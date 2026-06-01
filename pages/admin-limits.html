@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>每月提領上限設定 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-matrix.css" />
+    <link rel="stylesheet" href="../css/admin-blacklist.css" />
+    <style>
+      #audit-table thead th {
+        background: #f1f5f9;
+        padding: 10px 14px;
+        font-size: 12px;
+        color: var(--color-text-muted);
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      #audit-table tbody tr:hover { background: #f8fafc; }
+      #audit-table tbody td {
+        padding: 10px 14px;
+        vertical-align: top;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      #audit-table tbody tr:last-child td { border-bottom: none; }
+      .audit-tag {
+        display: inline-block;
+        padding: 2px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .audit-tag--expiry { background: #ede9fe; color: #6d28d9; }
+      .audit-tag--limit  { background: #fef3c7; color: #92400e; }
+      .audit-note-line { font-size: 12px; line-height: 1.9; white-space: nowrap; }
+      .audit-note-arrow { color: #6366f1; font-weight: 700; margin: 0 4px; }
+      .audit-note-after { font-weight: 700; color: var(--color-text); }
+    </style>
+  </head>
+  <body class="admin">
+    <main class="blacklist-page fade-in page-wrap">
+
+      <div class="page-crumb">風控管理 / 提領限制與時效管理</div>
+
+      
+
+      <section class="risk-stack">
+
+        <!-- ── 時間效期設定 ── -->
+        <div class="risk-card">
+          <h3><i class="fa-solid fa-clock"></i>獎金效期與失效規則設定</h3>
+          <p class="desc">
+            設定後立即生效；已進入失效倒數之案件仍依原設定計算，僅新觸發案件套用新值。所有設定異動皆寫入稽核軌跡。
+          </p>
+
+          <div class="limit-row">
+            <div>
+              <div class="limit-label">後續案件紅利效期</div>
+              <div class="limit-hint">
+                被推薦人再次申辦貸款時，推薦人加領獎金的計算起點（第一筆服務費付清或協商案付至第三期的起始日）至完成付清的最長天數。超過此期限的後續案件不予發放。
+              </div>
+            </div>
+            <div class="limit-input-wrap">
+              <input id="lim-followup-days" class="limit-number-input" type="number"
+                step="1" min="1" inputmode="numeric" value="150" />
+              <span class="limit-unit-label">天</span>
+            </div>
+          </div>
+
+          <div class="limit-row">
+            <div>
+              <div class="limit-label">獎金核發後未提領失效期限</div>
+              <div class="limit-hint">
+                系統已核發獎金後，推薦人未填寫匯款資料或申請提領的最長保留天數。超過此期限將自動失效歸零。
+              </div>
+            </div>
+            <div class="limit-input-wrap">
+              <input id="lim-unclaimed-days" class="limit-number-input" type="number"
+                step="1" min="1" inputmode="numeric" value="180" />
+              <span class="limit-unit-label">天</span>
+            </div>
+          </div>
+
+          <div class="limit-actions">
+            <button id="btn-save-expiry" type="button" class="btn btn-primary">
+              <i class="fa-regular fa-floppy-disk"></i>儲存效期設定
+            </button>
+          </div>
+        </div>
+
+        <!-- ── 每月提領上限 ── -->
+        <div class="risk-card">
+          <h3><i class="fa-solid fa-gauge-high"></i>每月提領上限設定</h3>
+          <p class="desc">
+            設定後立即生效；歷史已產生之快照不受影響。所有設定異動皆寫入稽核軌跡。
+          </p>
+
+          <div class="limit-stat-row" id="limit-stat-row">
+            <div class="limit-stat">
+              <span class="limit-stat-label">本月觸發</span>
+              <span class="limit-stat-value" id="lim-stat-trigger">8</span>
+              <span class="limit-stat-unit">筆</span>
+            </div>
+            <div class="limit-stat">
+              <span class="limit-stat-label">合計金額</span>
+              <span class="limit-stat-value" id="lim-stat-amount">$19,700</span>
+            </div>
+            <div class="limit-stat">
+              <span class="limit-stat-label">模式</span>
+              <span class="limit-stat-mode mode-pending" id="lim-stat-mode">暫存待人工放行</span>
+            </div>
+          </div>
+
+          <div class="limit-row">
+            <div>
+              <div class="limit-label">每月最高可提領總額</div>
+              <div class="limit-hint">建議 50,000 元</div>
+            </div>
+            <div class="limit-input-wrap">
+              <input id="lim-amount" class="limit-number-input" type="number"
+                step="1" min="0" inputmode="numeric" value="50000" />
+              <label class="limit-unlimited">
+                <input id="lim-amount-unlimited" type="checkbox" />
+                <span>不設上限</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="limit-row">
+            <div>
+              <div class="limit-label">每月最高成功推薦件數</div>
+              <div class="limit-hint">建議 5 件</div>
+            </div>
+            <div class="limit-input-wrap">
+              <input id="lim-count" class="limit-number-input" type="number"
+                step="1" min="0" inputmode="numeric" value="5" />
+              <label class="limit-unlimited">
+                <input id="lim-count-unlimited" type="checkbox" />
+                <span>不設上限</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="limit-row">
+            <div>
+              <div class="limit-label">超量處理方式</div>
+              <div class="limit-hint">超出上限之新案件後續處理流程</div>
+            </div>
+            <div class="limit-action-fixed">
+              <i class="fa-solid fa-user-clock"></i>
+              <div>
+                <strong>暫存待人工放行</strong>
+                <small>送單會被攔住、進入超量待審佇列，由風控人員審核後決定是否放行。</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- <div class="pending-mode-link">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+              超量送單會進入待審佇列。
+              <a href="#admin-pending-review" id="link-to-pending">前往「超量待審佇列」 →</a>
+            </div>
+          </div> -->
+
+          <div class="limit-actions">
+            <button id="btn-save-limits" type="button" class="btn btn-primary">
+              <i class="fa-regular fa-floppy-disk"></i>儲存上限設定
+            </button>
+          </div>
+        </div>
+        <!-- ── 異動歷程 ── -->
+        <div class="risk-card">
+          <h3><i class="fa-solid fa-clock-rotate-left"></i>異動歷程</h3>
+          <div style="overflow-x: auto;">
+            <table class="data-table" id="audit-table">
+              <thead>
+                <tr>
+                  <th style="white-space:nowrap;">時間</th>
+                  <th>操作人員</th>
+                  <th>異動項目</th>
+                  <th>異動內容</th>
+                </tr>
+              </thead>
+              <tbody id="audit-tbody">
+                <tr>
+                  <td colspan="4" style="text-align:center;padding:24px;color:var(--color-text-muted);">尚無異動紀錄</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <script src="../js/admin-limits.js"></script>
+  </body>
+</html>

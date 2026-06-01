@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>風控管理 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-matrix.css" />
+    <link rel="stylesheet" href="../css/admin-blacklist.css" />
+  </head>
+  <body class="admin">
+    <main class="blacklist-page fade-in page-wrap">
+
+      <div class="page-crumb">風控管理 / 黑名單管理</div>
+      <!-- 工具列 -->
+     
+
+      <section class="risk-stack">
+        <!-- 黑名單管理 -->
+        <div class="risk-card risk-card-wide">
+        <div class="blacklist-card-head">
+          <h3><i class="fa-solid fa-ban"></i>黑名單管理</h3>
+          <div class="blacklist-toolbar">
+            <input class="blacklist-search" type="text" placeholder="搜尋事件編號、姓名、手機…" />
+            <select class="field-select" style="width:auto;">
+              <option>全部狀態</option>
+              <option>已凍結</option>
+              <option>系統警示</option>
+              <option>正常</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="blacklist-table">
+            <thead>
+              <tr>
+                <th style="width:140px;">事件編號</th>
+                <th>推薦人</th>
+                <th style="width:90px;">身份</th>
+                <th style="width:100px;">狀態</th>
+                <th>觸發原因 / 最新備註</th>
+                <th style="width:160px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="blacklist-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="risk-card-foot">
+          <i class="fa-solid fa-circle-info"></i>
+          被凍結帳號所產生的所有推薦連結將<strong>立即失效</strong>；已送出但尚未撥款之案件改判為「未符合資格」。
+        </div>
+        <div class="pagination-bar">
+          <div class="pg-size">
+            每頁
+            <select id="bl-page-size">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="50">50</option>
+            </select>
+            筆
+          </div>
+          <div class="pagination" id="bl-pagination"></div>
+          <div class="pg-total">共 <span id="bl-pg-total">0</span> 筆</div>
+        </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- ============== 查看詳情 Modal ============== -->
+    <div id="view-modal" class="flag-modal-backdrop">
+      <div class="flag-modal" style="max-width: 540px;">
+        <h3><i class="fa-solid fa-circle-info" style="color: var(--color-primary);"></i>帳號詳情</h3>
+        <div class="flag-modal-body">
+
+          <div class="view-grid">
+            <div class="view-row">
+              <span class="view-label">事件編號</span>
+              <span class="view-value" id="view-incident-id">—</span>
+            </div>
+            <div class="view-row">
+              <span class="view-label">推薦人姓名</span>
+              <span class="view-value" id="view-name">—</span>
+            </div>
+            <div class="view-row">
+              <span class="view-label">身份</span>
+              <span class="view-value" id="view-tag">—</span>
+            </div>
+            <div class="view-row">
+              <span class="view-label">目前狀態</span>
+              <span class="view-value" id="view-status">—</span>
+            </div>
+            <div class="view-row">
+              <span class="view-label">被系統警示時間</span>
+              <span class="view-value" id="view-warned-at">—</span>
+            </div>
+            <div class="view-row">
+              <span class="view-label">被列入黑名單時間</span>
+              <span class="view-value" id="view-blacklisted-at">—</span>
+            </div>
+            <div class="view-row">
+              <span class="view-label">處理人員</span>
+              <span class="view-value" id="view-flagged-by">—</span>
+            </div>
+            <div class="view-row view-row-full">
+              <span class="view-label">原因 / 備註</span>
+              <span class="view-value" id="view-reason">—</span>
+            </div>
+          </div>
+
+          <!-- 操作按鈕（在查看內提供） -->
+          <div class="view-actions">
+            <button id="view-btn-unfreeze" type="button" class="btn btn-outline" hidden>
+              <i class="fa-solid fa-lock-open"></i>解除凍結
+            </button>
+            <button id="view-btn-flag" type="button" class="btn btn-outline" hidden style="border-color: var(--color-danger); color: var(--color-danger);">
+              <i class="fa-solid fa-ban"></i>標記為黑名單
+            </button>
+          </div>
+
+          <div class="info-box danger" id="view-action-warn" hidden style="margin-top: 12px;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>請點擊上方按鈕執行操作。所有動作會立即生效並寫入稽核軌跡。</div>
+          </div>
+        </div>
+        <div class="flag-modal-footer">
+          <button id="btn-view-close" type="button" class="btn btn-outline">關閉</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== 標記黑名單 — 原因填寫 Modal ============== -->
+    <div id="flag-modal" class="flag-modal-backdrop">
+      <div class="flag-modal">
+        <h3><i class="fa-solid fa-ban" style="color: var(--color-danger);"></i>標記為洗單黑名單</h3>
+        <div class="flag-modal-body">
+          <p style="font-size: var(--font-sm); color: var(--color-text); margin-bottom: 12px;">
+            您即將凍結帳號事件 <strong id="flag-incident-id"></strong>（<span id="flag-name"></span>）。凍結後該帳號之所有連結將立即失效。
+          </p>
+          <div class="field">
+            <label class="field-label field-required">凍結原因（必填，將寫入稽核軌跡）</label>
+            <textarea id="flag-reason" class="field-input" rows="3" placeholder="例：同一裝置出現多組推薦碼、IP 集中、來源為論壇陌生客等…"></textarea>
+          </div>
+          <div class="info-box danger">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>本操作將即時生效，已送出但未撥款之案件將改判為「未符合資格」。請務必確認後再執行。</div>
+          </div>
+        </div>
+        <div class="flag-modal-footer">
+          <button id="btn-flag-cancel" type="button" class="btn btn-outline">取消</button>
+          <button id="btn-flag-confirm" type="button" class="btn btn-primary" style="background: var(--color-danger);">
+            <i class="fa-solid fa-ban"></i>確認凍結
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/admin-blacklist.js"></script>
+  </body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>全站方案開關 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-matrix.css" />
+    <link rel="stylesheet" href="../css/admin-campaigns.css" />
+    <style>
+      .plan-switch-page { padding: 24px; }
+
+      .audit-card {
+        background: #fff;
+        border-radius: var(--radius-lg);
+        padding: 16px 20px;
+        box-shadow: var(--shadow-sm);
+        margin-top: 16px;
+      }
+      .audit-card h3 {
+        font-size: var(--font-md);
+        font-weight: 700;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .audit-row {
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--color-border-light);
+        font-size: var(--font-xs);
+        display: flex;
+        gap: 10px;
+      }
+      .audit-row:last-child { border-bottom: 0; }
+      .audit-time {
+        color: var(--color-text-muted);
+        font-family: 'Courier New', monospace;
+        flex-shrink: 0;
+        min-width: 130px;
+      }
+      .audit-empty {
+        padding: 20px;
+        text-align: center;
+        color: var(--color-text-muted);
+        font-size: var(--font-sm);
+      }
+    </style>
+  </head>
+  <body class="admin">
+    <main class="plan-switch-page fade-in page-wrap">
+
+      <div class="page-crumb">風控管理 / 全站方案開關</div>
+
+      
+  
+
+      <!-- 全站方案啟用控制（員工 / 會員 獨立 toggle） -->
+      <section class="plan-master-switch" style="margin: 0 0 16px;">
+        <div class="pms-head">
+          <i class="fa-solid fa-power-off"></i>
+          <div>
+            <strong>方案啟用狀態</strong>
+            <span class="pms-hint">點擊下方開關即可立即切換；切換前會跳出確認視窗，避免誤觸。</span>
+          </div>
+        </div>
+        <div class="pms-toggles">
+          <label class="pms-toggle" data-target="employee">
+            <input id="pms-employee" type="checkbox" />
+            <span class="pms-slot">
+              <span class="pms-name"><i class="fa-solid fa-user-tie"></i>員工方案</span>
+              <span class="pms-status" id="pms-employee-status">啟用中</span>
+              <span class="pms-knob"></span>
+            </span>
+          </label>
+          <label class="pms-toggle" data-target="customer">
+            <input id="pms-customer" type="checkbox" />
+            <span class="pms-slot">
+              <span class="pms-name"><i class="fa-solid fa-users"></i>會員方案</span>
+              <span class="pms-status" id="pms-customer-status">啟用中</span>
+              <span class="pms-knob"></span>
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <!-- 稽核軌跡 -->
+      <section class="audit-card">
+        <h3>
+          <i class="fa-solid fa-clipboard-list" style="color: var(--color-primary)"></i>
+          稽核軌跡（最近 10 筆 - 全站方案開關相關）
+        </h3>
+        <div id="audit-list"></div>
+      </section>
+
+    </main>
+
+    <script>
+      (function () {
+        'use strict';
+
+        const KEY = (plan) => 'mgm_plan_paused_' + plan;
+        const LABEL = { employee: '員工方案', customer: '會員方案' };
+        const LABEL_ACTIVE = '啟用中';
+        const LABEL_PAUSED = '已暫停';
+
+        function fillSwitch(plan) {
+          const cb = document.getElementById('pms-' + plan);
+          const status = document.getElementById('pms-' + plan + '-status');
+          if (!cb || !status) return;
+          const paused = (() => {
+            try { return localStorage.getItem(KEY(plan)) === '1'; }
+            catch { return false; }
+          })();
+          cb.checked = paused;
+          status.textContent = paused ? LABEL_PAUSED : LABEL_ACTIVE;
+        }
+
+        function writeAudit(action, target, note) {
+          try {
+            const key = 'mgm_risk_audit_log';
+            const cur = JSON.parse(localStorage.getItem(key) || '[]');
+            cur.unshift({
+              time: new Date().toLocaleString('zh-TW'),
+              actor: 'Admin User',
+              action, target, note,
+            });
+            if (cur.length > 200) cur.length = 200;
+            localStorage.setItem(key, JSON.stringify(cur));
+          } catch {}
+        }
+
+        function renderAudit() {
+          const wrap = document.getElementById('audit-list');
+          if (!wrap) return;
+          let log = [];
+          try { log = JSON.parse(localStorage.getItem('mgm_risk_audit_log') || '[]'); } catch {}
+          const list = log
+            .filter((x) => /全站方案|員工方案|會員方案/.test(x.action) || x.target === '全站方案開關')
+            .slice(0, 10);
+          if (list.length === 0) {
+            wrap.innerHTML = '<div class="audit-empty">尚無切換紀錄</div>';
+            return;
+          }
+          wrap.innerHTML = list.map((x) => `
+            <div class="audit-row">
+              <span class="audit-time">${x.time}</span>
+              <span><strong>${x.actor}</strong> ${x.action}${x.note ? '：' + x.note : ''}</span>
+            </div>
+          `).join('');
+        }
+
+        fillSwitch('employee');
+        fillSwitch('customer');
+        renderAudit();
+
+        ['employee', 'customer'].forEach((plan) => {
+          const cb = document.getElementById('pms-' + plan);
+          if (!cb) return;
+          cb.addEventListener('change', () => {
+            const turningOff = cb.checked;
+            const label = LABEL[plan];
+            const msg = turningOff
+              ? `確定暫停【${label}】嗎？\n\n暫停後，該方案之使用者只能進入「我的獎金」頁，其他頁面顯示「敬請期待」。\n已賺得的獎金與提領功能不受影響。\n\n本操作將寫入稽核軌跡。`
+              : `確定恢復【${label}】嗎？\n\n恢復後該方案之使用者可正常使用所有功能。\n本操作將寫入稽核軌跡。`;
+            if (!confirm(msg)) {
+              cb.checked = !turningOff;
+              return;
+            }
+            try { localStorage.setItem(KEY(plan), turningOff ? '1' : '0'); } catch {}
+            document.getElementById('pms-' + plan + '-status').textContent = turningOff ? LABEL_PAUSED : LABEL_ACTIVE;
+            writeAudit(
+              `${turningOff ? '暫停' : '恢復'}【${label}】`,
+              '全站方案開關',
+              turningOff ? '前台對應方案進入「敬請期待」狀態' : '前台對應方案恢復正常',
+            );
+            renderAudit();
+            toast(`已${turningOff ? '暫停' : '恢復'}【${label}】，已寫入稽核軌跡`);
+          });
+        });
+
+        // 同步其他分頁的變動
+        window.addEventListener('storage', (e) => {
+          if (!e.key) return;
+          if (e.key === 'mgm_plan_paused_employee') fillSwitch('employee');
+          if (e.key === 'mgm_plan_paused_customer') fillSwitch('customer');
+          if (e.key === 'mgm_risk_audit_log') renderAudit();
+        });
+
+        function toast(msg) {
+          const t = document.createElement('div');
+          t.style.cssText =
+            'position:fixed;top:80px;right:24px;background:#10b981;color:#fff;' +
+            'padding:12px 18px;border-radius:10px;font-size:14px;z-index:9999;';
+          t.innerHTML = '<i class="fa-solid fa-check"></i> ' + msg;
+          document.body.appendChild(t);
+          setTimeout(() => t.remove(), 2400);
+        }
+      })();
+    </script>
+  </body>
+</html>

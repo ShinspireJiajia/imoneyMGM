@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>後台總覽 - 理財通 MGM</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-matrix.css" />
+    <link rel="stylesheet" href="../css/admin-records.css" />
+    <style>
+      .dashboard-page {
+        padding: 24px;
+      }
+      .welcome {
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+        color: #fff;
+        border-radius: var(--radius-xl);
+        padding: 22px 24px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .welcome::after {
+        content: '';
+        position: absolute;
+        right: -30px;
+        top: -30px;
+        width: 180px;
+        height: 180px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+      }
+      .welcome h1 {
+        font-size: var(--font-2xl);
+        font-weight: 700;
+      }
+      .welcome p {
+        font-size: var(--font-sm);
+        opacity: 0.85;
+        margin-top: 4px;
+      }
+      .quick-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: var(--radius-pill);
+        font-size: var(--font-sm);
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+      }
+      .quick-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+      .content-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 16px;
+      }
+      .panel {
+        background: #fff;
+        border-radius: var(--radius-lg);
+        padding: 16px 20px;
+        box-shadow: var(--shadow-sm);
+      }
+      .panel h3 {
+        font-size: var(--font-md);
+        font-weight: 700;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .panel h3 i {
+        color: var(--color-primary);
+      }
+      /* 圓餅圖（CSS conic-gradient 模擬） */
+      .donut {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: conic-gradient(
+          var(--color-warning) 0% 18%,
+          var(--color-primary) 18% 40%,
+          var(--color-success) 40% 70%,
+          #9ca3af 70% 90%,
+          var(--color-danger) 90% 100%
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+      }
+      .donut::after {
+        content: '128';
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--font-2xl);
+        font-weight: 700;
+        color: var(--color-text);
+      }
+      .donut-legend {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+      .legend-item {
+        font-size: var(--font-xs);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .legend-item .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      /* 條形圖 */
+      .bar-chart {
+        display: flex;
+        align-items: stretch;
+        gap: 14px;
+        height: 240px;
+        padding: 22px 4px 0;
+        border-bottom: 1px solid var(--color-border-light);
+      }
+      .bar-col {
+        flex: 1;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+      }
+      .bar {
+        width: 80%;
+        background: linear-gradient(180deg, var(--color-primary-light), var(--color-primary));
+        border-radius: 6px 6px 0 0;
+        position: relative;
+        flex-shrink: 0;
+        min-height: 4px;
+      }
+      .bar-label {
+        font-size: 12px;
+        color: var(--color-text-secondary);
+        flex-shrink: 0;
+        font-variant-numeric: tabular-nums;
+      }
+      .bar .val {
+        position: absolute;
+        top: -22px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: var(--font-xs);
+        font-weight: 700;
+        color: var(--color-primary-dark);
+      }
+      .recent-list {
+        font-size: var(--font-sm);
+      }
+      .recent-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--color-border-light);
+      }
+      .recent-row:last-child {
+        border-bottom: 0;
+      }
+      .recent-row .name {
+        font-weight: 600;
+      }
+      .recent-row .meta {
+        font-size: 11px;
+        color: var(--color-text-secondary);
+        margin-top: 2px;
+      }
+      @media (max-width: 1024px) {
+        .content-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body class="admin">
+    <main class="dashboard-page fade-in page-wrap">
+      
+      <div class="page-crumb">首頁 / 後台總覽</div>
+<!-- 歡迎卡 -->
+      <section class="welcome">
+        <div>
+          <h1>歡迎回來，Admin User</h1>
+          <p>本月推廣案件 128 筆，發放獎金 $182,500，未符合 12 筆已自動標記原因</p>
+        </div>
+      </section>
+
+      <!-- KPI -->
+      <section class="kpi-grid" style="margin-bottom: 20px;">
+        <div class="kpi-card">
+          <div class="kpi-icon purple"><i class="fa-solid fa-user-plus"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">本月送單</div>
+            <div class="kpi-value">128</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">成功撥款</div>
+            <div class="kpi-value">38</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon yellow"><i class="fa-solid fa-coins"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">發放獎金</div>
+            <div class="kpi-value">$182.5K</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon red"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">黑名單</div>
+            <div class="kpi-value">12</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 主內容 -->
+      <div class="content-grid">
+        <!-- 左：本月送單趨勢 -->
+        <section class="panel">
+          <h3><i class="fa-solid fa-chart-column"></i>近 7 日送單趨勢</h3>
+          <div class="bar-chart">
+            <div class="bar-col">
+              <div class="bar" style="height: 60%;"><span class="val">12</span></div>
+              <div class="bar-label">05/19</div>
+            </div>
+            <div class="bar-col">
+              <div class="bar" style="height: 78%;"><span class="val">18</span></div>
+              <div class="bar-label">05/20</div>
+            </div>
+            <div class="bar-col">
+              <div class="bar" style="height: 52%;"><span class="val">10</span></div>
+              <div class="bar-label">05/21</div>
+            </div>
+            <div class="bar-col">
+              <div class="bar" style="height: 85%;"><span class="val">22</span></div>
+              <div class="bar-label">05/22</div>
+            </div>
+            <div class="bar-col">
+              <div class="bar" style="height: 95%;"><span class="val">25</span></div>
+              <div class="bar-label">05/23</div>
+            </div>
+            <div class="bar-col">
+              <div class="bar" style="height: 70%;"><span class="val">16</span></div>
+              <div class="bar-label">05/24</div>
+            </div>
+            <div class="bar-col">
+              <div class="bar" style="height: 100%;"><span class="val">28</span></div>
+              <div class="bar-label">05/25</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 右：狀態分佈 -->
+        <section class="panel">
+          <h3><i class="fa-solid fa-chart-pie"></i>案件狀態分佈</h3>
+          <div class="donut" aria-label="狀態分佈圖"></div>
+          <div class="donut-legend">
+            <div class="legend-item">
+              <span class="dot" style="background: var(--color-warning)"></span>審核中 23
+            </div>
+            <div class="legend-item">
+              <span class="dot" style="background: var(--color-primary)"></span>專案確認 28
+            </div>
+            <div class="legend-item">
+              <span class="dot" style="background: var(--color-success)"></span>可提領 38
+            </div>
+            <div class="legend-item">
+              <span class="dot" style="background: #9ca3af"></span>已提領 27
+            </div>
+            <div class="legend-item">
+              <span class="dot" style="background: var(--color-danger)"></span>未符合 12
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </main>
+  </body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>提領功能管理 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-matrix.css" />
+    <link rel="stylesheet" href="../css/admin-referrers.css" />
+    <link rel="stylesheet" href="../css/admin-payments.css" />
+  </head>
+  <body class="admin">
+    <main class="payments-page fade-in page-wrap">
+      
+      <div class="page-crumb">財務管理 / 提領功能管理</div>
+<!-- 工具列 -->
+      <div class="page-toolbar">
+        <div>
+          
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <!-- 「編輯匯款資訊」權限獨立開關（demo 用：localStorage 持久化） -->
+          <label class="perm-toggle" title="開啟後，款項列每筆會出現「編輯」按鈕；可在權限管理頁將此權限給予財務後台特定帳號">
+            <input type="checkbox" id="perm-edit-payment" />
+            <span class="perm-toggle-track"><span class="perm-toggle-knob"></span></span>
+            <span class="perm-toggle-label">
+              <i class="fa-solid fa-key"></i>
+              權限：編輯匯款資訊
+            </span>
+          </label>
+          <button id="btn-export-recon" type="button" class="btn btn-outline">
+            <i class="fa-solid fa-download"></i>匯出對帳檔
+          </button>
+          <button id="btn-monthly-report" type="button" class="btn btn-outline">
+            <i class="fa-solid fa-file-invoice-dollar"></i>月結報表
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <section class="kpi-grid" style="margin-bottom: 16px;">
+        <div class="kpi-card">
+          <div class="kpi-icon yellow"><i class="fa-solid fa-money-bill-transfer"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">待匯款</div>
+            <div class="kpi-value" id="kpi-transfer-amount">$0</div>
+            <div class="kpi-label" id="kpi-transfer-count" style="margin-top: 2px;">0 筆</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon blue"><i class="fa-solid fa-store"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">現場領取</div>
+            <div class="kpi-value" id="kpi-cash-amount">$0</div>
+            <div class="kpi-label" id="kpi-cash-count" style="margin-top: 2px;">0 筆</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">本月已撥款</div>
+            <div class="kpi-value" id="kpi-done-amount">$0</div>
+            <div class="kpi-label" id="kpi-done-count" style="margin-top: 2px;">0 筆</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 篩選 -->
+      <section class="filter-bar">
+        <div class="field">
+          <label class="field-label">關鍵字搜尋</label>
+          <input id="filter-keyword" class="field-input" type="text" placeholder="款項編號、案號、推薦人…" />
+        </div>
+        <div class="field">
+          <label class="field-label">狀態</label>
+          <select class="field-select" id="filter-status">
+            <option value="all">全部</option>
+            <option value="pending">待撥款</option>
+            <option value="transferred">已匯款</option>
+            <option value="pickup">待現場領取</option>
+            <option value="completed">已領取</option>
+            <option value="failed">銀行退匯</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">方式</label>
+          <select class="field-select" id="filter-method">
+            <option value="all">全部</option>
+            <option value="transfer">匯款</option>
+            <option value="cash">現場領取</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">申請日期</label>
+          <div class="filter-date-range">
+            <input id="filter-date-from" class="field-input" type="date" />
+            <span style="color: var(--color-text-muted); flex-shrink: 0;">~</span>
+            <input id="filter-date-to" class="field-input" type="date" />
+          </div>
+        </div>
+        <button id="btn-filter-search" type="button" class="btn btn-primary">
+          <i class="fa-solid fa-magnifying-glass"></i>查詢
+        </button>
+      </section>
+
+      <!-- 列表 -->
+      <section class="list-card">
+        <div class="list-head">
+          <h3><i class="fa-solid fa-money-check-dollar"></i>提領申請清單</h3>
+          <div style="font-size: var(--font-xs); color: var(--color-text-secondary);">
+            勾選後可使用下方批次操作
+          </div>
+        </div>
+
+        <!-- 批次操作條 -->
+        <div id="batch-bar" class="batch-bar hidden">
+          <div class="batch-bar-row">
+            <span>
+              已勾選 <span class="batch-count" id="batch-count">0</span> 筆
+              <span class="batch-amount" id="batch-amount">$0</span>
+            </span>
+            <div class="batch-spacer"></div>
+            <button id="btn-batch-transferred" type="button" class="btn btn-primary" style="padding: 6px 14px; font-size: 12px;">
+              <i class="fa-solid fa-check"></i>批次標記「已撥款」
+            </button>
+            <button id="btn-batch-completed" type="button" class="btn btn-success" style="padding: 6px 14px; font-size: 12px;">
+              <i class="fa-solid fa-handshake"></i>批次標記「已領取」
+            </button>
+            <button id="btn-batch-cancel" type="button" class="btn btn-outline" style="padding: 6px 14px; font-size: 12px;">
+              取消勾選
+            </button>
+          </div>
+          <div class="batch-note-row">
+            <label class="batch-note-label">批次備註（選填）</label>
+            <textarea id="batch-note" rows="1" class="batch-note-input"
+              placeholder="此備註會一併寫入所選筆數的款項，並追加至異動歷程"></textarea>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="data-table data-table-payments">
+            <thead>
+              <tr>
+                <th style="width: 36px;"></th>
+                <th>款項編號</th>
+                <th>案號</th>
+                <th>會員編號</th>
+                <th>推薦人</th>
+                <th>標籤</th>
+                <th>稅務資訊</th>
+                <th>金額</th>
+                <th>方式</th>
+                <th>申請日期</th>
+                <th>狀態</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="payments-tbody"></tbody>
+          </table>
+        </div>
+
+        <div style="padding: 14px 20px; border-top: 1px solid var(--color-border-light); font-size: var(--font-xs); color: var(--color-text-secondary); display: flex; gap: 16px; flex-wrap: wrap;">
+          <span><i class="fa-solid fa-circle-info"></i> 點擊「歷程」可查看該筆款項完整異動軌跡</span>
+          <span style="color: var(--color-danger);">
+        </div>
+
+        <div class="pagination-bar">
+          <div class="pg-size">
+            每頁
+            <select id="pay-page-size">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            筆
+          </div>
+          <div class="pagination" id="pay-pagination"></div>
+          <div class="pg-total">共 <span id="pay-pg-total">0</span> 筆 · 第 <span id="pay-pg-cur">1</span> / <span id="pay-pg-max">1</span> 頁</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============== 月結報表 Modal ============== -->
+    <div id="monthly-modal" class="history-modal-bg">
+      <div class="history-modal" style="max-width: 720px;">
+        <div class="history-modal-head">
+          <h3>
+            <i class="fa-solid fa-file-invoice-dollar"></i>月結報表
+          </h3>
+          <span id="btn-monthly-close" class="history-modal-close" role="button" tabindex="0"><i class="fa-solid fa-xmark"></i></span>
+        </div>
+        <div class="history-modal-body" style="padding: 18px 22px;">
+          <div class="field" style="display:flex;align-items:center;gap:10px;">
+            <label class="field-label" style="margin:0;">統計月份</label>
+            <input id="monthly-month" type="month" class="field-input" style="max-width:160px;" />
+            <button id="btn-monthly-refresh" type="button" class="btn btn-outline" style="padding:6px 14px;">
+              <i class="fa-solid fa-arrows-rotate"></i>重新計算
+            </button>
+          </div>
+
+          <section class="monthly-summary" id="monthly-summary">
+            <!-- JS 動態填入：總筆數、已撥款、待撥款、退匯、依方式統計、依產品統計 -->
+          </section>
+
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+            <button id="btn-monthly-download" type="button" class="btn btn-primary">
+              <i class="fa-solid fa-download"></i>下載月結 CSV
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== 編輯備註 Modal ============== -->
+    <div id="note-pay-modal" class="history-modal-bg">
+      <div class="history-modal" style="max-width: 480px;">
+        <div class="history-modal-head">
+          <h3>
+            <i class="fa-regular fa-note-sticky"></i>編輯備註
+            <span style="font-size:13px;margin-left:8px;font-family:'Courier New',monospace;color:var(--color-primary-dark);" id="note-pay-id">—</span>
+          </h3>
+          <span id="btn-note-pay-close" class="history-modal-close" role="button" tabindex="0"><i class="fa-solid fa-xmark"></i></span>
+        </div>
+        <div class="history-modal-body" style="padding: 18px 22px;">
+          <div class="field">
+            <label class="field-label">備註內容（將寫入該筆款項並追加至異動歷程）</label>
+            <textarea id="note-pay-text" class="field-input" rows="4" placeholder="例：銀行帳號已補正、推薦人改現場領取、退款待補件…"></textarea>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+            <button id="btn-note-pay-cancel" type="button" class="btn btn-outline">取消</button>
+            <button id="btn-note-pay-save" type="button" class="btn btn-primary">
+              <i class="fa-solid fa-check"></i>儲存備註
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== 編輯匯款資訊 Modal ============== -->
+    <div id="edit-pay-modal" class="history-modal-bg">
+      <div class="history-modal" style="max-width: 480px;">
+        <div class="history-modal-head">
+          <h3>
+            <i class="fa-solid fa-pen-to-square"></i>編輯匯款資訊
+            <span style="font-size: 13px; margin-left: 8px; font-family: 'Courier New', monospace; color: var(--color-primary-dark);" id="edit-pay-id">—</span>
+          </h3>
+          <span id="btn-edit-pay-close" class="history-modal-close" role="button" tabindex="0">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </div>
+        <div class="history-modal-body" style="padding: 18px 22px;">
+          <div class="field">
+            <label class="field-label">推薦人</label>
+            <input id="edit-pay-ref" class="field-input" type="text" disabled />
+          </div>
+          <div class="field">
+            <label class="field-label">撥款方式</label>
+            <select id="edit-pay-method" class="field-select">
+              <option value="transfer">匯款</option>
+              <option value="cash">現場領取</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">狀態（人工維護）</label>
+            <select id="edit-pay-status" class="field-select">
+              <option value="pending">待撥款</option>
+              <option value="transferred">已匯款</option>
+              <option value="pickup">待現場領取</option>
+              <option value="completed">已領取</option>
+              <option value="failed">銀行退匯</option>
+            </select>
+          </div>
+          <div class="field edit-pay-transfer-fields">
+            <label class="field-label">銀行名稱</label>
+            <input id="edit-pay-bank" class="field-input" type="text" placeholder="例：玉山銀行" />
+          </div>
+          <div class="field edit-pay-transfer-fields">
+            <label class="field-label">帳號末四碼</label>
+            <input id="edit-pay-last4" class="field-input" type="text" maxlength="4" placeholder="1234" />
+          </div>
+          <div class="field edit-pay-cash-fields" hidden>
+            <label class="field-label">領取門市</label>
+            <input id="edit-pay-branch" class="field-input" type="text" placeholder="例：現場" />
+          </div>
+          <div class="field edit-pay-cash-fields" hidden>
+            <label class="field-label">預計領取日期</label>
+            <input id="edit-pay-expected-pickup" class="field-input" type="date" />
+          </div>
+          <div class="field">
+            <label class="field-label">變更原因（將寫入歷程）</label>
+            <textarea id="edit-pay-reason" class="field-input" rows="2" placeholder="例：推薦人補正帳號（原帳號錯誤）"></textarea>
+          </div>
+          <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px;">
+            <button id="btn-edit-pay-cancel" type="button" class="btn btn-outline">取消</button>
+            <button id="btn-edit-pay-save" type="button" class="btn btn-primary">
+              <i class="fa-solid fa-check"></i>儲存變更
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 異動歷程 Modal -->
+    <div id="history-modal" class="history-modal-bg">
+      <div class="history-modal">
+        <div class="history-modal-head">
+          <h3>
+            <i class="fa-solid fa-clock-rotate-left"></i>款項異動歷程
+            <span style="font-size: 13px; margin-left: 8px; font-family: 'Courier New', monospace; color: var(--color-primary-dark);" id="history-payid">—</span>
+          </h3>
+          <span id="btn-history-close" class="history-modal-close" role="button" tabindex="0">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </div>
+        <div class="history-modal-body">
+          <!-- 款項摘要 -->
+          <div class="history-payment-summary">
+            <div class="item">推薦人 <strong id="history-ref">—</strong></div>
+            <div class="item">稅務資訊 <strong id="history-tax">—</strong></div>
+            <div class="item">金額 <strong id="history-amount">—</strong></div>
+            <div class="item">方式 <strong id="history-method">—</strong></div>
+            <div class="item">目前狀態 <strong id="history-status">—</strong></div>
+          </div>
+
+          <!-- Timeline -->
+          <div id="history-timeline" class="timeline-vertical"></div>
+
+
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/admin-payments.js"></script>
+  </body>
+</html>

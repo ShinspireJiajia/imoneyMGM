@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>敬請期待 - 理財通 MGM</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/coming-soon.css" />
+  </head>
+  <body>
+    <main class="coming-soon fade-in">
+      <div class="cs-card">
+        <div class="cs-icon" aria-hidden="true">
+          <i class="fa-regular fa-clock"></i>
+        </div>
+        <h1 class="cs-title">敬請期待</h1>
+        <p class="cs-desc">
+          推薦活動目前暫停中，<br />
+          新檔期正在準備中，請稍待最新消息。
+        </p>
+
+        <div class="cs-note">
+          <i class="fa-solid fa-circle-info"></i>
+          <div>
+            您之前已賺得的獎金與提領功能不受影響，可隨時查看與申請。
+          </div>
+        </div>
+
+        <a href="#rewards" class="cs-btn" data-go="rewards">
+          <i class="fa-solid fa-sack-dollar"></i>
+          查看我的獎金
+        </a>
+
+        <p class="cs-foot">
+          如有疑問請聯繫客服 <a href="tel:0800123456">0800-123-456</a>
+        </p>
+      </div>
+    </main>
+
+    <script>
+      // 「查看我的獎金」按鈕：通知 parent frame 切到 rewards
+      document.querySelector('[data-go]')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (window.parent && window.parent.AppRouter) {
+          window.parent.AppRouter.go('rewards');
+        } else {
+          location.href = '../index.html#rewards';
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>推廣紀錄 - 理財通 MGM</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/records.css" />
+  </head>
+  <body>
+    <main class="records fade-in">
+      <!-- ============== 進行中活動橫幅（獎金動態計算來源說明） ============== -->
+
+
+      <!-- ============== Tab 篩選（只顯示可提領流程中的案件） ============== -->
+      <nav class="status-tabs" aria-label="狀態篩選">
+        <div class="status-tab active" data-filter="all">
+          全部<span class="count">0</span>
+        </div>
+        <div class="status-tab" data-filter="rewardable">
+          可提領<span class="count">0</span>
+        </div>
+        <div class="status-tab" data-filter="archived">
+          已歸檔<span class="count">0</span>
+        </div>
+        <div class="status-tab" data-filter="expired">
+          已失效<span class="count">0</span>
+        </div>
+      </nav>
+
+      <!-- ============== 紀錄列表（JS 渲染） ============== -->
+      <section class="record-list" id="record-list" aria-live="polite"></section>
+
+
+
+      <!-- 資料保存期限說明 -->
+      <p class="data-retention-note">
+        <i class="fa-regular fa-clock"></i>
+        資料僅保存近 18 個月的資料，規則是依據最終狀態更新日計算
+      </p>
+    </main>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/records.js"></script>
+  </body>
+</html>

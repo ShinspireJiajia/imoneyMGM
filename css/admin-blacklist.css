@@ -1,0 +1,602 @@
+/* ==========================================================
+   admin-blacklist.css - 風控管理：提領上限 + 洗單黑名單
+   ========================================================== */
+
+.blacklist-page {
+  padding: 24px;
+}
+
+.page-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.page-title {
+  font-size: var(--font-2xl);
+  font-weight: 700;
+}
+
+.page-subtitle {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+
+/* 單欄垂直排列（避免使用者迷路） */
+.risk-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* 簡潔的頭部統計（凍結帳號 / 系統警示） */
+.risk-overview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.risk-overview-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+}
+
+.risk-overview-item i {
+  color: var(--color-warning-dark);
+  font-size: 13px;
+}
+
+.risk-overview-item:first-child i {
+  color: var(--color-danger);
+}
+
+.risk-overview-item strong {
+  color: var(--color-text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.risk-card-foot {
+  padding: 14px 20px;
+  border-top: 1px solid var(--color-border-light);
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  background: #fafafa;
+}
+
+.risk-card-foot i {
+  color: var(--color-primary);
+  margin-right: 4px;
+}
+
+/* ---------- 機制 1 觸發統計 ---------- */
+.limit-stat-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin: 0 0 14px;
+  font-size: var(--font-sm);
+}
+
+.limit-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.limit-stat-label {
+  color: var(--color-text-secondary);
+}
+
+.limit-stat-label::after { content: '：'; }
+
+.limit-stat-value {
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.limit-stat-unit {
+  color: var(--color-text-secondary);
+  margin-right: 4px;
+}
+
+.limit-stat-mode {
+  font-weight: 700;
+  color: var(--color-text);
+  background: #F3F4F6;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: var(--font-xs);
+}
+
+.limit-stat-mode.mode-pending {
+  background: var(--color-warning-light);
+  color: var(--color-warning-dark);
+}
+
+/* ---------- 模式切換提示連結 ---------- */
+.pending-mode-link {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: var(--color-warning-light);
+  border-left: 3px solid var(--color-warning);
+  border-radius: 6px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: var(--font-sm);
+  color: #92400e;
+}
+
+.pending-mode-link[hidden] { display: none; }
+
+.pending-mode-link i { color: var(--color-warning-dark); }
+
+.pending-mode-link a {
+  color: var(--color-primary-dark);
+  font-weight: 700;
+  text-decoration: underline;
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+.limit-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.limit-actions .btn {
+  padding: 10px 22px;
+}
+
+/* 不設上限 checkbox */
+.limit-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.limit-input-wrap input[type="number"] {
+  flex: 1;
+  min-width: 140px;
+  padding-right: 28px;          /* 預留 spinner 空間 */
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* 整數金額輸入框（最少容納 6 位數） */
+.limit-number-input {
+  width: 100%;
+  min-width: 140px;
+}
+
+/* 超量處理方式 select 加寬到能完整顯示 */
+.limit-action-select {
+  width: 100%;
+  min-width: 240px;
+  padding-right: 32px;
+}
+
+/* 超量處理方式 — 鎖定為單一選項（暫存待人工放行）之顯示樣式 */
+.limit-action-fixed {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--color-warning-light);
+  border: 1px solid #fde68a;
+  border-left: 3px solid var(--color-warning);
+  border-radius: 8px;
+  width: 100%;
+  min-width: 240px;
+}
+
+.limit-action-fixed i {
+  color: var(--color-warning-dark);
+  font-size: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.limit-action-fixed strong {
+  display: block;
+  color: #92400e;
+  font-size: var(--font-sm);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.limit-action-fixed small {
+  display: block;
+  color: var(--color-text-secondary);
+  font-size: var(--font-xs);
+  line-height: 1.6;
+}
+
+.limit-input-wrap input[type="number"]:disabled {
+  background: #f5f5f5;
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.limit-unlimited {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.limit-unlimited input { accent-color: var(--color-primary); }
+
+.limit-unit-label {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* 黑名單表：標籤獨立欄位 / 狀態純文字 */
+.user-cell .user-tag-text {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  margin-left: 8px;
+}
+
+.tag-cell {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+}
+
+.status-text {
+  font-weight: 600;
+  font-size: var(--font-sm);
+}
+
+.status-text.status-frozen   { color: var(--color-danger); }
+.status-text.status-warning  { color: var(--color-warning-dark); }
+.status-text.status-normal   { color: var(--color-success-dark); }
+
+/* 查看詳情 modal */
+.view-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+
+.view-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--color-border-light);
+}
+
+.view-row.view-row-full {
+  grid-column: 1 / -1;
+}
+
+.view-label {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.view-value {
+  font-size: var(--font-sm);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.view-row-full .view-value {
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.view-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.view-actions .btn {
+  min-width: 140px;
+}
+
+@media (max-width: 640px) {
+  .view-grid { grid-template-columns: 1fr; }
+}
+
+/* 保留舊 selector 避免破壞 — 已不使用 */
+.risk-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1024px) {
+  .risk-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 上限設定卡 */
+.risk-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.risk-card h3 {
+  font-size: var(--font-md);
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.risk-card h3 i {
+  color: var(--color-primary);
+}
+
+.risk-card .desc {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.limit-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  gap: 16px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--color-border-light);
+}
+
+.limit-row:last-child {
+  border-bottom: 0;
+}
+
+.limit-label {
+  font-size: var(--font-sm);
+  font-weight: 600;
+}
+
+.limit-hint {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.limit-row input {
+  padding: 8px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-md);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  text-align: right;
+}
+
+.limit-row input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+/* 黑名單表格 */
+.blacklist-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.blacklist-card-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.blacklist-card-head h3 {
+  font-size: var(--font-md);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.blacklist-card-head h3 i {
+  color: var(--color-danger);
+}
+
+.blacklist-toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.blacklist-search {
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-sm);
+  width: 240px;
+}
+
+.blacklist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-sm);
+}
+
+.blacklist-table th,
+.blacklist-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.blacklist-table th {
+  background: var(--color-bg);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  font-size: var(--font-xs);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.uid-cell {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.user-cell strong {
+  display: block;
+  color: var(--color-text);
+}
+
+.user-cell .meta {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.reason-cell {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  max-width: 260px;
+}
+
+.reason-cell strong {
+  color: var(--color-danger);
+}
+
+.action-btn {
+  background: var(--color-primary-50);
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background: var(--color-primary-100);
+}
+
+.action-btn.danger {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.action-btn.success {
+  background: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+/* 標記為黑名單的 Modal */
+.flag-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.flag-modal-backdrop.show {
+  display: flex;
+}
+
+.flag-modal {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 480px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.flag-modal h3 {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-danger);
+}
+
+.flag-modal-body {
+  margin-bottom: 16px;
+}
+
+.flag-modal-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* 稽核軌跡 */
+.audit-list {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+.audit-row {
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--color-border-light);
+  display: flex;
+  gap: 8px;
+}
+
+.audit-row:last-child {
+  border-bottom: 0;
+}
+
+.audit-time {
+  font-family: 'Courier New', monospace;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.audit-row strong {
+  color: var(--color-text);
+}

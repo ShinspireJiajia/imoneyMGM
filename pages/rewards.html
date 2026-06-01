@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的獎金 - 理財通 MGM</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/rewards.css" />
+  </head>
+  <body>
+    <main class="rewards fade-in">
+      <!-- ============== 離職員工尚未完成前置驗證 ============== -->
+      <section class="rw-blacklist-notice" id="rw-ex-precheck-notice" hidden>
+        <div class="rw-bl-icon"><i class="fa-solid fa-user-shield"></i></div>
+        <div class="rw-bl-body">
+          <div class="rw-bl-title">請先完成離職員工驗證流程</div>
+          <p class="rw-bl-text">
+            進入獎金與提領流程前，請先完成離職員工入口的 <strong>LINE 好友綁定</strong> 與 <strong>表單手機驗證</strong>。
+            完成後即可正常使用分享與提領功能。
+          </p>
+          <a class="btn btn-primary" href="../ex-employee.html" style="margin-top: 8px;">
+            <i class="fa-solid fa-right-to-bracket"></i>前往離職員工入口完成驗證
+          </a>
+        </div>
+      </section>
+
+      <!-- ============== 獎金總覽 ============== -->
+      <section class="rewards-overview">
+        <div class="reward-policy-toggle">
+          <button
+            type="button"
+            id="btn-reward-policy-toggle"
+            class="reward-policy-trigger"
+            aria-label="查看結算與撥款及獎金領取期限規則"
+            aria-controls="reward-policy-panel"
+            aria-expanded="false"
+            title="查看結算與撥款及獎金領取期限規則"
+          >
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="rewards-overview-label">目前可提領總額</div>
+        <div class="rewards-overview-amount"><span class="cur">NT$</span><span id="ov-available">0</span></div>
+        <div class="rewards-overview-row">
+          <div class="item">
+            <span>可提領筆數</span>
+            <strong id="ov-pending-count">0 筆</strong>
+          </div>
+          <div class="divider"></div>
+          <div class="item" style="text-align: right;">
+            <span>累積已完成</span>
+            <strong id="ov-withdrawn">$0</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== 上方入口連結 ============== -->
+      <div class="entry-links">
+        <a class="entry-link" data-go="tax-info" href="#tax-info">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          <span>扣繳憑單說明</span>
+        </a>
+        <a class="entry-link" data-go="share-rules" href="#share-rules">
+          <i class="fa-solid fa-book-open"></i>
+          <span>分享制度說明</span>
+        </a>
+      </div>
+
+      <section
+        id="reward-policy-panel"
+        class="info-box reward-policy-disclosure"
+        aria-label="獎金效期與結算說明"
+        hidden
+      >
+        <i class="fa-solid fa-circle-info"></i>
+        <div>
+          <p>
+            <strong>結算與撥款：</strong>推薦獎金發放以個別案件滿足核發條件之月份為準。採月結方式，統一於次月 25 日核款，核款後會通知進行領取（遇例假日或國定假日則順延至下一營業日）。
+          </p>
+          <p>
+            <strong>獎金領取期限：</strong>推薦獎金之領取有效期限為結算撥款次日起算 180 天（日曆天）內。
+          </p>
+        </div>
+      </section>
+
+
+      <!-- ============== 獎金清單工具列 ============== -->
+      <!-- ============== 黑名單凍結通知（會員被封鎖時顯示） ============== -->
+      <section class="rw-blacklist-notice" id="rw-blacklist-notice" hidden>
+        <div class="rw-bl-icon"><i class="fa-solid fa-ban"></i></div>
+        <div class="rw-bl-body">
+          <div class="rw-bl-title">您的帳號目前為封鎖身分</div>
+          <p class="rw-bl-text">
+            被封鎖身分的用戶目前僅可查看此提示訊息，<strong>分享與獎金功能皆無法使用</strong>。
+            若需進一步了解，請聯繫客服。
+          </p>
+        </div>
+      </section>
+
+      <div class="reward-toolbar">
+        <h3><span class="rt-mark">§</span>獎金明細</h3>
+        <div class="toolbar-actions">
+          <button type="button" id="btn-open-filter" class="filter-trigger" aria-haspopup="dialog">
+            <i class="fa-solid fa-filter"></i>
+            <span id="filter-summary">全部</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ============== 獎金清單（JS 渲染） ============== -->
+      <section class="reward-list" id="reward-list"></section>
+      <!-- 空狀態 -->
+      <div class="reward-empty" id="reward-empty" hidden>
+        <i class="fa-solid fa-filter-circle-xmark"></i>
+        <div class="empty-title">沒有符合條件的獎金</div>
+        <div class="empty-desc">請調整篩選條件或重設後再試一次。</div>
+      </div>
+
+
+
+      <!-- 資料保存期限說明 -->
+      <p class="data-retention-note">
+        <i class="fa-regular fa-clock"></i>
+        資料僅保存近 18 個月的資料，規則是依據最終狀態更新日計算
+      </p>
+    </main>
+
+    <!-- ============== 底部 Sticky 提領條 ============== -->
+    <div class="withdraw-bar" role="region" aria-label="提領總計">
+      <div class="withdraw-bar-info">
+        <div class="label">可提領 <span id="selected-count">0</span> 筆</div>
+        <div class="amount" id="selected-amount">$0</div>
+      </div>
+      <button id="btn-withdraw" type="button" class="btn btn-primary" disabled>
+        <i class="fa-solid fa-arrow-right"></i>全部提領
+      </button>
+    </div>
+
+    <!-- ============== 篩選 POPUP ============== -->
+    <div id="filter-modal" class="filter-modal" hidden>
+      <div class="filter-modal-backdrop" data-close></div>
+      <div
+        class="filter-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="filter-modal-title"
+      >
+        <header class="filter-modal-header">
+          <h4 id="filter-modal-title">
+            <i class="fa-solid fa-filter"></i>篩選條件
+          </h4>
+          <button type="button" class="filter-modal-close" data-close aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+
+        <div class="filter-modal-body">
+          <!-- 狀態頁籤 -->
+          <div class="filter-tabs" role="tablist" aria-label="獎金狀態">
+            <button type="button" class="filter-tab active" data-status="all" role="tab" aria-selected="true">
+              全部 <span class="count" id="cnt-all">0</span>
+            </button>
+            <button type="button" class="filter-tab" data-status="rewardable" role="tab" aria-selected="false">
+              尚未提領 <span class="count" id="cnt-rewardable">0</span>
+            </button>
+            <button type="button" class="filter-tab" data-status="applying" role="tab" aria-selected="false">
+              申請中 <span class="count" id="cnt-applying">0</span>
+            </button>
+            <button type="button" class="filter-tab" data-status="paid" role="tab" aria-selected="false">
+              已撥款 <span class="count" id="cnt-paid">0</span>
+            </button>
+          </div>
+
+          <!-- 進階條件（依不同狀態顯示） -->
+          <div class="filter-advanced" id="filter-advanced" hidden>
+            <!-- 撥款方式 -->
+            <div class="filter-row" id="row-method" hidden>
+              <label class="filter-label"><i class="fa-solid fa-money-bill-wave"></i>撥款方式</label>
+              <div class="filter-chips" id="chips-method">
+                <button type="button" class="chip active" data-method="all">全部</button>
+                <button type="button" class="chip" data-method="transfer">
+                  <i class="fa-solid fa-building-columns"></i>銀行匯款
+                </button>
+                <button type="button" class="chip" data-method="cash">
+                  <i class="fa-solid fa-store"></i>現場領取
+                </button>
+              </div>
+            </div>
+
+            <!-- 撥款日期區間（僅已撥款顯示） -->
+            <div class="filter-row" id="row-date" hidden>
+              <label class="filter-label"><i class="fa-solid fa-calendar-days"></i>撥款日期</label>
+              <div class="filter-date-range">
+                <input type="date" id="date-from" class="filter-date" />
+                <span class="dash">~</span>
+                <input type="date" id="date-to" class="filter-date" />
+              </div>
+              <div class="filter-quick-dates">
+                <button type="button" class="chip-sm" data-quick="7">近 7 日</button>
+                <button type="button" class="chip-sm" data-quick="30">近 30 日</button>
+                <button type="button" class="chip-sm" data-quick="90">近 90 日</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="filter-modal-footer">
+          <button type="button" id="filter-reset" class="btn btn-outline">
+            <i class="fa-solid fa-rotate-left"></i>重設
+          </button>
+          <button type="button" id="filter-apply" class="btn btn-primary">
+            <i class="fa-solid fa-magnifying-glass"></i>查詢
+          </button>
+        </footer>
+      </div>
+    </div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/rewards.js"></script>
+  </body>
+</html>

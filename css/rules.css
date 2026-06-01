@@ -1,0 +1,230 @@
+/* ==========================================================
+   rules.css - 分享制度說明 / 扣繳憑單說明（純資訊頁）
+   字型：微軟正黑體；視覺：清楚 > 一切
+   ========================================================== */
+
+.rules-page {
+  padding: 16px;
+  padding-bottom: 24px;
+}
+
+/* 頁首 — 簡潔大標 + 左側紫色色帶 */
+.page-hero {
+  position: relative;
+  padding: 16px 16px 18px 20px;
+  margin-bottom: 16px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-left: 5px solid var(--color-primary);
+  border-radius: 0 10px 10px 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.page-hero-eyebrow {
+  display: inline-block;
+  font-size: var(--font-xs);
+  letter-spacing: 0.12em;
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.page-hero h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+}
+
+.page-hero p {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  margin-top: 6px;
+  line-height: 1.7;
+}
+
+/* 區塊卡片 */
+.rule-block {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 16px 18px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.rule-block-warn {
+  border-color: var(--color-warning);
+  background: #FFFBEB;
+}
+
+.rule-block h2 {
+  font-size: var(--font-md);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.rule-block-warn h2 {
+  color: var(--color-warning-dark);
+  border-bottom-color: rgba(217, 119, 6, 0.25);
+}
+
+.rule-block h2 .num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.rule-block h2 .num.warn {
+  background: var(--color-warning);
+  color: var(--color-text);
+}
+
+.rule-block p,
+.rule-block li {
+  font-size: var(--font-sm);
+  color: var(--color-text);
+  line-height: 1.85;
+}
+
+.rule-block ul {
+  padding-left: 22px;
+  margin-top: 6px;
+  list-style: disc;
+  color: var(--color-text-secondary);
+}
+
+.rule-block ul li {
+  padding: 3px 0;
+}
+
+.rule-block ul li::marker {
+  color: var(--color-primary);
+}
+
+.rule-block strong {
+  color: var(--color-primary-dark);
+  font-weight: 700;
+}
+
+/* 強調框 */
+.highlight-quote {
+  position: relative;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-left: 4px solid var(--color-warning);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 14px;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  line-height: 1.8;
+  color: #92400e;
+  margin: 10px 0;
+}
+
+/* 流程圖 */
+.flow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.flow-step {
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-100);
+  border-left: 3px solid var(--color-primary);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--color-primary-dark);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.flow-step i {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.flow-step .fs-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.flow-arrow {
+  text-align: center;
+  color: var(--color-primary);
+  font-size: 14px;
+}
+
+/* 對照表（沿用） */
+.matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-sm);
+  margin-top: 8px;
+}
+
+.matrix-table th,
+.matrix-table td {
+  padding: 9px;
+  text-align: center;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.matrix-table th {
+  background: var(--color-primary-50);
+  color: var(--color-primary-dark);
+  font-weight: 700;
+  font-size: var(--font-xs);
+}
+
+.matrix-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* 外部連結按鈕 */
+.external-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--color-bg-alt);
+  border-radius: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-primary-dark);
+}
+
+.external-link:hover {
+  background: var(--color-primary-100);
+}

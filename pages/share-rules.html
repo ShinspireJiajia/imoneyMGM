@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>分享制度說明 - 理財通 MGM</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/rules.css" />
+  </head>
+  <body>
+    <main class="rules-page fade-in">
+      <!-- 頁首 -->
+      <section class="page-hero">
+        <h1>分享制度說明</h1>
+        <p>請務必詳閱以下條款，保障您的推薦獎金權益。</p>
+      </section>
+
+      <!-- 條款項次（由 share-rules.js 從 localStorage 或預設值載入） -->
+      <div id="rules-container"></div>
+    </main>
+
+    <script>
+    (function () {
+      'use strict';
+
+      const DEFAULT_RULES = [
+        { id: 'sr-1', title: '專屬固定推薦碼', style: 'normal',
+          content: '<p>每位推薦人（會員 / 員工）皆擁有一組<strong>專屬且固定</strong>之推薦碼，可長期使用、無需更換。已分享出去的連結將永久歸屬於您。</p>' },
+        { id: 'sr-2', title: '分享流程', style: 'flow',
+          content: '<p>1. 取得您的專屬推薦碼</p><p>複製連結分享身邊親友</p>' },
+        { id: 'sr-3', title: '防弊與歸屬判定原則', style: 'normal',
+          content: '<h3>（一）阻擋自我推薦</h3><p>送出表單時系統將比對「申請人手機號碼／身分證字號」是否與該推薦碼擁有者完全相符，若相符該筆貸款仍正常進入審核，但<strong>系統將自動註銷該訂單的推薦分潤資格</strong>。</p>' },
+        
+        { id: 'sr-7', title: '獎金提領與稅務', style: 'normal',
+          content: '<ul><li>提領方式分為「現場領取」與「匯款入帳」兩種。</li><li>首次提領需上傳身分證正反面與存摺封面，後續提領自動沿用。</li><li>本筆獎金將計入年度「執行業務所得 / 其他所得」申報。</li></ul>' },
+      ];
+
+      function loadRules() {
+        try {
+          const s = localStorage.getItem('mgm_share_rules');
+          if (s) return JSON.parse(s);
+        } catch {}
+        return DEFAULT_RULES;
+      }
+
+      function renderItem(rule, idx) {
+        const num = (idx + 1);
+        switch (rule.style) {
+          case 'warning':
+            return `<article class="rule-block rule-block-warn">
+                      <h2><span class="num warn">!</span>${rule.title}</h2>
+                      <div class="highlight-quote">${rule.content}</div>
+                    </article>`;
+          case 'quote':
+            return `<article class="rule-block">
+                      <h2><span class="num">${num}</span>${rule.title}</h2>
+                      <div class="highlight-quote">${rule.content}</div>
+                    </article>`;
+          case 'flow': {
+            // 把每個 <p> 或 <li> 轉成 flow-step
+            const div = document.createElement('div');
+            div.innerHTML = rule.content;
+            const items = [...div.querySelectorAll('p,li')]
+              .map(p => p.textContent.replace(/^\s*\d+[.\)、]?\s*/, '').trim())
+              .filter(Boolean);
+            const flow = items.map((t, i) => `
+              <div class="flow-step"><span class="fs-num">${i + 1}</span><span>${t}</span></div>
+              ${i < items.length - 1 ? '<div class="flow-arrow"><i class="fa-solid fa-arrow-down"></i></div>' : ''}
+            `).join('');
+            return `<article class="rule-block">
+                      <h2><span class="num">${num}</span>${rule.title}</h2>
+                      <div class="flow">${flow}</div>
+                    </article>`;
+          }
+          case 'normal':
+          default:
+            return `<article class="rule-block">
+                      <h2><span class="num">${num}</span>${rule.title}</h2>
+                      ${rule.content}
+                    </article>`;
+        }
+      }
+
+      function render() {
+        const c = document.getElementById('rules-container');
+        if (!c) return;
+        const list = loadRules();
+        c.innerHTML = list.map(renderItem).join('');
+      }
+
+      document.addEventListener('DOMContentLoaded', render);
+    })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>推薦案件報表 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-matrix.css" />
+    <link rel="stylesheet" href="../css/admin-referrers.css" />
+    <link rel="stylesheet" href="../css/admin-reports.css" />
+  </head>
+  <body class="admin">
+    <main class="reports-page fade-in page-wrap">
+
+      <div class="page-crumb">案件管理 / 推薦案件報表</div>
+
+      <!-- <div class="page-toolbar">
+        <div>
+          
+        </div>
+      </div> -->
+
+      <!-- ============== 篩選列 ============== -->
+      <section class="report-filter-bar">
+        <div class="rfb-fields">
+          <div class="field">
+            <label class="field-label">年度</label>
+            <select id="rpt-year" class="field-select"></select>
+          </div>
+          <div class="field">
+            <label class="field-label">月份</label>
+            <select id="rpt-month" class="field-select">
+              <option value="all">全部</option>
+              <option value="1">1 月</option><option value="2">2 月</option><option value="3">3 月</option>
+              <option value="4">4 月</option><option value="5">5 月</option><option value="6">6 月</option>
+              <option value="7">7 月</option><option value="8">8 月</option><option value="9">9 月</option>
+              <option value="10">10 月</option><option value="11">11 月</option><option value="12">12 月</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">方案</label>
+            <select id="rpt-plan" class="field-select">
+              <option value="all">全部</option>
+              <option value="customer">會員方案</option>
+              <option value="employee">員工方案</option>
+            </select>
+          </div>
+          <button id="btn-rpt-query" type="button" class="btn btn-primary">
+            <i class="fa-solid fa-magnifying-glass"></i>查詢
+          </button>
+          <button id="btn-rpt-reset" type="button" class="btn btn-outline">
+            <i class="fa-solid fa-rotate-left"></i>重設
+          </button>
+        </div>
+        <div class="rfb-actions">
+          <button id="btn-rpt-export" type="button" class="btn btn-outline">
+            <i class="fa-solid fa-download"></i>匯出資料
+          </button>
+          <button id="btn-rpt-print" type="button" class="btn btn-outline" title="另開列印視窗">
+            <i class="fa-solid fa-print"></i>列印
+          </button>
+        </div>
+      </section>
+
+      <!-- ============== KPI 卡 ============== -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon purple"><i class="fa-solid fa-file-circle-plus"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">當月新增案件</div>
+            <div class="kpi-value" id="kpi-new">0</div>
+            <div class="kpi-delta" id="kpi-new-delta"></div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green"><i class="fa-solid fa-handshake"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">當月成交案件</div>
+            <div class="kpi-value" id="kpi-deal">0</div>
+            <div class="kpi-delta" id="kpi-deal-delta"></div>
+            <div class="kpi-sub" id="kpi-deal-rate"></div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon yellow"><i class="fa-solid fa-coins"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">當月獎金發放</div>
+            <div class="kpi-value" id="kpi-payout">NT$ 0</div>
+            <div class="kpi-delta" id="kpi-payout-delta"></div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon blue"><i class="fa-solid fa-sack-dollar"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">累計獎金發放</div>
+            <div class="kpi-value" id="kpi-total">NT$ 0</div>
+            <div class="kpi-sub" id="kpi-total-thru"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============== 下方圖表查詢條件 ============== -->
+      <section class="report-subfilter-bar">
+        <div class="rsf-fields">
+          <div class="field">
+            <label class="field-label">圖表起日</label>
+            <input id="rpt-chart-from" type="date" class="field-input" />
+          </div>
+          <div class="field">
+            <label class="field-label">圖表迄日</label>
+            <input id="rpt-chart-to" type="date" class="field-input" />
+          </div>
+          <button id="btn-chart-query" type="button" class="btn btn-primary">
+            <i class="fa-solid fa-magnifying-glass"></i>查詢圖表
+          </button>
+          <button id="btn-chart-reset" type="button" class="btn btn-outline">
+            <i class="fa-solid fa-rotate-left"></i>重設近一個月
+          </button>
+        </div>
+      </section>
+
+      <!-- ============== 金額趨勢 ============== -->
+      <div class="report-grid report-grid-full">
+        <section class="panel">
+          <div class="panel-head">
+            <h3><i class="fa-solid fa-coins"></i>獎金發放金額趨勢</h3>
+            <span class="panel-hint" id="payout-period-hint"></span>
+            <div class="legend-row">
+              <span class="legend-item"><span class="dot" style="background:#F59E0B;"></span>當月發放</span>
+              <span class="legend-item"><span class="dot dot-line" style="background:#7C3AED;"></span>累計</span>
+            </div>
+          </div>
+          <div id="payout-chart" class="bar-chart-single"></div>
+        </section>
+      </div>
+
+      <!-- ============== 兩欄：案件結果分布 + Top 推薦人 ============== -->
+      <div class="report-grid">
+        <section class="panel">
+          <div class="panel-head">
+            <h3><i class="fa-solid fa-filter"></i>案件結果分布</h3>
+            <span class="panel-hint">符合 / 不符合 之筆數結構</span>
+          </div>
+          <div id="case-breakdown" class="case-breakdown"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h3><i class="fa-solid fa-trophy"></i>Top 推薦人</h3>
+          </div>
+          <div class="top-tabs" role="tablist" aria-label="身份切換">
+            <button type="button" class="top-tab active" data-tag="會員" role="tab" aria-selected="true">會員</button>
+            <button type="button" class="top-tab" data-tag="員工" role="tab" aria-selected="false">員工</button>
+            <button type="button" class="top-tab" data-tag="離職員工" role="tab" aria-selected="false">離職員工</button>
+          </div>
+          <div class="top-split-grid">
+            <section class="top-split-card" aria-label="依獎金排行">
+              <h4 class="top-split-title">依獎金</h4>
+              <div id="top-referrers-payout" class="top-list"></div>
+            </section>
+            <section class="top-split-card" aria-label="依筆數排行">
+              <h4 class="top-split-title">依筆數</h4>
+              <div id="top-referrers-cases" class="top-list"></div>
+            </section>
+          </div>
+          <p class="panel-foot-hint">本身份前 5 名</p>
+        </section>
+      </div>
+
+      <!-- ============== 月份明細表 ============== -->
+      <section class="panel">
+        <div class="panel-head">
+          <h3><i class="fa-solid fa-table"></i>月份明細</h3>
+          <span class="panel-hint" id="detail-period-hint"></span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table report-detail-table">
+            <thead>
+              <tr>
+                <th>月份</th>
+                <th class="num">新增案件</th>
+                <th class="num">成交案件</th>
+                <th class="num">中止案件</th>
+                <th class="num">獎金發放</th>
+                <th class="num">已提領</th>
+                <th class="num">待提領</th>
+              </tr>
+            </thead>
+            <tbody id="detail-tbody"></tbody>
+            <tfoot id="detail-tfoot"></tfoot>
+          </table>
+        </div>
+      </section>
+
+
+    </main>
+
+    <script src="../js/admin-reports.js"></script>
+  </body>
+</html>

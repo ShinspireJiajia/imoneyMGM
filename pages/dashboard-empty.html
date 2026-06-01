@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>歡迎加入 - 理財通 MGM</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <link rel="stylesheet" href="../css/dashboard-empty.css" />
+  </head>
+  <body>
+    <main class="dashboard fade-in">
+      <!-- ============== 歡迎卡（取代金額大數字） ============== -->
+      <section class="welcome-hero" aria-label="歡迎">
+        <div class="welcome-emoji">👋</div>
+        <div class="welcome-title">
+          歡迎加入，<span id="referrer-name">陳新人</span>！
+        </div>
+        <span class="welcome-tag">
+          <i class="fa-solid fa-tag"></i>
+          <span id="referrer-tag">會員</span>
+        </span>
+        <p class="welcome-subtitle">
+          您的專屬推薦碼已準備就緒。<br />
+          只要分享給有資金需求的親友，<strong>第一筆獎金</strong>就在不遠處。
+        </p>
+        <button id="btn-welcome-share" type="button" class="welcome-cta">
+          <i class="fa-solid fa-share-nodes"></i>立即開始分享
+        </button>
+      </section>
+
+      <!-- ============== 推薦碼卡（同 dashboard，仍顯示活動結束日） ============== -->
+      <section class="code-card" aria-label="本期推薦碼">
+        <div class="code-card-head">
+          <span class="code-card-title">
+            <i class="fa-solid fa-link"></i>您的專屬分享連結
+          </span>
+        </div>
+        <div class="code-actions">
+          <button type="button" id="btn-copy-link" class="btn btn-outline btn-block" aria-label="複製連結">
+            <i class="fa-solid fa-link"></i>複製連結
+          </button>
+        </div>
+
+      </section>
+
+      <!-- ============== 空狀態統計列 ============== -->
+      <section class="stat-grid-empty" aria-label="推廣數據">
+        <div class="stat-card-empty">
+          <div class="v">0</div>
+          <div class="l">尚未推廣</div>
+        </div>
+        <div class="stat-card-empty">
+          <div class="v">0</div>
+          <div class="l">尚無審核</div>
+        </div>
+        <div class="stat-card-empty">
+          <div class="v">0</div>
+          <div class="l">尚無獎金</div>
+        </div>
+      </section>
+
+      <!-- ============== 3 步驟新手教學 ============== -->
+      <section class="onboarding-card">
+        <h3><i class="fa-solid fa-bullseye"></i>三步驟，賺到第一筆獎金</h3>
+
+        <div class="onboarding-step">
+          <div class="onboarding-step-num">1</div>
+          <div class="onboarding-step-body">
+            <div class="onboarding-step-title">複製您的專屬推薦連結</div>
+            <div class="onboarding-step-desc">系統提供您專屬的推薦連結，點擊上方「複製連結」即可帶走。</div>
+          </div>
+          <span class="onboarding-step-action" id="btn-copy-link-step">複製</span>
+        </div>
+
+        <div class="onboarding-step">
+          <div class="onboarding-step-num">2</div>
+          <div class="onboarding-step-body">
+            <div class="onboarding-step-title">分享給有資金需求的親友</div>
+            <div class="onboarding-step-desc">透過 LINE、Facebook、簡訊或任何您慣用的方式發出，親友點擊後系統將追蹤其行為。</div>
+          </div>
+          <span class="onboarding-step-action" data-go="share">分享</span>
+        </div>
+
+        <div class="onboarding-step">
+          <div class="onboarding-step-num">3</div>
+          <div class="onboarding-step-body">
+            <div class="onboarding-step-title">親友送單後，即可開始累積獎金</div>
+            <div class="onboarding-step-desc">當親友透過您的連結填寫貸款諮詢表單並成功送出，系統會自動把它記到您名下，您也會收到通知。</div>
+          </div>
+          <span class="onboarding-step-action" data-go="share-rules">了解</span>
+        </div>
+      </section>
+
+
+
+      <!-- ============== 快速入口 ============== -->
+      <section class="quick-section">
+        <h2 class="section-title">快速功能</h2>
+        <div class="quick-grid">
+          <div class="quick-item" data-go="share" tabindex="0">
+            <div class="quick-item-icon">
+              <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <div class="quick-item-label">分享連結</div>
+          </div>
+          <div class="quick-item" data-go="records" tabindex="0">
+            <div class="quick-item-icon green">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div class="quick-item-label">推廣紀錄</div>
+          </div>
+          <div class="quick-item" data-go="rewards" tabindex="0">
+            <div class="quick-item-icon yellow">
+              <i class="fa-solid fa-sack-dollar"></i>
+            </div>
+            <div class="quick-item-label">我的獎金</div>
+          </div>
+          <div class="quick-item" data-go="share-rules" tabindex="0">
+            <div class="quick-item-icon">
+              <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <div class="quick-item-label">制度說明</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== 重要訊息：歸屬須知 ============== -->
+
+    </main>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/dashboard-empty.js"></script>
+  </body>
+</html>

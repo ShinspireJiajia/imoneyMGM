@@ -1,0 +1,560 @@
+/* ==========================================================
+   admin-payments.css - 分潤帳務（財務功能）
+   ========================================================== */
+
+.payments-page {
+  padding: 24px;
+}
+
+.payments-page .page-toolbar {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+/* 覆寫 filter-bar 格線：申請日期欄位需要足夠寬度容納起訖兩個日期輸入框 */
+.payments-page .filter-bar {
+  grid-template-columns: 2fr 1fr 1fr minmax(260px, 2fr) auto;
+}
+
+/* 日期起訖容器：禁止折行 */
+.payments-page .filter-bar .filter-date-range {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+/* 起訖日期輸入框平均分配可用空間 */
+.payments-page .filter-bar .filter-date-range .field-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 共用 .filter-bar / .list-card / .data-table 沿用 admin-referrers.css 結構 */
+
+/* 帳務狀態色帶（與 rewards 對齊） */
+.pay-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pay-status.pending {
+  background: var(--color-warning-light);
+  color: var(--color-warning-dark);
+}
+.pay-status.transferred {
+  background: var(--color-primary-100);
+  color: var(--color-primary-dark);
+}
+.pay-status.pickup {
+  background: var(--color-warning-light);
+  color: var(--color-warning-dark);
+}
+.pay-status.completed {
+  background: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+.pay-status.failed {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+/* 批次操作工具列 */
+.batch-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--color-primary-50);
+  border-bottom: 1px solid var(--color-primary-200);
+  font-size: var(--font-sm);
+}
+
+.batch-bar.hidden {
+  display: none;
+}
+
+.batch-count {
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.batch-amount {
+  margin-left: 8px;
+  background: #fff;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.batch-spacer {
+  flex: 1;
+}
+
+/* Checkbox 樣式 */
+.row-check {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+/* 異常款項列 */
+.data-table tr.row-failed {
+  background: #fff5f5;
+}
+
+.data-table tr.row-failed:hover td {
+  background: #fee2e2;
+}
+
+/* 異動歷程 modal */
+.history-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 20px;
+}
+
+.history-modal-bg.show {
+  display: flex;
+}
+
+.history-modal {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  max-width: 760px;
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.history-modal-head {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-modal-head h3 {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-modal-head h3 i {
+  color: var(--color-primary);
+}
+
+.history-modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.history-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.history-payment-summary {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-50) 0%,
+    #fdf4ff 100%
+  );
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.history-payment-summary .item {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+}
+
+.history-payment-summary .item strong {
+  display: block;
+  font-size: var(--font-md);
+  color: var(--color-primary-dark);
+  margin-top: 2px;
+}
+
+/* Timeline */
+.timeline-vertical {
+  position: relative;
+  padding-left: 30px;
+}
+
+.timeline-vertical::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--color-border);
+}
+
+.timeline-entry {
+  position: relative;
+  padding: 10px 0 16px;
+}
+
+.timeline-entry::before {
+  content: '';
+  position: absolute;
+  left: -23px;
+  top: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+.timeline-entry.done::before {
+  background: var(--color-success);
+  box-shadow: 0 0 0 3px var(--color-success-light);
+}
+
+.timeline-entry.failed::before {
+  background: var(--color-danger);
+  box-shadow: 0 0 0 3px var(--color-danger-light);
+}
+
+.timeline-time {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-family: 'Courier New', monospace;
+  margin-bottom: 2px;
+}
+
+.timeline-title {
+  font-weight: 700;
+  font-size: var(--font-sm);
+  margin-bottom: 2px;
+}
+
+.timeline-desc {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.timeline-actor {
+  font-size: 11px;
+  color: var(--color-primary-dark);
+  margin-top: 2px;
+}
+
+.append-only-notice {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  margin-top: 14px;
+  text-align: center;
+}
+
+.append-only-notice i {
+  color: var(--color-warning);
+  margin-right: 4px;
+}
+
+/* 批次操作 bar 內含批次備註欄 */
+.batch-bar { flex-direction: column; align-items: stretch; gap: 8px; }
+.batch-bar.hidden { display: none; }
+.batch-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.batch-spacer { flex: 1; }
+.batch-note-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--color-border-light);
+}
+.batch-note-label {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.batch-note-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: var(--font-xs);
+  resize: vertical;
+  min-height: 30px;
+}
+
+/* 表格儲存格樣式 — 編號類使用等寬字 */
+.data-table-payments td {
+  vertical-align: middle;
+}
+
+.cell-mono {
+  font-family: 'Courier New', 'JetBrains Mono', monospace;
+  font-size: var(--font-xs);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cell-mono .mono-strong {
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.cell-product {
+  font-size: var(--font-xs);
+  white-space: nowrap;
+}
+
+.cell-tax {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.cell-amount {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cell-method, .cell-applied {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* 身份標籤 chip */
+.tag-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.tag-pill.badge-green   { background:#dcfce7; color:#15803d; border-color:#bbf7d0; }
+.tag-pill.badge-purple  { background:var(--color-primary-50); color:var(--color-primary-dark); border-color:var(--color-primary-100); }
+.tag-pill.badge-yellow  { background:var(--color-warning-light); color:#92400e; border-color:#fde68a; }
+.tag-pill.badge-gray    { background:#f3f4f6; color:#6b7280; border-color:#e5e7eb; }
+
+/* ===================== 月結報表 modal ===================== */
+.monthly-summary {
+  margin-top: 14px;
+}
+
+.monthly-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-text-muted);
+  font-size: var(--font-sm);
+}
+
+.monthly-empty i {
+  display: block;
+  font-size: 32px;
+  margin-bottom: 8px;
+  color: var(--color-border);
+}
+
+.monthly-kpi-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.monthly-kpi {
+  background: linear-gradient(135deg, var(--color-primary-50), #fdf4ff);
+  border: 1px solid var(--color-primary-100);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.monthly-kpi .lbl {
+  display: block;
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.monthly-kpi strong {
+  display: block;
+  font-size: var(--font-xl);
+  color: var(--color-primary-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+.monthly-block {
+  margin-top: 14px;
+}
+
+.monthly-block h4 {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 6px;
+  padding-left: 8px;
+  border-left: 3px solid var(--color-primary);
+}
+
+.monthly-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-xs);
+}
+
+.monthly-table th,
+.monthly-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border-light);
+  text-align: left;
+}
+
+.monthly-table th {
+  background: var(--color-bg);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.monthly-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 省略號樣式（分頁） */
+.pg-ellipsis {
+  padding: 0 6px;
+  color: var(--color-text-muted);
+  user-select: none;
+}
+
+/* ===================== 權限 toggle（編輯匯款資訊） ===================== */
+.perm-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  user-select: none;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.perm-toggle:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-50);
+}
+
+.perm-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.perm-toggle-track {
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+  background: #cbd5e0;
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.perm-toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: left 0.15s;
+}
+
+.perm-toggle input:checked + .perm-toggle-track {
+  background: var(--color-primary);
+}
+
+.perm-toggle input:checked + .perm-toggle-track .perm-toggle-knob {
+  left: 16px;
+}
+
+.perm-toggle-label {
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.perm-toggle-label i {
+  color: var(--color-warning);
+  font-size: 11px;
+}
+
+.perm-toggle input:checked ~ .perm-toggle-label {
+  color: var(--color-primary-dark);
+}
+
+/* B4：所屬活動 ID（顯示於款項編號下方） */
+.cell-campaign-id {
+  font-size: 10px;
+  color: var(--color-text-muted, #6b7280);
+  font-family: 'Courier New', monospace;
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+}

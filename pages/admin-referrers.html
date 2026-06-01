@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>推薦人管理 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-matrix.css" />
+    <link rel="stylesheet" href="../css/admin-referrers.css" />
+    <!-- 推薦碼管理已併入本頁，沿用其使用紀錄表格樣式 -->
+    <link rel="stylesheet" href="../css/admin-codes.css" />
+  </head>
+  <body class="admin">
+    <main class="referrers-page fade-in page-wrap">
+
+      
+      <div class="page-crumb">會員管理 / 推薦人管理</div>
+<!-- 工具列 -->
+      <div class="page-toolbar">
+        <div>
+          <div class="page-title">推薦人管理</div>
+         
+        </div>
+        <button type="button" class="btn btn-outline">
+          <i class="fa-solid fa-download"></i>匯出資料
+        </button>
+      </div>
+
+      <!-- 篩選列 -->
+      <section class="filter-bar">
+        <div class="field">
+          <label class="field-label">會員編號</label>
+          <input class="field-input" id="f-uid" type="text" placeholder="例如 U240105002" />
+        </div>
+        <div class="field">
+          <label class="field-label">手機號碼</label>
+          <input class="field-input" id="f-phone" type="text" placeholder="例如 0922" />
+        </div>
+        <div class="field">
+          <label class="field-label">姓名</label>
+          <input class="field-input" id="f-name" type="text" placeholder="推薦人姓名" />
+        </div>
+        <div class="field">
+          <label class="field-label">身份</label>
+          <select class="field-select" id="f-tag">
+            <option value="all">全部</option>
+            <option value="會員">會員</option>
+            <option value="員工">員工</option>
+            <option value="離職員工">離職員工</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">狀態</label>
+          <select class="field-select" id="f-status">
+            <option value="all">全部</option>
+            <option value="active">正常</option>
+            <option value="warning">系統警示</option>
+            <option value="frozen">已停用</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-primary" id="btn-search">查詢</button>
+      </section>
+
+      <!-- 列表 -->
+      <section class="list-card">
+        <div class="list-head">
+          <h3>推薦人清單</h3>
+          <div class="list-head-hint">
+            點擊「備註」可加入僅後台可見之客服筆記
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>身份</th>
+                <th>會員編號</th>
+                <th>姓名</th>
+                <th>手機號碼</th>
+                <th>點擊次數</th>
+                <th>成功送單</th>
+                <th>待提領</th>
+                <th>已提領</th>
+                <th>狀態</th>
+                <th style="min-width: 280px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="referrers-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <div class="pagination">
+            <button class="pg-btn" disabled>«</button>
+            <button class="pg-btn pg-active">1</button>
+            <button class="pg-btn" disabled>»</button>
+          </div>
+          <div class="pg-total">共: <span id="ref-pg-total">0</span> 筆</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============== 檢視推薦人詳情 Modal ============== -->
+    <div id="view-modal" class="note-modal-bg">
+      <div class="note-modal" style="max-width: 720px;">
+        <h3>
+          <i class="fa-solid fa-id-card" style="color: var(--color-primary);"></i>推薦人詳情
+          <span class="note-target-wrap">
+            <span id="view-target">—</span>
+          </span>
+        </h3>
+
+        <div class="view-tabs">
+          <button type="button" class="view-tab active" data-vtab="info">基本資訊</button>
+          <button type="button" class="view-tab" data-vtab="links">專屬推薦碼</button>
+          <button type="button" class="view-tab" data-vtab="cases">對應案件</button>
+        </div>
+
+        <!-- 基本資訊 -->
+        <div class="view-pane" data-vpane="info">
+          <div class="view-info-grid">
+            <div class="view-info-row"><span class="view-info-label">會員編號</span><span class="view-info-value" id="view-uid">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">姓名</span><span class="view-info-value" id="view-name">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">顯示身份</span><span class="view-info-value" id="view-tag">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">UserRole</span><span class="view-info-value" id="view-user-role">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">EmployeeFlag</span><span class="view-info-value" id="view-employee-flag">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">EmployeeStatus</span><span class="view-info-value" id="view-employee-status">—</span></div>
+            <div class="view-info-row" id="view-retired-at-row" hidden><span class="view-info-label">離職時間點</span><span class="view-info-value" id="view-retired-at">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">登入帳號</span><span class="view-info-value" id="view-login-email">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">手機號碼（OTP）</span><span class="view-info-value" id="view-phone">—</span></div>
+            <div class="view-info-row" id="view-id-last4-row"><span class="view-info-label">身分證字號後四碼</span><span class="view-info-value" id="view-id-last4">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">點擊次數</span><span class="view-info-value" id="view-clicks">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">成功送單</span><span class="view-info-value" id="view-cases-stat">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">待提領</span><span class="view-info-value" id="view-pending">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">已提領</span><span class="view-info-value" id="view-withdrawn">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">狀態</span><span class="view-info-value" id="view-status">—</span></div>
+          </div>
+        </div>
+
+        <!-- 分享連結 -->
+        <div class="view-pane" data-vpane="links" hidden>
+          <div class="view-links-list" id="view-links-list"></div>
+        </div>
+
+        <!-- 對應案件 -->
+        <div class="view-pane" data-vpane="cases" hidden>
+          <div class="view-cases-list" id="view-cases-list"></div>
+          <p class="view-cases-hint">
+            <i class="fa-solid fa-circle-info"></i>
+            僅顯示案件申請進度與被推薦人資訊
+          </p>
+        </div>
+
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top: 14px;">
+          <button id="btn-view-close" type="button" class="btn btn-outline">關閉</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 內部備註 Modal -->
+    <div id="note-modal" class="note-modal-bg">
+      <div class="note-modal">
+        <h3>
+          內部備註
+          <span class="note-target-wrap">
+            <span id="note-target">—</span>
+          </span>
+        </h3>
+        <p class="note-desc">
+          本備註僅後台人員可見，推薦人於前台看不到。所有備註會自動帶上操作人員與時間戳。
+        </p>
+
+        <div id="note-list" class="note-list"></div>
+
+        <div class="field">
+          <label class="field-label">新增備註</label>
+          <textarea id="note-input" class="field-input" rows="3" placeholder="例：VIP 客戶，請優先聯繫；或：手機已驗證為本人使用…"></textarea>
+        </div>
+
+        <div class="note-modal-actions">
+          <button id="btn-note-close" type="button" class="btn btn-outline">關閉</button>
+          <button id="btn-note-save" type="button" class="btn btn-primary">新增備註</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/admin-referrers.js"></script>
+  </body>
+</html>

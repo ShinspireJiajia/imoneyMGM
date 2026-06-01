@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>分享制度說明維護 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-campaigns.css" />
+    <link rel="stylesheet" href="../css/admin-share-rules.css" />
+  </head>
+  <body class="admin">
+    <main class="page-wrap fade-in">
+
+      <div class="page-crumb">行銷設定 / 分享制度說明維護</div>
+
+      <section class="page-card">
+
+        <!-- 工具列 -->
+        <div class="card-toolbar">
+          <div class="sr-intro">
+            <strong>分享制度說明</strong>
+            <span class="sr-intro-sub">維護 <code>/index.html#share-rules</code> 顯示之條款內容，項次可新增 / 修改 / 排序 / 刪除。</span>
+          </div>
+          <div class="card-toolbar-actions">
+            <button type="button" class="btn-outline" id="btn-sr-preview">
+              <i class="fa-solid fa-eye"></i>預覽
+            </button>
+            <button type="button" class="btn-primary" id="btn-sr-add">
+              <i class="fa-solid fa-plus"></i>新增項次
+            </button>
+          </div>
+        </div>
+
+        <!-- 項次列表 -->
+        <section class="sr-list" id="sr-list" aria-label="條款項次列表"></section>
+
+        <div class="page-alert">
+          <i class="fa-solid fa-circle-info"></i>
+          <div>
+            條款項次按列表由上到下顯示於前台。可拖曳「<i class="fa-solid fa-up-down" style="margin: 0 2px;"></i>」手把調整順序。儲存後即生效，前台會在下次重新整理時顯示。
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- ============== 項次編輯 Modal ============== -->
+    <div id="sr-editor-modal" class="ce-modal" hidden>
+      <div class="ce-modal-backdrop" data-close></div>
+      <div class="ce-modal-panel sr-modal-panel" role="dialog" aria-modal="true">
+        <header class="ce-modal-header">
+          <div>
+            <h3>
+              <i class="fa-solid fa-pen-to-square"></i>
+              <span id="sr-modal-mode">編輯項次</span>
+            </h3>
+            <div class="ce-subtitle">
+              <span class="ce-hint">標題、內容、樣式均可獨立設定。儲存後即出現在前台。</span>
+            </div>
+          </div>
+          <button type="button" class="ce-close" data-close aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+
+        <div class="ce-modal-body sr-modal-body">
+          <!-- 標題 -->
+          <div class="sr-field">
+            <label class="sr-field-label">項次標題</label>
+            <input type="text" id="sr-title" class="field-input" placeholder="例：專屬固定推薦碼" />
+          </div>
+
+          <!-- 樣式 -->
+          <div class="sr-field">
+            <label class="sr-field-label">呈現樣式</label>
+            <div class="sr-style-row" id="sr-style-row">
+              <label class="sr-style-opt">
+                <input type="radio" name="sr-style" value="normal" checked />
+                <span class="sr-style-card">
+                  <span class="sr-style-name"><i class="fa-solid fa-paragraph"></i>一般段落</span>
+                  <span class="sr-style-desc">標題加正文，最常用</span>
+                </span>
+              </label>
+              <label class="sr-style-opt">
+                <input type="radio" name="sr-style" value="warning" />
+                <span class="sr-style-card">
+                  <span class="sr-style-name"><i class="fa-solid fa-triangle-exclamation"></i>警示框</span>
+                  <span class="sr-style-desc">黃色強調框，用於免責聲明等重要訊息</span>
+                </span>
+              </label>
+              <label class="sr-style-opt">
+                <input type="radio" name="sr-style" value="quote" />
+                <span class="sr-style-card">
+                  <span class="sr-style-name"><i class="fa-solid fa-quote-left"></i>引用框</span>
+                  <span class="sr-style-desc">紫色引用樣式，用於規範條文</span>
+                </span>
+              </label>
+              <label class="sr-style-opt">
+                <input type="radio" name="sr-style" value="flow" />
+                <span class="sr-style-card">
+                  <span class="sr-style-name"><i class="fa-solid fa-diagram-project"></i>流程步驟</span>
+                  <span class="sr-style-desc">步驟卡，以列表方式展示連續動作</span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 工具列（與活動文案編輯共用樣式） -->
+          <div id="sr-toolbar" class="ce-toolbar" aria-label="編輯工具列">
+            <div class="ce-tb-group">
+              <button type="button" class="ce-tb-btn" data-cmd="formatBlock" data-value="h3">小標</button>
+              <button type="button" class="ce-tb-btn" data-cmd="formatBlock" data-value="p">段落</button>
+            </div>
+            <div class="ce-tb-sep"></div>
+            <div class="ce-tb-group">
+              <button type="button" class="ce-tb-btn" data-cmd="bold" title="粗體"><i class="fa-solid fa-bold"></i></button>
+              <button type="button" class="ce-tb-btn" data-cmd="italic" title="斜體"><i class="fa-solid fa-italic"></i></button>
+              <button type="button" class="ce-tb-btn" data-cmd="underline" title="底線"><i class="fa-solid fa-underline"></i></button>
+            </div>
+            <div class="ce-tb-sep"></div>
+            <div class="ce-tb-group">
+              <button type="button" class="ce-tb-btn" data-cmd="insertUnorderedList" title="項目清單"><i class="fa-solid fa-list-ul"></i></button>
+              <button type="button" class="ce-tb-btn" data-cmd="insertOrderedList" title="編號清單"><i class="fa-solid fa-list-ol"></i></button>
+            </div>
+            <div class="ce-tb-sep"></div>
+            <div class="ce-tb-group">
+              <button type="button" class="ce-tb-btn" data-cmd="createLink" title="加入連結"><i class="fa-solid fa-link"></i></button>
+              <label class="ce-tb-btn" title="上傳圖片">
+                <i class="fa-solid fa-image"></i>圖片
+                <input id="sr-img-input" type="file" accept="image/*" hidden />
+              </label>
+              <button type="button" class="ce-tb-btn" data-cmd="removeFormat" title="清除格式"><i class="fa-solid fa-eraser"></i></button>
+            </div>
+            <div class="ce-tb-spacer"></div>
+            <button type="button" id="sr-toggle-source" class="ce-tb-btn ce-tb-mode">
+              <i class="fa-solid fa-code"></i>HTML 原始碼
+            </button>
+          </div>
+
+          <div id="sr-editor" class="ce-editor sr-editor" contenteditable="true" spellcheck="false"></div>
+          <textarea id="sr-source" class="ce-source" hidden spellcheck="false"></textarea>
+
+          <p class="ce-tip">
+            <i class="fa-solid fa-circle-info"></i>
+            「流程步驟」樣式請在內容中用 <code>1. ...</code> <code>2. ...</code> 編號列表，渲染時會自動轉成步驟卡。
+          </p>
+        </div>
+
+        <footer class="ce-modal-footer">
+          <div class="ce-footer-right">
+            <button type="button" class="btn-outline" data-close>取消</button>
+            <button type="button" class="btn-primary" id="sr-save">
+              <i class="fa-solid fa-check"></i>儲存
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <script src="../js/admin-share-rules.js"></script>
+  </body>
+</html>

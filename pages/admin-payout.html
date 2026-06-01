@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>推薦案件獎金核款 - 後台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-matrix.css" />
+    <link rel="stylesheet" href="../css/admin-referrers.css" />
+    <link rel="stylesheet" href="../css/admin-records.css" />
+    <link rel="stylesheet" href="../css/admin-payments.css" />
+    <style>
+      .warn-chips-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+      .warn-chip {
+        display: inline-flex; align-items: center;
+        background: #fef3c7; color: #92400e;
+        border: 1px solid #fcd34d; border-radius: 4px;
+        padding: 1px 6px; font-size: 10px; font-weight: 700;
+        font-family: 'Courier New', monospace; white-space: nowrap;
+      }
+      .rv-section-warning { border-left: 3px solid #f59e0b !important; background: #fffbeb; }
+      .rv-section-warning h4 { color: #b45309; margin-bottom: 8px; }
+      .warn-code-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+      .warn-code-desc { font-size: 13px; color: #92400e; }
+      .notify-method-wrap { display: flex; gap: 10px; }
+      .notify-method-label {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 9px 18px; border: 1.5px solid var(--color-border);
+        border-radius: 8px; cursor: pointer; font-size: 13px;
+        font-weight: 500; transition: border-color 0.15s, background 0.15s;
+        user-select: none;
+      }
+      .notify-method-label input[type="radio"] { display: none; }
+      .notify-method-label.active {
+        border-color: #6366f1; background: #eef2ff; color: #4338ca;
+      }
+      .notify-method-label .fa-line { color: #00b900; font-size: 15px; }
+      .notify-char-row {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 6px;
+      }
+      .notify-char-count { font-size: 12px; font-weight: 700; color: var(--color-text-muted); }
+      .notify-char-count.warn  { color: #f59e0b; }
+      .notify-char-count.over  { color: var(--color-danger); }
+      .notify-warn-bar {
+        display: flex; align-items: center; gap: 8px;
+        background: #fffbeb; border: 1px solid #fcd34d; border-radius: 7px;
+        padding: 8px 12px; font-size: 12px; color: #92400e; margin-bottom: 14px;
+      }
+      tr.has-warn-code > td { background: #f3f4f6; }
+      tr.has-warn-code:hover > td { background: #e5e7eb !important; }
+    </style>
+  </head>
+  <body class="admin">
+    <main class="records-page fade-in page-wrap">
+      <div class="page-crumb">財務管理 / 推薦案件獎金核款</div>
+
+
+        <div class="page-actions">
+          <button type="button" class="btn btn-outline" id="btn-export-csv">
+            <i class="fa-solid fa-download"></i>匯出資料
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <section class="kpi-grid" style="margin-bottom: 16px;">
+        <div class="kpi-card">
+          <div class="kpi-icon yellow"><i class="fa-solid fa-hourglass-half"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">待核款案件</div>
+            <div class="kpi-value" id="kpi-pending-count">0 筆</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon blue"><i class="fa-solid fa-sack-dollar"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">待核款總獎金</div>
+            <div class="kpi-value" id="kpi-pending-amount">$0</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">本月已核款</div>
+            <div class="kpi-value" id="kpi-approved-count">0 筆</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green"><i class="fa-solid fa-coins"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">本月已核款金額</div>
+            <div class="kpi-value" id="kpi-approved-amount">$0</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon red"><i class="fa-solid fa-circle-xmark"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">已拒絕</div>
+            <div class="kpi-value" id="kpi-rejected-count">0 筆</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 篩選列 -->
+      <section class="filter-bar">
+        <div class="field">
+          <label class="field-label">推薦人（編號 / 姓名）</label>
+          <input class="field-input" id="f-referrer" type="text" placeholder="推薦人編號或姓名" />
+        </div>
+        <div class="field">
+          <label class="field-label">案號</label>
+          <input class="field-input" id="f-case-id" type="text" placeholder="例如 M2026052301" />
+        </div>
+        <div class="field">
+          <label class="field-label">類型</label>
+          <select class="field-select" id="f-type">
+            <option value="all">全部</option>
+            <option value="general">一般貸款案件</option>
+            <option value="negotiation">債務協商案件</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">狀態</label>
+          <select class="field-select" id="f-status">
+            <option value="all">全部</option>
+            <option value="pending_approval" selected>待核款</option>
+            <option value="rewardable">已核款</option>
+            <option value="rejected">已拒絕</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">警示代碼</label>
+          <select class="field-select" id="f-warn-code">
+            <option value="all">全部</option>
+            <option value="has_warn">有警示</option>
+            <option value="no_warn">無警示</option>
+            <option value="E-150">E-150</option>
+            <option value="E-180">E-180</option>
+            <option value="E-OLD">E-OLD</option>
+            <option value="E-BLK">E-BLK</option>
+            <option value="E-PAY">E-PAY</option>
+          </select>
+        </div>
+        <button id="btn-search" type="button" class="btn btn-primary">查詢</button>
+      </section>
+
+      <!-- 批次操作條 -->
+      <div id="batch-bar" class="batch-bar hidden">
+        <div class="batch-bar-row">
+          <span>
+            已勾選 <span class="batch-count" id="batch-count">0</span> 筆
+            <span class="batch-amount" id="batch-amount">$0</span>
+          </span>
+          <div class="batch-spacer"></div>
+          <button id="btn-batch-approve" type="button" class="btn btn-success" style="padding: 6px 14px; font-size: 12px;">
+            <i class="fa-solid fa-circle-check"></i>批次核准
+          </button>
+          <button id="btn-batch-reject" type="button" class="btn btn-danger" style="padding: 6px 14px; font-size: 12px;">
+            <i class="fa-solid fa-circle-xmark"></i>批次拒絕
+          </button>
+          <button id="btn-batch-cancel" type="button" class="btn btn-outline" style="padding: 6px 14px; font-size: 12px;">
+            取消勾選
+          </button>
+        </div>
+        <div class="batch-note-row">
+          <label class="batch-note-label">備註（選填，核准 / 拒絕均適用）</label>
+          <textarea id="batch-note" rows="1" class="batch-note-input"
+            placeholder="例：已核對資料無誤 / 資料不符請補件"></textarea>
+        </div>
+      </div>
+
+      <!-- 案件列表 -->
+      <section class="list-card">
+        <div class="list-head">
+          <h3>案件列表（共 <span id="total-count">0</span> 筆）</h3>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div class="list-head-hint">勾選待核款案件，使用上方批次核准 / 拒絕；或逐筆操作</div>
+            <button type="button" class="btn btn-outline" id="btn-code-legend" style="font-size:12px;padding:4px 10px;white-space:nowrap;">
+              <i class="fa-solid fa-circle-info"></i> 警示代碼說明
+            </button>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 36px;"></th>
+                <th>案號</th>
+                <th>推薦人</th>
+                <th>會員編號</th>
+                <th>身份</th>
+                <th>類型</th>
+                <th>計算獎金</th>
+                <th>狀態</th>
+                <th>警示代碼</th>
+                <th style="min-width: 140px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="payout-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <div class="pagination">
+            <button class="pg-btn" disabled>«</button>
+            <button class="pg-btn pg-active">1</button>
+            <button class="pg-btn" disabled>»</button>
+          </div>
+          <div class="pg-total">共: <span id="payout-pg-total">0</span> 筆</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============== 案件詳情 + 核款 Modal ============== -->
+    <div id="payout-modal" class="rec-modal" hidden>
+      <div class="rec-modal-backdrop" data-close></div>
+      <div class="rec-modal-panel" role="dialog" aria-modal="true" aria-labelledby="pm-title">
+        <header class="rec-modal-head">
+          <h3 id="pm-title">
+            <i class="fa-solid fa-file-invoice-dollar"></i>核款詳情
+            <span class="rec-case-id" id="pm-caseid">—</span>
+          </h3>
+          <button type="button" class="rec-modal-close" data-close aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+
+        <div class="rec-modal-body">
+          <section class="rv-section">
+            <h4>推薦關係</h4>
+            <div class="rv-grid">
+              <div class="rv-row"><span class="rv-label">推薦人</span><span class="rv-value" id="pm-referrer">—</span></div>
+              <div class="rv-row"><span class="rv-label">會員編號</span><span class="rv-value mono" id="pm-referrer-cid">—</span></div>
+              <div class="rv-row"><span class="rv-label">身份</span><span class="rv-value" id="pm-tag">—</span></div>
+              <div class="rv-row"><span class="rv-label">案件類型</span><span class="rv-value" id="pm-case-type">—</span></div>
+              <div class="rv-row"><span class="rv-label">被推薦人</span><span class="rv-value" id="pm-referee">—</span></div>
+              <div class="rv-row"><span class="rv-label">被推薦人手機</span><span class="rv-value mono" id="pm-referee-phone">—</span></div>
+              <div class="rv-row"><span class="rv-label">符合活動編號</span><span class="rv-value mono" id="pm-campaign">—</span></div>
+            </div>
+          </section>
+
+          <section class="rv-section">
+            <h4>獎金資訊</h4>
+            <div class="rv-grid">
+              <div class="rv-row"><span class="rv-label">收款單號</span><span class="rv-value mono" id="pm-receipt-no">—</span></div>
+              <div class="rv-row rv-row-full"><span class="rv-label">計算獎金</span><span class="rv-value mono rv-amount-emph" id="pm-amount">—</span></div>
+            </div>
+          </section>
+
+          <section class="rv-section rv-section-warning" id="pm-section-warning" hidden>
+            <h4><i class="fa-solid fa-triangle-exclamation"></i> 系統警示（不建議核發）</h4>
+            <div id="pm-warning-codes"></div>
+            <p class="rv-foot" style="color:#b45309;margin-top:6px;">※ 系統偵測到異常條件，請人工審核確認後再操作。</p>
+          </section>
+
+          <section class="rv-section" id="pm-section-snapshot" hidden>
+            <h4>送單時快照參數</h4>
+            <div class="rv-snapshot" id="pm-snapshot">—</div>
+            <p class="rv-foot">※ 快照於送單當下擷取，後續活動規則調整不影響本案件。</p>
+          </section>
+
+          <section class="rv-section" id="pm-section-approved" hidden>
+            <h4>核款紀錄</h4>
+            <div class="rv-grid">
+              <div class="rv-row"><span class="rv-label">核款時間</span><span class="rv-value mono" id="pm-approved-at">—</span></div>
+              <div class="rv-row"><span class="rv-label">核款人員</span><span class="rv-value" id="pm-approved-by">—</span></div>
+              <div class="rv-row rv-row-full"><span class="rv-label">備註</span><span class="rv-value" id="pm-approve-note">—</span></div>
+            </div>
+          </section>
+
+          <section class="rv-section" id="pm-section-rejected" hidden>
+            <h4>拒絕紀錄</h4>
+            <div class="rv-grid">
+              <div class="rv-row"><span class="rv-label">拒絕時間</span><span class="rv-value mono" id="pm-rejected-at">—</span></div>
+              <div class="rv-row"><span class="rv-label">拒絕人員</span><span class="rv-value" id="pm-rejected-by">—</span></div>
+              <div class="rv-row rv-row-full"><span class="rv-label">拒絕原因</span><span class="rv-value" id="pm-reject-note">—</span></div>
+            </div>
+          </section>
+        </div>
+
+        <footer class="rec-modal-foot">
+          <button type="button" class="btn btn-success" id="btn-modal-approve" hidden>
+            <i class="fa-solid fa-circle-check"></i>核准獎金
+          </button>
+          <button type="button" class="btn btn-danger" id="btn-modal-reject" hidden>
+            <i class="fa-solid fa-circle-xmark"></i>拒絕核款
+          </button>
+          <button type="button" class="btn btn-outline" data-close>關閉</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- ============== 拒絕核款 Modal ============== -->
+    <div id="reject-modal" class="rec-modal" hidden>
+      <div class="rec-modal-backdrop" id="reject-modal-backdrop"></div>
+      <div class="rec-modal-panel" style="max-width: 480px;" role="dialog" aria-modal="true">
+        <header class="rec-modal-head">
+          <h3>
+            <i class="fa-solid fa-circle-xmark" style="color: var(--color-danger);"></i>拒絕核款
+            <span class="rec-case-id" id="rj-caseid">—</span>
+          </h3>
+          <button type="button" class="rec-modal-close" id="btn-reject-modal-close" aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+        <div class="rec-modal-body">
+          <div style="padding: 4px 0 12px; font-size: var(--font-sm); color: var(--color-text-secondary);">
+            推薦人：<strong id="rj-referrer">—</strong>　計算獎金：<strong id="rj-amount" style="color: var(--color-danger);">—</strong>
+          </div>
+          <div class="field">
+            <label class="field-label" style="font-weight: 600;">拒絕原因 <span style="color: var(--color-danger);">*</span></label>
+            <select id="rj-reason-code" class="field-select" style="margin-bottom: 8px;">
+              <option value="">-- 請選擇拒絕原因 --</option>
+            </select>
+            <textarea id="rj-note" class="field-input" rows="3"
+              placeholder="請輸入其他原因說明（必填）"
+              style="resize: vertical; display: none; margin-top: 4px;"></textarea>
+          </div>
+        </div>
+        <footer class="rec-modal-foot">
+          <button type="button" class="btn btn-danger" id="btn-reject-confirm">
+            <i class="fa-solid fa-circle-xmark"></i>確認拒絕
+          </button>
+          <button type="button" class="btn btn-outline" id="btn-reject-cancel">取消</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- ============== 警示代碼說明 Modal ============== -->
+    <div id="code-legend-modal" class="rec-modal" hidden>
+      <div class="rec-modal-backdrop" id="code-legend-backdrop"></div>
+      <div class="rec-modal-panel" style="max-width: 540px;" role="dialog" aria-modal="true">
+        <header class="rec-modal-head">
+          <h3><i class="fa-solid fa-circle-info" style="color:#6366f1;"></i> 警示代碼說明</h3>
+          <button type="button" class="rec-modal-close" id="btn-code-legend-close" aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+        <div class="rec-modal-body">
+          <table class="data-table" style="font-size:13px;">
+            <thead>
+              <tr>
+                <th style="width:76px;">代碼</th>
+                <th>說明</th>
+                <th style="width:90px;text-align:center;">建議處理</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="warn-chip">E-150</span></td>
+                <td id="legend-desc-e150">後續案件超過 150 天紅利效期</td>
+                <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
+              </tr>
+              <tr>
+                <td><span class="warn-chip">E-180</span></td>
+                <td id="legend-desc-e180">獎金核發後超過 180 天未提領</td>
+                <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
+              </tr>
+              <tr>
+                <td><span class="warn-chip">E-OLD</span></td>
+                <td>員工／離職員工推薦了「舊客戶」</td>
+                <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
+              </tr>
+              <tr>
+                <td><span class="warn-chip">E-BLK</span></td>
+                <td>帳號被列為黑名單</td>
+                <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
+              </tr>
+              <tr>
+                <td><span class="warn-chip">E-PAY</span></td>
+                <td>未達成案件生效的基本繳款條件</td>
+                <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="font-size:12px;color:var(--color-text-muted);margin-top:12px;line-height:1.6;">
+            ※ 以上警示由系統自動偵測，不代表必然違規。<br>
+            後台人員可依實際情況人工審核，仍可選擇核准或拒絕。
+          </p>
+        </div>
+        <footer class="rec-modal-foot">
+          <button type="button" class="btn btn-primary" id="btn-code-legend-ok">了解，關閉</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- ============== 核款通知 Modal ============== -->
+    <div id="notify-modal" class="rec-modal" hidden>
+      <div class="rec-modal-backdrop" id="notify-backdrop"></div>
+      <div class="rec-modal-panel" style="max-width:500px;" role="dialog" aria-modal="true">
+        <header class="rec-modal-head">
+          <h3>
+            <i class="fa-solid fa-paper-plane" style="color:#6366f1;"></i>發送核款通知
+            <span class="rec-case-id" id="notify-caseid">—</span>
+          </h3>
+          <button type="button" class="rec-modal-close" id="btn-notify-close" aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+        <div class="rec-modal-body">
+
+          <!-- 案件摘要 -->
+          <div style="display:flex;gap:28px;padding:10px 14px;background:#f8fafc;border-radius:8px;margin-bottom:14px;font-size:13px;">
+            <div><span style="color:var(--color-text-muted);">推薦人</span>&ensp;<strong id="notify-referrer">—</strong></div>
+            <div><span style="color:var(--color-text-muted);">獎金</span>&ensp;<strong id="notify-amount" style="color:#059669;">—</strong></div>
+          </div>
+
+          <!-- 系統警示提示（若有） -->
+          <div class="notify-warn-bar" id="notify-warn-bar" hidden>
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="notify-warn-text">此案件含系統警示，請確認核款意願後再發送。</span>
+          </div>
+
+          <!-- 發送方式 -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;">發送方式</div>
+            <div class="notify-method-wrap">
+              <label class="notify-method-label active" id="label-method-sms">
+                <input type="radio" name="notify-method" value="sms" checked>
+                <i class="fa-solid fa-comment-sms"></i>簡訊
+              </label>
+              <label class="notify-method-label" id="label-method-line">
+                <input type="radio" name="notify-method" value="line">
+                <i class="fa-brands fa-line"></i>LINE 推播
+              </label>
+            </div>
+          </div>
+
+          <!-- SMS 面板 -->
+          <div id="notify-panel-sms">
+            <div style="font-size:12px;color:var(--color-text-muted);margin-bottom:6px;">訊息內容</div>
+            <textarea id="notify-sms-content" class="field-input" rows="4"
+              style="resize:vertical;font-size:13px;line-height:1.7;width:100%;box-sizing:border-box;"></textarea>
+          </div>
+
+          <!-- LINE 面板 -->
+          <div id="notify-panel-line" hidden>
+            <div class="notify-char-row">
+              <span style="font-size:12px;color:var(--color-text-muted);">訊息內容（上限 50 字）</span>
+              <span class="notify-char-count" id="notify-line-counter">0 / 50</span>
+            </div>
+            <textarea id="notify-line-content" class="field-input" rows="3"
+              style="resize:none;font-size:13px;line-height:1.7;width:100%;box-sizing:border-box;"
+              maxlength="50"></textarea>
+            <div style="font-size:11px;color:var(--color-text-muted);margin-top:5px;">
+              ※ 內容已含提領連結，LINE 推播限 50 字。
+            </div>
+          </div>
+
+        </div>
+        <footer class="rec-modal-foot">
+          <button type="button" class="btn btn-success" id="btn-notify-send">
+            <i class="fa-solid fa-paper-plane"></i>確認核款並發送通知
+          </button>
+          <button type="button" class="btn btn-outline" id="btn-notify-skip">
+            <i class="fa-solid fa-circle-check"></i>僅核款，不通知
+          </button>
+        </footer>
+      </div>
+    </div>
+
+    <script src="../js/admin-payout.js"></script>
+  </body>
+</html>

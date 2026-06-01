@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>儀表板 - 理財通 MGM</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <link rel="stylesheet" href="../css/profile-settings.css" />
+  </head>
+  <body>
+    <main class="dashboard fade-in">
+      <!-- ============== 個人歡迎卡 ============== -->
+      <section class="profile-card" aria-label="會員資訊">
+        <div class="profile-row">
+          <div>
+            <div class="profile-name" id="referrer-name">王小毅</div>
+          </div>
+          <div class="profile-avatar-wrap">
+            <button type="button" class="profile-settings-btn" id="btn-profile-settings" data-go="profile-settings" aria-label="個人設定">
+              <i class="fa-solid fa-gear"></i>
+            </button>
+            <div class="profile-avatar" aria-hidden="true">
+              <i class="fa-solid fa-user"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 獎金總覽（取代原「累積獎金」大數字；同 /rewards 數據；整塊可點擊跳至我的獎金） -->
+        <a class="profile-rewards" id="rewards-summary" href="#rewards" data-go="rewards" aria-label="我的獎金總覽，點擊查看明細">
+          <div class="pr-head">
+            <span class="pr-title"><i class="fa-solid fa-sack-dollar"></i>我的獎金</span>
+            <span class="pr-link">查看明細<i class="fa-solid fa-chevron-right"></i></span>
+          </div>
+          <div class="pr-grid">
+            <div class="pr-cell">
+              <div class="pr-label">可提領</div>
+              <div class="pr-amount"><span class="pr-cur">NT$</span><span id="rs-available">0</span></div>
+              <div class="pr-sub"><span id="rs-pending-count">0</span> 筆</div>
+            </div>
+            <div class="pr-divider"></div>
+            <div class="pr-cell">
+              <div class="pr-label">已累積</div>
+              <div class="pr-amount"><span class="pr-cur">NT$</span><span id="rs-withdrawn">0</span></div>
+              <div class="pr-sub">歷年完成</div>
+            </div>
+          </div>
+        </a>
+      </section>
+
+      <!-- ============== 推薦碼卡（離職員工鎖定時改顯示「已離職說明卡」） ============== -->
+      <section class="code-card" id="code-card" aria-label="本期推薦碼">
+        <div class="code-card-head">
+          <span class="code-card-title">
+            <i class="fa-solid fa-link"></i>您的專屬分享連結
+          </span>
+        </div>
+        <div class="code-actions">
+          <button type="button" id="btn-copy-link" class="btn btn-outline btn-block" aria-label="複製連結">
+            <i class="fa-solid fa-link"></i>複製連結
+          </button>
+        </div>
+      </section>
+
+      <!-- ============== 被封鎖會員說明卡（黑名單時顯示） ============== -->
+      <section class="bl-notice-card" id="bl-notice-card" hidden>
+        <i class="fa-solid fa-ban"></i>
+        <div class="bnc-body">
+          <div class="bnc-title">您的帳號目前為封鎖身分</div>
+          <p class="bnc-text">
+            被封鎖身分的用戶目前僅可查看此提示訊息，<strong>分享與獎金功能皆無法使用</strong>。
+            若需進一步了解，請聯繫客服。
+          </p>
+        </div>
+      </section>
+
+
+      <!-- ============== 快速入口 ============== -->
+      <section class="quick-section" id="quick-section">
+        <h2 class="section-title">
+          <span class="section-title-mark">— 快速功能 —</span>
+        </h2>
+        <div class="quick-grid">
+          <div class="quick-item" id="quick-share" data-go="share" tabindex="0">
+            <div class="quick-item-icon">
+              <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <div class="quick-item-label">分享連結</div>
+          </div>
+          <div class="quick-item" data-go="records" tabindex="0">
+            <div class="quick-item-icon green">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div class="quick-item-label">推廣紀錄</div>
+          </div>
+          <div class="quick-item" id="quick-rewards" data-go="rewards" tabindex="0">
+            <div class="quick-item-icon yellow">
+              <i class="fa-solid fa-sack-dollar"></i>
+            </div>
+            <div class="quick-item-label">我的獎金</div>
+          </div>
+          <div class="quick-item" data-go="share-rules" tabindex="0">
+            <div class="quick-item-icon">
+              <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <div class="quick-item-label">制度說明</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/dashboard.js"></script>
+  </body>
+</html>

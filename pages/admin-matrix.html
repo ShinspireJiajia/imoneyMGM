@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>活動詳情 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-campaigns.css" />
+    <link rel="stylesheet" href="../css/admin-matrix.css" />
+  </head>
+  <body class="admin">
+    <main class="matrix-page page-wrap fade-in">
+      <div class="page-crumb">行銷設定 / 活動檔期管理 / 活動詳情</div>
+
+      <!-- ============== 活動標題卡 ============== -->
+      <section class="campaign-detail-head" id="campaign-head">
+        <button type="button" class="cd-back" id="btn-back-list">
+          <i class="fa-solid fa-arrow-left"></i>回活動列表
+        </button>
+        <div class="cd-head-main">
+          <h2 class="cd-name" id="cd-name">2026 Q2 會員初夏推薦大賞</h2>
+          <div class="cd-meta">
+            <span class="badge" id="cd-status">進行中</span>
+            <span class="cd-period">
+              <i class="fa-regular fa-calendar"></i>
+              <span id="cd-period">2026/04/01 ～ 2026/06/30</span>
+              <span class="cd-period-remain" id="cd-remain">剩 37 天</span>
+            </span>
+            <span class="cd-id" id="cd-id">CAMP-C-2026Q2</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Tabs ============== -->
+      <nav class="cd-tabs" role="tablist" aria-label="活動詳情">
+        <button type="button" class="cd-tab active" data-tab="info" role="tab">
+          <i class="fa-solid fa-circle-info"></i>基本資訊
+        </button>
+        <button type="button" class="cd-tab" data-tab="matrix" role="tab">
+          <i class="fa-solid fa-table-cells"></i>獎金級距
+        </button>
+      </nav>
+
+      <!-- =============================================
+           PANE 1：基本資訊
+           ============================================= -->
+      <section class="cd-pane" data-pane="info">
+        <div class="cd-section-card">
+          <h3 class="cd-section-title">活動基本資訊</h3>
+          <div class="cd-form-grid">
+            <div class="field">
+              <label class="field-label">活動名稱</label>
+              <input id="info-name" class="field-input" type="text" />
+            </div>
+            <div class="field">
+              <label class="field-label">活動 ID</label>
+              <input id="info-id" class="field-input" type="text" disabled />
+            </div>
+            <div class="field">
+              <label class="field-label">起始日</label>
+              <input id="info-start" class="field-input" type="date" />
+            </div>
+            <div class="field">
+              <label class="field-label">結束日</label>
+              <input id="info-end" class="field-input" type="date" />
+            </div>
+            <div class="field">
+              <label class="field-label">活動狀態</label>
+              <select id="info-status" class="field-select">
+                <option value="upcoming">未開始</option>
+                <option value="active">進行中</option>
+                <option value="ended">已結束</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="cd-form-actions">
+            <button type="button" id="btn-info-save" class="btn btn-primary">
+              <i class="fa-solid fa-check"></i>儲存基本資訊
+            </button>
+          </div>
+        </div>
+
+        <div class="cd-section-card cd-history-inline">
+          <div class="cd-history-head">
+            <h3 class="cd-section-title">編輯歷程</h3>
+            <div class="cd-history-scope">基本資訊</div>
+          </div>
+          <div id="history-timeline-info" class="cd-history-timeline"></div>
+        </div>
+      </section>
+
+      <!-- =============================================
+           PANE 2：獎金級距（原 matrix）
+           ============================================= -->
+      <section class="cd-pane" data-pane="matrix" hidden>
+
+        <!-- 訂單綁定規則說明 -->
+        <div class="snapshot-notice">
+          <i class="fa-solid fa-snowflake"></i>
+          <p><strong>訂單綁定規則：以送單當下為準。</strong>會員成功送單當下，系統擷取當下進行中之活動檔期參數寫死為快照；後續修改本表參數不會影響已送出之既有訂單。若送單當下無進行中活動，將自動套用〈活動檔期管理〉中設定之預設值。</p>
+        </div>
+
+        <!-- 獎金發放標準設定 -->
+        <section class="matrix-card">
+          <div class="matrix-card-head">
+            <h3><i class="fa-solid fa-table-cells"></i>獎金發放標準設定</h3>
+            <button id="btn-add-project" type="button" class="btn btn-outline" style="padding: 6px 14px; font-size: 13px;">
+              <i class="fa-solid fa-plus"></i>新增專案
+            </button>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="matrix-table-full">
+              <thead>
+                <tr>
+                  <th style="width: 200px;">方案</th>
+                  <th>觸發條件</th>
+                  <th style="width: 160px;">推薦獎金 (TWD)</th>
+                  <th style="width: 120px;">啟用狀態</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="matrix-tbody">
+                <tr data-row-mode="view" data-project-key="motor">
+                  <td><strong>汽機車小額融資／代書信貸</strong></td>
+                  <td><select class="inline-input trigger-input" disabled><option value="付訖服務費" selected>付訖服務費</option><option value="需繳滿第三期服務費（每期 ≥ $6,000 起算）">需繳滿第三期服務費（每期 ≥ $6,000 起算）</option></select></td>
+                  <td><span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input bonus-input" type="number" value="1500" disabled /></span></td>
+                  <td class="status-label"><label class="switch"><input type="checkbox" checked disabled /><span class="switch-slider"></span></label></td>
+                  <td class="row-actions">
+                    <button type="button" class="row-action-btn" data-row-action="edit"><i class="fa-solid fa-pen"></i>編輯</button>
+                    <button type="button" class="row-action-btn primary" data-row-action="save" hidden><i class="fa-solid fa-check"></i>儲存</button>
+                    <button type="button" class="row-action-btn" data-row-action="cancel" hidden>取消</button>
+                  </td>
+                </tr>
+                <tr data-row-mode="view" data-project-key="bank">
+                  <td><strong>銀行信貸／企貸</strong></td>
+                  <td><select class="inline-input trigger-input" disabled><option value="付訖服務費" selected>付訖服務費</option><option value="需繳滿第三期服務費（每期 ≥ $6,000 起算）">需繳滿第三期服務費（每期 ≥ $6,000 起算）</option></select></td>
+                  <td><span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input bonus-input" type="number" value="3600" disabled /></span></td>
+                  <td class="status-label"><label class="switch"><input type="checkbox" checked disabled /><span class="switch-slider"></span></label></td>
+                  <td class="row-actions">
+                    <button type="button" class="row-action-btn" data-row-action="edit"><i class="fa-solid fa-pen"></i>編輯</button>
+                    <button type="button" class="row-action-btn primary" data-row-action="save" hidden><i class="fa-solid fa-check"></i>儲存</button>
+                    <button type="button" class="row-action-btn" data-row-action="cancel" hidden>取消</button>
+                  </td>
+                </tr>
+                <tr data-row-mode="view" data-project-key="realestate">
+                  <td><strong>不動產貸款</strong></td>
+                  <td><select class="inline-input trigger-input" disabled><option value="付訖服務費" selected>付訖服務費</option><option value="需繳滿第三期服務費（每期 ≥ $6,000 起算）">需繳滿第三期服務費（每期 ≥ $6,000 起算）</option></select></td>
+                  <td><span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input bonus-input" type="number" value="5000" disabled /></span></td>
+                  <td class="status-label"><label class="switch"><input type="checkbox" checked disabled /><span class="switch-slider"></span></label></td>
+                  <td class="row-actions">
+                    <button type="button" class="row-action-btn" data-row-action="edit"><i class="fa-solid fa-pen"></i>編輯</button>
+                    <button type="button" class="row-action-btn primary" data-row-action="save" hidden><i class="fa-solid fa-check"></i>儲存</button>
+                    <button type="button" class="row-action-btn" data-row-action="cancel" hidden>取消</button>
+                  </td>
+                </tr>
+                <tr data-row-mode="view" data-project-key="debt">
+                  <td><strong>債務協商</strong></td>
+                  <td><select class="inline-input trigger-input" disabled><option value="付訖服務費">付訖服務費</option><option value="需繳滿第三期服務費（每期 ≥ $6,000 起算）" selected>需繳滿第三期服務費（每期 ≥ $6,000 起算）</option></select></td>
+                  <td><span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input bonus-input" type="number" value="2000" disabled /></span></td>
+                  <td class="status-label"><label class="switch"><input type="checkbox" checked disabled /><span class="switch-slider"></span></label></td>
+                  <td class="row-actions">
+                    <button type="button" class="row-action-btn" data-row-action="edit"><i class="fa-solid fa-pen"></i>編輯</button>
+                    <button type="button" class="row-action-btn primary" data-row-action="save" hidden><i class="fa-solid fa-check"></i>儲存</button>
+                    <button type="button" class="row-action-btn" data-row-action="cancel" hidden>取消</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 多專案疊加組合規則 -->
+        <section class="matrix-card combo-card">
+          <div class="matrix-card-head">
+            <h3><i class="fa-solid fa-layer-group"></i>組合條件設定（疊加制）</h3>
+            <button id="btn-add-combo" type="button" class="btn btn-outline" style="padding: 6px 14px; font-size: 13px;">
+              <i class="fa-solid fa-plus"></i>新增組合
+            </button>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table class="matrix-table-full combo-table">
+              <thead>
+                <tr>
+                  <th style="width: 420px;">專案組合（可複選）</th>
+                  <th style="width: 220px;">組合總上限 (TWD)</th>
+                  <th style="width: 140px;">啟用狀態</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="combo-tbody">
+                <tr data-row-mode="view">
+                  <td>
+                    <div class="combo-projects">
+                      <label class="combo-check"><input type="checkbox" class="combo-project" value="motor" checked disabled /><span>汽機車小額融資／代書信貸</span></label>
+                      <label class="combo-check"><input type="checkbox" class="combo-project" value="bank" checked disabled /><span>銀行信貸／企貸</span></label>
+                      <label class="combo-check"><input type="checkbox" class="combo-project" value="realestate" disabled /><span>不動產貸款</span></label>
+                      <label class="combo-check"><input type="checkbox" class="combo-project" value="debt" disabled /><span>債務協商</span></label>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input combo-cap" type="number" value="20000" disabled /></span>
+                  </td>
+                  <td class="status-label"><label class="switch"><input type="checkbox" class="combo-enabled" checked disabled /><span class="switch-slider"></span></label></td>
+                  <td class="row-actions">
+                    <button type="button" class="row-action-btn" data-combo-action="edit"><i class="fa-solid fa-pen"></i>編輯</button>
+                    <button type="button" class="row-action-btn primary" data-combo-action="save" hidden><i class="fa-solid fa-check"></i>儲存</button>
+                    <button type="button" class="row-action-btn" data-combo-action="cancel" hidden>取消</button>
+                    <button type="button" class="row-action-btn danger" data-combo-action="remove">移除</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="combo-note">
+            規則說明：案件同時符合多個類型時，先各自依單專案規則計算獎金後加總，再套用「組合總上限」。
+          </div>
+        </section>
+
+        <div class="cd-form-actions">
+          <button type="button" id="btn-save-matrix" class="btn btn-primary">
+            <i class="fa-regular fa-floppy-disk"></i>儲存獎金級距
+          </button>
+        </div>
+
+        <div class="cd-section-card cd-history-inline">
+          <div class="cd-history-head">
+            <h3 class="cd-section-title">編輯歷程</h3>
+            <div class="cd-history-scope">獎金級距 / 系統快照</div>
+          </div>
+          <div id="history-timeline-matrix" class="cd-history-timeline"></div>
+        </div>
+      </section>
+
+    </main>
+
+    <script src="../js/admin-matrix.js"></script>
+  </body>
+</html>

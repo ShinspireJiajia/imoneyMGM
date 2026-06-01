@@ -1,0 +1,727 @@
+/* ==========================================================
+   common.css - 共用設計系統
+   主色：亮紫色 / 輔色：清新綠、溫暖黃
+   ========================================================== */
+
+/* 全域強制：HTML hidden 屬性必須優先於任何 display 設定
+   避免「.xxx { display: flex }」之類的規則覆寫掉 hidden 而導致元素誤顯示 */
+[hidden] {
+  display: none !important;
+}
+
+/* 設計變數 (Design Tokens) */
+:root {
+  /* 主色 - 亮紫 */
+  --color-primary: #8b5cf6;
+  --color-primary-dark: #7c3aed;
+  --color-primary-light: #a78bfa;
+  --color-primary-50: #faf5ff;
+  --color-primary-100: #f3e8ff;
+  --color-primary-200: #e9d5ff;
+
+  /* 輔色 - 清新綠 (成功 / 已符合) */
+  --color-success: #10b981;
+  --color-success-dark: #059669;
+  --color-success-light: #d1fae5;
+
+  /* 輔色 - 溫暖黃 (警示 / 審核中) */
+  --color-warning: #f59e0b;
+  --color-warning-dark: #d97706;
+  --color-warning-light: #fef3c7;
+
+  /* 危險 - 紅 (註銷 / 未符合) */
+  --color-danger: #ef4444;
+  --color-danger-light: #fee2e2;
+
+  /* 文字 */
+  --color-text: #1f2937;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+
+  /* 背景與邊框 */
+  --color-bg: #fafafa;
+  --color-bg-alt: #f5f3ff;
+  --color-card: #ffffff;
+  --color-border: #e5e7eb;
+  --color-border-light: #f3f4f6;
+
+  /* 陰影 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(139, 92, 246, 0.08);
+  --shadow-lg: 0 8px 24px rgba(139, 92, 246, 0.12);
+
+  /* 圓角 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* 間距 */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+
+  /* 字級（無障礙：最小不低於 14px） */
+  --font-xs: 14px;
+  --font-sm: 14px;
+  --font-base: 14px;
+  --font-md: 15px;
+  --font-lg: 16px;
+  --font-xl: 18px;
+  --font-2xl: 22px;
+  --font-3xl: 28px;
+
+  /* 字體 — 微軟正黑體為主（Windows），其他系統 fallback */
+  --font-family: 'Microsoft JhengHei', '微軟正黑體', 'Microsoft JhengHei UI',
+    'PingFang TC', 'Heiti TC', 'Noto Sans TC',
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* 標題用同字型；以字重區分階層，不換字型 */
+  --font-serif-tc: var(--font-family);
+  /* 數字仍用同字型 + tabular-nums，避免數字亂跳行 */
+  --font-numeric: var(--font-family);
+}
+
+/* Reset 與基礎排版 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 強制鎖定根字級為 16px，避免年長者手機放大系統字級造成跑版
+   另禁用瀏覽器自動文字縮放（iOS Safari / Android Chrome） */
+html {
+  font-size: 16px !important;
+  -webkit-text-size-adjust: 100% !important;
+  -moz-text-size-adjust: 100% !important;
+  -ms-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: var(--font-family);
+  font-size: var(--font-base);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.65;
+}
+
+/* ============================================================
+   行銷後台主題（青綠色 — Teal）— body.admin 範圍內
+   把品牌色變數覆寫成 teal，所有 admin 頁面立即套用
+   ============================================================ */
+body.admin {
+  --color-primary:       #3FA89F;
+  --color-primary-dark:  #2D8A82;
+  --color-primary-light: #82C7C0;
+  --color-primary-50:    #F0F8F7;
+  --color-primary-100:   #D5EEEB;
+  --color-primary-200:   #ABDDD7;
+
+  --color-text:          #2C3E50;
+  --color-text-secondary:#6B7280;
+
+  --color-bg:            #F4F6F7;
+  --color-bg-alt:        #F0F8F7;
+  --color-border:        #E5E7EB;
+  --color-border-light:  #F1F3F5;
+
+  /* 表格條紋與 hover */
+  --admin-table-head-bg: #3FA89F;
+  --admin-table-head-fg: #FFFFFF;
+  --admin-row-hover:     #F0F8F7;
+  --admin-link:          #2D8A82;
+  --admin-stat-bg:       #F0F1F3;
+
+  background: var(--color-bg);
+  font-family: var(--font-family);
+  font-feature-settings: normal;
+}
+
+/* 所有 admin 頁面共用：頁面 wrap / 麵包屑 / 主卡片 */
+body.admin .page-wrap {
+  padding: 20px 24px 32px;
+  font-family: var(--font-family);
+  color: var(--color-text);
+}
+
+body.admin .page-crumb {
+  font-size: var(--font-md);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 14px;
+  letter-spacing: 0.02em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* 通用按鈕元件 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-md);
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-dark) 100%
+  );
+  color: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-success {
+  background: var(--color-success);
+  color: #fff;
+}
+
+.btn-warning {
+  background: var(--color-warning);
+  color: #fff;
+}
+
+.btn-outline {
+  border: 1.5px solid var(--color-primary);
+  color: var(--color-primary);
+  background: #fff;
+}
+
+.btn-outline:hover {
+  background: var(--color-primary-50);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 通用標籤 (Badge) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-xs);
+  font-weight: 600;
+}
+
+.badge-purple {
+  background: var(--color-primary-100);
+  color: var(--color-primary-dark);
+}
+
+.badge-green {
+  background: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+.badge-yellow {
+  background: var(--color-warning-light);
+  color: var(--color-warning-dark);
+}
+
+.badge-red {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.badge-gray {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.badge-blue {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge-orange {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+/* 通用卡片 */
+.card {
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-lg);
+}
+
+/* 通用表單欄位 */
+.field {
+  margin-bottom: var(--space-lg);
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.field-required::after {
+  content: ' *';
+  color: var(--color-danger);
+}
+
+.field-input,
+.field-select,
+.field-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  font-size: var(--font-base);
+  transition: border-color 0.15s ease;
+}
+
+.field-input:focus,
+.field-select:focus,
+.field-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+}
+
+/* 通用提示 (Tooltip / Info) */
+.info-box {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-200);
+  border-radius: var(--radius-md);
+  color: var(--color-primary-dark);
+  font-size: var(--font-sm);
+  line-height: 1.6;
+}
+
+.info-box.warning {
+  background: var(--color-warning-light);
+  border-color: #fde68a;
+  color: var(--color-warning-dark);
+}
+
+.info-box.danger {
+  background: var(--color-danger-light);
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.info-box i {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* 工具類 */
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.flex {
+  display: flex;
+}
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.gap-sm {
+  gap: var(--space-sm);
+}
+.gap-md {
+  gap: var(--space-md);
+}
+.mb-sm {
+  margin-bottom: var(--space-sm);
+}
+.mb-md {
+  margin-bottom: var(--space-md);
+}
+.mb-lg {
+  margin-bottom: var(--space-lg);
+}
+
+/* 資料保存期限提示（前台共用） */
+.data-retention-note {
+  margin: 16px 0 0;
+  padding: 10px 0 4px;
+  text-align: center;
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1.65;
+}
+
+.data-retention-note i {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+/* 動畫 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease both;
+}
+
+/* ===================== 後台分頁列（共用） ===================== */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 18px 14px;
+  background: #fff;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.pagination {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pg-btn {
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: var(--color-text);
+  border-radius: 6px;
+  font-size: var(--font-sm);
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+  font-family: inherit;
+}
+
+.pg-btn:hover:not(:disabled):not(.pg-active) {
+  background: var(--color-primary-50);
+  color: var(--color-primary-dark);
+  border-color: var(--color-primary-light);
+}
+
+.pg-btn:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  background: #fafafa;
+  opacity: 0.6;
+}
+
+.pg-btn.pg-active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+  cursor: default;
+  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.20);
+}
+
+.pg-total {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.pg-total span {
+  color: var(--color-primary-dark);
+  font-weight: 700;
+}
+
+.pg-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+}
+
+.pg-size select {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: var(--font-xs);
+  background: #fff;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ===================== 共用：檔案上傳列 ===================== */
+.upload-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upload-row {
+  position: relative;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upload-row:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-50);
+}
+
+.upload-row.uploaded {
+  border-style: solid;
+  border-color: var(--color-success);
+  background: #f0fdf4;
+}
+
+.upload-row-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-row-reselect {
+  margin-left: auto;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: var(--color-text-secondary);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  position: relative;
+  z-index: 2;
+}
+
+.upload-row.uploaded .upload-row-reselect {
+  border-color: rgba(21, 128, 61, 0.3);
+  color: #166534;
+}
+
+.upload-row-main i {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(124, 58, 237, 0.12);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.upload-row.uploaded .upload-row-main i {
+  background: rgba(34, 197, 94, 0.14);
+  color: #15803d;
+}
+
+.upload-row-texts {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.upload-row-title {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.upload-row-filename {
+  display: none;
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.upload-row-preview {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-light);
+  background: #fff;
+}
+
+.upload-row input[type='file'] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+/* ===================== 共用：6 位數 OTP 輸入 ===================== */
+.otp-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(6px, 2.5vw, 10px);
+  margin: 20px 0 12px;
+  width: 100%;
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.otp-input {
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1 / 1.15;
+  min-height: 52px;
+  padding: 0;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  background: #fafafa;
+  font-family: var(--font-family);
+  font-variant-numeric: tabular-nums;
+  transition: all 0.15s;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.otp-input::-webkit-outer-spin-button,
+.otp-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.otp-input::placeholder {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-size: 22px;
+  opacity: 0.5;
+}
+
+.otp-input:placeholder-shown {
+  background: #fafafa;
+}
+
+.otp-input:not(:placeholder-shown) {
+  background: #fff;
+  border-color: var(--color-primary-light);
+}
+
+.otp-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+  .otp-row {
+    margin: 16px 0 10px;
+    max-width: 100%;
+  }
+
+  .otp-input {
+    min-height: 48px;
+    font-size: clamp(20px, 5vw, 24px);
+  }
+}

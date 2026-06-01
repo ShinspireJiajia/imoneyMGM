@@ -1,0 +1,304 @@
+/* ==========================================================
+   layout.css - LINE OA Portal Master Frame
+   Mobile-first，桌機顯示時置中於 480px 模擬手機畫面
+   清楚為主、可信、有希望
+   ========================================================== */
+
+/* 整體外框 */
+.portal-frame {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  height: 100vh;
+  margin: 0 auto;
+  background: var(--color-bg);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  body {
+    background:
+      radial-gradient(circle at 12% 18%, rgba(245, 158, 11, 0.06) 0, transparent 40%),
+      radial-gradient(circle at 88% 82%, rgba(16, 185, 129, 0.05) 0, transparent 45%),
+      #F4F1F9;
+    padding: 20px 0;
+  }
+  .portal-frame {
+    height: calc(100vh - 40px);
+    border-radius: 12px;
+    box-shadow:
+      0 0 0 1px rgba(124, 58, 237, 0.10),
+      0 24px 60px -20px rgba(124, 58, 237, 0.22);
+  }
+}
+
+/* Header — 深紫實心，底部一條溫暖黃細邊（hopeful trust） */
+.portal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--color-primary-dark);
+  color: #fff;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.portal-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    var(--color-warning) 0%,
+    var(--color-warning) 50%,
+    var(--color-success) 50%,
+    var(--color-success) 100%);
+}
+
+.portal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.portal-header-back {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 16px;
+  transition: background 0.15s;
+}
+
+.portal-header-back:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.portal-header-title {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.portal-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.portal-header-referrer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0 8px;
+}
+
+.portal-header-referrer-label {
+  font-size: var(--font-xs);
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.portal-header-referrer-uid {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+.portal-header-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 16px;
+  position: relative;
+}
+
+.portal-header-icon:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.portal-header-icon .dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-warning);
+  border: 1.5px solid var(--color-primary-dark);
+}
+
+/* 內容區（iframe） */
+.portal-content {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: var(--color-bg);
+  display: block;
+}
+
+/* 底部導覽 */
+.portal-bottom-nav {
+  display: flex;
+  background: #fff;
+  border-top: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+  padding: 6px 0 8px;
+  position: relative;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-xs);
+  font-weight: 500;
+  transition: color 0.15s;
+  position: relative;
+}
+
+.nav-item i {
+  font-size: 20px;
+}
+
+.nav-item:hover {
+  color: var(--color-primary);
+}
+
+.nav-item.active {
+  color: var(--color-primary-dark);
+  font-weight: 700;
+}
+
+.nav-item--disabled {
+  opacity: 0.28;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 3px;
+  background: var(--color-primary);
+  border-radius: 2px;
+}
+
+/* Demo 切換工具列 */
+.demo-switcher {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.12);
+  padding: 12px 14px;
+  z-index: 100;
+  font-size: var(--font-sm);
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .demo-switcher {
+    display: block;
+  }
+}
+
+.demo-switcher-title {
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color-border-light);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.demo-switcher a {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  transition: all 0.15s;
+}
+
+.demo-switcher a:hover {
+  background: var(--color-primary-50);
+  color: var(--color-primary-dark);
+}
+
+.demo-switcher a i {
+  width: 16px;
+  margin-right: 4px;
+}
+
+/* Demo 身分切換 - 改 2x2 grid 以容納 4 個身分按鈕 */
+.demo-plan-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 3px;
+  margin: 4px 0 6px;
+}
+
+.demo-plan-toggle .dpt-btn {
+  padding: 7px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.demo-plan-toggle .dpt-btn:hover {
+  color: var(--color-primary-dark);
+}
+
+.demo-plan-toggle .dpt-btn.active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.demo-plan-status {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.demo-plan-status strong {
+  color: var(--color-text);
+}

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>提領申請 - 理財通 MGM</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/withdrawal.css" />
+  </head>
+  <body>
+    <main class="withdrawal fade-in">
+      <!-- ============== 提領頁常設入口（§六.2 規範） ============== -->
+      <div class="withdraw-quick-links">
+        <a class="wq-link" href="#tax-info" data-go="tax-info">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          扣繳憑單下載說明
+        </a>
+        <a class="wq-link" href="#share-rules" data-go="share-rules">
+          <i class="fa-solid fa-book-open"></i>
+          分享制度說明
+        </a>
+      </div>
+
+      <!-- 編輯模式提示（由 withdrawal.js 依情境顯示） -->
+      <div id="withdraw-edit-banner" class="withdraw-edit-banner" hidden>
+        <i class="fa-solid fa-pen-to-square"></i>
+        <span>您正在修改已送出的提領資料，確認後將以新資料執行。</span>
+      </div>
+
+      <!-- ============== 進度步驟 ============== -->
+      <div class="steps">
+        <div class="step active" data-step="1">
+          <div class="step-num">1</div>
+          <div class="step-label">確認金額<br />選擇方式</div>
+        </div>
+        <div class="step" data-step="2">
+          <div class="step-num">2</div>
+          <div class="step-label">稅務與<br />匯款資料</div>
+        </div>
+        <div class="step" data-step="3">
+          <div class="step-num">3</div>
+          <div class="step-label">完成<br />申請</div>
+        </div>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- 步驟 1：確認金額 + 選擇提領方式 -->
+      <!-- ====================================================== -->
+      <section class="step-panel active" data-step="1">
+        <div class="summary-card">
+          <div class="summary-total">
+            <span class="label">合計金額</span>
+            <span class="amount" id="summary-total">$0</span>
+          </div>
+        </div>
+
+        <div class="method-card">
+          <div class="method-title">
+            <i class="fa-solid fa-money-bill-transfer"></i>選擇提領方式
+          </div>
+          <div class="method-options">
+            <div class="method-option" data-method="cash" tabindex="0">
+              <i class="fa-solid fa-store"></i>
+              <div class="method-option-label">現場領取</div>
+              <div class="method-option-hint">親自至門市</div>
+            </div>
+            <div class="method-option" data-method="transfer" tabindex="0">
+              <i class="fa-solid fa-building-columns"></i>
+              <div class="method-option-label">匯款入帳</div>
+              <div class="method-option-hint">7 個工作天</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box warning">
+          <i class="fa-solid fa-file-invoice"></i>
+          <div>
+            本筆提領將計入您本年度「執行業務所得」或「其他所得」申報。本平台於每年 2 月底前完成國稅局申報，您可於 5 月報稅季透過「財政部電子申報繳稅服務網」下載電子扣繳憑單，本平台不另寄送紙本。<br /><br />
+            此外，依據衛生福利部中央健康保險署法規，若同月合併領取之總金額超過 20,000 元（即 20,001 元起），本平台將依法代扣 2.11% 的個人補充保費。計算公式為「當月領取總金額 × 2.11%」（按給付當月總額計算）。舉例說明：若您當月合併發放之總額為 20,001 元，系統將依法代扣 422 元（20,001 元 × 2.11% = 422 元，小數點後四捨五入）。
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <!-- 步驟 2：稅務與匯款資料（首次嚴格 / 二次沿用） -->
+      <!-- ====================================================== -->
+      <section class="step-panel" data-step="2">
+
+        <!-- 帶入個人設定資料（每次提領固定顯示） -->
+        <div id="import-profile-strip" class="import-profile-strip">
+          <div class="import-profile-strip-body">
+            <i class="fa-solid fa-address-card"></i>
+            <span id="import-strip-label">帶入個人設定資料</span>
+          </div>
+          <button type="button" class="btn btn-outline import-strip-btn" id="btn-import-profile-strip">
+            <i class="fa-solid fa-file-import"></i>帶入
+          </button>
+        </div>
+
+        <div id="cash-appointment-card" class="cash-appointment-card" style="display: none;">
+          <div class="cash-appointment-title">
+            <i class="fa-solid fa-calendar-check"></i>現場預約資訊
+          </div>
+          <div class="field">
+            <label class="field-label field-required" for="inp-cash-date">預約日期</label>
+            <select class="field-input" id="inp-cash-date">
+              <option value="">請先選擇日期</option>
+            </select>
+            <span class="field-hint" id="cash-date-hint">僅可預約下三週的週二或週四營業日</span>
+          </div>
+          <div class="cash-business-hours">
+            <i class="fa-regular fa-clock"></i>
+            <span>營業時間固定：9:00-18:00</span>
+          </div>
+        </div>
+
+        <!-- 二次以上提領：顯示歷史資料 -->
+        <div id="history-card" class="history-card" style="display: none;">
+          <div class="history-title">
+            <i class="fa-solid fa-clock-rotate-left"></i>偵測到您先前已建立稅務資料
+          </div>
+          <div class="history-body">
+            將匯款至您預設之帳戶：<br />
+            收款人：<strong id="history-name">—</strong><br />
+            身分證：<strong id="history-id">—</strong><br />
+            匯入帳戶：<strong id="history-bank">—</strong>
+          </div>
+          <div class="history-actions">
+            <button id="btn-edit-history" type="button" class="btn btn-outline">
+              <i class="fa-regular fa-pen-to-square"></i>修改資料
+            </button>
+            <button id="btn-reuse-history" type="button" class="btn btn-success">
+              <i class="fa-solid fa-check"></i>確認沿用
+            </button>
+          </div>
+        </div>
+
+        <!-- 首次提領：嚴格填寫 + 上傳證件 -->
+        <div id="first-form" class="first-form">
+
+          <h3 class="form-section-title">
+            <i class="fa-solid fa-id-card"></i>身分資料（依稅法需求收集）
+          </h3>
+
+          <div class="field">
+            <label class="field-label field-required" for="inp-real-name">真實姓名</label>
+            <input class="field-input" id="inp-real-name" type="text" placeholder="與身分證相同" />
+          </div>
+          <div class="field">
+            <label class="field-label field-required" for="inp-id-number">身分證字號</label>
+            <input class="field-input" id="inp-id-number" type="text" maxlength="10" placeholder="A123456789" />
+          </div>
+          <div class="field">
+            <label class="field-label field-required" for="inp-address">戶籍地址</label>
+            <input class="field-input" id="inp-address" type="text" placeholder="請輸入完整戶籍地址" />
+            <span class="field-hint">扣繳憑單將以此地址申報</span>
+          </div>
+
+          <h3 class="form-section-title" style="margin-top: 18px;">
+            <i class="fa-solid fa-building-columns"></i>匯款資料
+          </h3>
+
+          <div class="field">
+            <label class="field-label field-required" for="inp-bank">銀行 / 分行</label>
+            <input class="field-input" id="inp-bank" type="text" placeholder="例：玉山銀行 信義分行" />
+          </div>
+          <div class="field">
+            <label class="field-label field-required" for="inp-bank-account">帳號</label>
+            <input class="field-input" id="inp-bank-account" type="text" placeholder="僅可使用本人名下帳戶" />
+          </div>
+
+          <h3 class="form-section-title" style="margin-top: 18px;">
+            <i class="fa-solid fa-camera"></i>證件上傳
+          </h3>
+          <div class="upload-list">
+            <label class="upload-row">
+              <div class="upload-row-main">
+                <i class="fa-solid fa-id-card"></i>
+                <div class="upload-row-texts">
+                  <span class="upload-row-title">身分證正面</span>
+                  <span class="upload-row-filename">尚未上傳</span>
+                </div>
+                <button type="button" class="upload-row-reselect" hidden>重新選擇</button>
+              </div>
+              <img class="upload-row-preview" alt="身分證正面預覽" hidden />
+              <input type="file" accept="image/*" data-label="身分證正面" />
+            </label>
+
+            <label class="upload-row">
+              <div class="upload-row-main">
+                <i class="fa-regular fa-id-card"></i>
+                <div class="upload-row-texts">
+                  <span class="upload-row-title">身分證反面</span>
+                  <span class="upload-row-filename">尚未上傳</span>
+                </div>
+                <button type="button" class="upload-row-reselect" hidden>重新選擇</button>
+              </div>
+              <img class="upload-row-preview" alt="身分證反面預覽" hidden />
+              <input type="file" accept="image/*" data-label="身分證反面" />
+            </label>
+
+            <label class="upload-row">
+              <div class="upload-row-main">
+                <i class="fa-solid fa-book"></i>
+                <div class="upload-row-texts">
+                  <span class="upload-row-title">存摺封面影本</span>
+                  <span class="upload-row-filename">尚未上傳</span>
+                </div>
+                <button type="button" class="upload-row-reselect" hidden>重新選擇</button>
+              </div>
+              <img class="upload-row-preview" alt="存摺封面預覽" hidden />
+              <input type="file" accept="image/*" data-label="存摺封面影本" />
+            </label>
+          </div>
+
+          <label class="consent">
+            <input type="checkbox" id="inp-consent" />
+            <span>
+              我已知悉本筆獎金將計入年度所得申報，並同意平台依
+              <a href="#privacy-terms" data-go="privacy-terms">個資使用條款</a>蒐集、處理及利用上述資料供稅務申報用途。本資料將於後續提領自動沿用。
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <!-- 步驟 3：完成 -->
+      <!-- ====================================================== -->
+      <section class="step-panel" data-step="3">
+        <div class="done-state">
+          <div class="icon"><i class="fa-solid fa-check"></i></div>
+          <h2>提領申請已送出</h2>
+          <p>
+            財務團隊將於 3 個工作天內完成審核與匯款，<br />
+            完成後您將收到 LINE 推播 / 簡訊通知。
+          </p>
+
+          <div class="done-info">
+            <div class="row">
+              <span class="label">提領金額</span>
+              <span class="value" id="done-amount">$0</span>
+            </div>
+            <div class="row">
+              <span class="label">提領筆數</span>
+              <span class="value" id="done-count">0 筆</span>
+            </div>
+            <div class="row">
+              <span class="label">提領方式</span>
+              <span class="value" id="done-method">—</span>
+            </div>
+            <div class="row" id="done-appointment-row" style="display: none;">
+              <span class="label">現場預約</span>
+              <span class="value" id="done-appointment">—</span>
+            </div>
+            <div class="row">
+              <span class="label">送出時間</span>
+              <span class="value" id="done-date">—</span>
+            </div>
+          </div>
+
+          <button id="btn-back-home" type="button" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-house"></i>返回獎金清單
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- 底部 sticky 操作條（僅步驟 1, 2 顯示） -->
+    <div class="bottom-actions step-panel active" data-step="1" id="bar-step-1">
+      <button id="btn-next-1" type="button" class="btn btn-primary" disabled>
+        下一步：填寫匯款資料<i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+    <div class="bottom-actions step-panel" data-step="2" id="bar-step-2">
+      <button id="btn-back-2" type="button" class="btn btn-outline">
+        <i class="fa-solid fa-arrow-left"></i>上一步
+      </button>
+      <button id="btn-submit" type="button" class="btn btn-primary">
+        <i class="fa-solid fa-paper-plane"></i>送出申請
+      </button>
+    </div>
+
+    <script>
+      // 顯示適合步驟的底部按鈕條
+      document.addEventListener('click', () => {
+        const activeStep = document.querySelector('.step-panel.active[data-step]')?.dataset.step;
+        document.querySelectorAll('.bottom-actions').forEach((b) => {
+          b.style.display = b.dataset.step === activeStep ? 'flex' : 'none';
+        });
+      }, true);
+
+      // 初始
+      window.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.bottom-actions').forEach((b) => {
+          b.style.display = b.dataset.step === '1' ? 'flex' : 'none';
+        });
+      });
+    </script>
+    <script src="../js/common.js"></script>
+    <script src="../js/withdrawal.js"></script>
+  </body>
+</html>

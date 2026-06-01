@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>活動空窗期獎金設定 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-matrix.css" />
+    <link rel="stylesheet" href="../css/admin-campaigns.css" />
+    <style>
+      .perm-page {
+        padding: 24px;
+      }
+
+      /* 權限角色橫幅 */
+      .perm-banner {
+        background: linear-gradient(
+          135deg,
+          var(--color-warning) 0%,
+          var(--color-warning-dark) 100%
+        );
+        color: #fff;
+        border-radius: var(--radius-lg);
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .perm-banner.no-permission {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+      }
+
+      .perm-banner i {
+        font-size: 28px;
+      }
+
+      .perm-banner h3 {
+        font-size: var(--font-md);
+        font-weight: 700;
+      }
+
+      .perm-banner p {
+        font-size: var(--font-xs);
+        opacity: 0.9;
+        margin-top: 2px;
+      }
+
+      .perm-toggle {
+        margin-left: auto;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 6px 12px;
+        border-radius: var(--radius-pill);
+        font-size: var(--font-xs);
+        cursor: pointer;
+      }
+
+      /* 預設值卡 */
+      .default-form {
+        background: #fff;
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 16px;
+      }
+
+      .default-form h3 {
+        font-size: var(--font-md);
+        font-weight: 700;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .default-form .desc {
+        font-size: var(--font-xs);
+        color: var(--color-text-secondary);
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+
+      .default-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .default-field {
+        background: var(--color-bg);
+        border-radius: var(--radius-md);
+        padding: 12px 14px;
+      }
+
+      .default-field-label {
+        font-size: var(--font-xs);
+        color: var(--color-text-secondary);
+        margin-bottom: 6px;
+      }
+
+      .default-field input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1.5px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-md);
+        font-weight: 700;
+        color: var(--color-primary-dark);
+        background: #fff;
+      }
+
+      .default-field input:disabled {
+        background: #f3f4f6;
+        color: var(--color-text-muted);
+        cursor: not-allowed;
+      }
+
+      /* 密碼確認 modal */
+      .verify-modal-bg {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+        padding: 20px;
+      }
+
+      .verify-modal-bg.show {
+        display: flex;
+      }
+
+      .verify-modal {
+        background: #fff;
+        border-radius: var(--radius-lg);
+        max-width: 460px;
+        width: 100%;
+        padding: 24px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      }
+
+      .verify-modal h3 {
+        font-size: var(--font-lg);
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: var(--color-warning-dark);
+      }
+
+      .otp-row {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+        margin: 16px 0 10px;
+      }
+
+      .otp-input {
+        height: 50px;
+        border: 1.5px solid var(--color-border);
+        border-radius: var(--radius-md);
+        text-align: center;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--color-primary-dark);
+      }
+
+      .otp-input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+      }
+
+      /* 稽核軌跡 */
+      .audit-card {
+        background: #fff;
+        border-radius: var(--radius-lg);
+        padding: 16px 20px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .audit-card h3 {
+        font-size: var(--font-md);
+        font-weight: 700;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .audit-row {
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--color-border-light);
+        font-size: var(--font-xs);
+        display: flex;
+        gap: 10px;
+      }
+
+      .audit-row:last-child {
+        border-bottom: 0;
+      }
+
+      .audit-time {
+        color: var(--color-text-muted);
+        font-family: 'Courier New', monospace;
+        flex-shrink: 0;
+        min-width: 130px;
+      }
+
+    </style>
+  </head>
+  <body class="admin">
+    <main class="perm-page fade-in page-wrap">
+      
+      <div class="page-crumb">風控管理 / 活動空窗期獎金設定</div>
+<!-- 工具列 -->
+      
+
+      <!-- 權限角色 banner -->
+      <div id="perm-banner" class="perm-banner">
+        <i class="fa-solid fa-key"></i>
+        <div>
+          <h3>您目前角色：<strong>系統管理員</strong></h3>
+          <p>本功能僅限「系統管理員 / 風控主管」操作。一般行銷人員僅可檢視，無法修改。</p>
+        </div>
+        <span id="perm-toggle" class="perm-toggle" title="Demo 用：切換為一般行銷人員預覽">
+          <i class="fa-solid fa-arrows-rotate"></i> 切換為一般人員預覽
+        </span>
+      </div>
+
+      <!-- 獎金發放標準設定（Matrix 表格） -->
+      <div class="snapshot-notice" style="margin-bottom:16px;">
+        <i class="fa-solid fa-snowflake"></i>
+        <p><strong>訂單綁定規則：以送單當下為準。</strong>當送單時無任何進行中之活動，系統自動套用本表參數作為快照。儲存後立即生效，<strong>不溯及</strong>已快照之案件。所有以空窗期設定快照之案件，將於後台案件列表中以「⚠ 空窗期設定」標示。</p>
+      </div>
+
+      <section class="matrix-card">
+        <div class="matrix-card-head">
+          <h3><i class="fa-solid fa-table-cells"></i>空窗期獎金發放標準設定</h3>
+          <button id="btn-add-project" type="button" class="btn btn-outline" style="padding:6px 14px;font-size:13px;">
+            <i class="fa-solid fa-plus"></i>新增專案
+          </button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="matrix-table-full">
+            <thead>
+              <tr>
+                <th style="width:200px;">方案</th>
+                <th>觸發條件</th>
+                <th style="width:160px;">推薦獎金 (TWD)</th>
+                <th style="width:120px;">啟用狀態</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="default-matrix-tbody">
+              <tr data-row-mode="view" data-project-key="motor">
+                <td><strong>汽機車小額融資／代書信貸</strong></td>
+                <td><select class="inline-input trigger-input" disabled><option value="付訖服務費" selected>付訖服務費</option><option value="需繳滿第三期服務費（每期 ≥ $6,000 起算）">需繳滿第三期服務費（每期 ≥ $6,000 起算）</option></select></td>
+                <td><span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input bonus-input" type="number" value="0" disabled /></span></td>
+                <td class="status-label"><label class="switch"><input type="checkbox" disabled /><span class="switch-slider"></span></label></td>
+                <td class="row-actions">
+                  <button type="button" class="row-action-btn" data-row-action="edit"><i class="fa-solid fa-pen"></i>編輯</button>
+                  <button type="button" class="row-action-btn primary" data-row-action="save" hidden><i class="fa-solid fa-check"></i>儲存</button>
+                  <button type="button" class="row-action-btn" data-row-action="cancel" hidden>取消</button>
+                </td>
+              </tr>
+              <tr data-row-mode="view" data-project-key="bank">
+                <td><strong>銀行信貸／企貸</strong></td>
+                <td><select class="inline-input trigger-input" disabled><option value="付訖服務費" selected>付訖服務費</option><option value="需繳滿第三期服務費（每期 ≥ $6,000 起算）">需繳滿第三期服務費（每期 ≥ $6,000 起算）</option></select></td>
+                <td><span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input bonus-input" type="number" value="0" disabled /></span></td>
+                <td class="status-label"><label class="switch"><input type="checkbox" disabled /><span class="switch-slider"></span></label></td>
+                <td class="row-actions">
+                  <button type="button" class="row-action-btn" data-row-action="edit"><i class="fa-solid fa-pen"></i>編輯</button>
+                  <button type="button" class="row-action-btn primary" data-row-action="save" hidden><i class="fa-solid fa-check"></i>儲存</button>
+                  <button type="button" class="row-action-btn" data-row-action="cancel" hidden>取消</button>
+                </td>
+              </tr>
+              <tr data-row-mode="view" data-project-key="realestate">
+                <td><strong>不動產貸款</strong></td>
+                <td><select class="inline-input trigger-input" disabled><option value="付訖服務費" selected>付訖服務費</option><option value="需繳滿第三期服務費（每期 ≥ $6,000 起算）">需繳滿第三期服務費（每期 ≥ $6,000 起算）</option></select></td>
+                <td><span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input bonus-input" type="number" value="0" disabled /></span></td>
+                <td class="status-label"><label class="switch"><input type="checkbox" disabled /><span class="switch-slider"></span></label></td>
+                <td class="row-actions">
+                  <button type="button" class="row-action-btn" data-row-action="edit"><i class="fa-solid fa-pen"></i>編輯</button>
+                  <button type="button" class="row-action-btn primary" data-row-action="save" hidden><i class="fa-solid fa-check"></i>儲存</button>
+                  <button type="button" class="row-action-btn" data-row-action="cancel" hidden>取消</button>
+                </td>
+              </tr>
+              <tr data-row-mode="view" data-project-key="debt">
+                <td><strong>債務協商</strong></td>
+                <td><select class="inline-input trigger-input" disabled><option value="付訖服務費">付訖服務費</option><option value="需繳滿第三期服務費（每期 ≥ $6,000 起算）" selected>需繳滿第三期服務費（每期 ≥ $6,000 起算）</option></select></td>
+                <td><span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input bonus-input" type="number" value="0" disabled /></span></td>
+                <td class="status-label"><label class="switch"><input type="checkbox" disabled /><span class="switch-slider"></span></label></td>
+                <td class="row-actions">
+                  <button type="button" class="row-action-btn" data-row-action="edit"><i class="fa-solid fa-pen"></i>編輯</button>
+                  <button type="button" class="row-action-btn primary" data-row-action="save" hidden><i class="fa-solid fa-check"></i>儲存</button>
+                  <button type="button" class="row-action-btn" data-row-action="cancel" hidden>取消</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="cd-form-actions" style="margin-bottom:24px;">
+        <button id="btn-save-default" type="button" class="btn btn-primary">
+          <i class="fa-regular fa-floppy-disk"></i>儲存空窗期設定（需密碼確認）
+        </button>
+      </div>
+
+      <!-- 稽核軌跡 -->
+      <section class="audit-card">
+        <h3>
+          <i class="fa-solid fa-clipboard-list" style="color: var(--color-primary)"></i>
+          稽核軌跡（最近 10 筆）
+        </h3>
+        <div class="audit-row">
+          <span class="audit-time">2026/04/15 09:30</span>
+          <span><strong>Admin User</strong> 將「抽成比例」由 0.00% → 0.00%（未變動，僅儲存確認）</span>
+        </div>
+        <div class="audit-row">
+          <span class="audit-time">2026/03/30 14:22</span>
+          <span><strong>風控主管 - 林經理</strong> 將「固定底包」由 100 → 0；已通過後台密碼二次確認</span>
+        </div>
+        <div class="audit-row">
+          <span class="audit-time">2026/01/02 11:05</span>
+          <span><strong>Admin User</strong> 首次建立預設值：底包 100 / 比例 0.00% / 上限 100</span>
+        </div>
+      </section>
+    </main>
+
+    <!-- 密碼確認 Modal（再次輸入後台登入密碼） -->
+    <div id="verify-modal" class="verify-modal-bg">
+      <div class="verify-modal">
+        <h3><i class="fa-solid fa-lock"></i>密碼二次確認</h3>
+        <p style="font-size: var(--font-sm); color: var(--color-text-secondary); line-height: 1.6;">
+          進入後台之選單權限已驗證您可使用此功能，但本參數屬<strong>敏感異動</strong>。請<strong>再次輸入您的後台登入密碼</strong>以完成寫入確認，所有動作將記錄於稽核軌跡。
+        </p>
+        <div class="field" style="margin-top: 16px;">
+          <label class="field-label field-required" for="verify-password" style="display:block;font-size: var(--font-xs);color: var(--color-text-secondary);margin-bottom: 6px;">後台登入密碼</label>
+          <input
+            id="verify-password"
+            class="field-input"
+            type="password"
+            autocomplete="current-password"
+            placeholder="請輸入您剛剛登入後台時使用之密碼"
+            style="width:100%;padding:10px 12px;border:1.5px solid var(--color-border);border-radius:var(--radius-md);font-size:var(--font-md);"
+          />
+          <div id="verify-password-error" style="display:none;margin-top:6px;font-size:var(--font-xs);color:var(--color-danger);">
+            <i class="fa-solid fa-circle-exclamation"></i> 密碼有誤，請再試一次（demo 提示：admin1234）
+          </div>
+        </div>
+        <div style="font-size: var(--font-xs); color: var(--color-text-secondary); margin-top: 8px;">
+          (Demo 預設密碼：<strong>admin1234</strong>)
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+          <button id="btn-verify-cancel" type="button" class="btn btn-outline">取消</button>
+          <button id="btn-verify-confirm" type="button" class="btn btn-primary">
+            <i class="fa-solid fa-check"></i>確認寫入
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 權限角色切換 demo
+      let hasPermission = true;
+
+      function applyPermission() {
+        const banner = document.getElementById('perm-banner');
+        const inputs = document.querySelectorAll('.default-field input');
+        const saveBtn = document.getElementById('btn-save-default');
+
+        if (hasPermission) {
+          banner.classList.remove('no-permission');
+          banner.querySelector('h3').innerHTML = '您目前角色：<strong>系統管理員</strong>';
+          banner.querySelector('p').textContent = '本功能僅限「系統管理員 / 風控主管」操作。一般行銷人員僅可檢視，無法修改。';
+          banner.querySelector('i').className = 'fa-solid fa-key';
+          inputs.forEach((i) => (i.disabled = false));
+          saveBtn.disabled = false;
+        } else {
+          banner.classList.add('no-permission');
+          banner.querySelector('h3').innerHTML = '您目前角色：<strong>一般行銷人員</strong>';
+          banner.querySelector('p').textContent = '您無權限調整此項設定，如需修改請聯繫系統管理員 / 風控主管。';
+          banner.querySelector('i').className = 'fa-solid fa-lock';
+          inputs.forEach((i) => (i.disabled = true));
+          saveBtn.disabled = true;
+        }
+      }
+
+      document.getElementById('perm-toggle').addEventListener('click', () => {
+        hasPermission = !hasPermission;
+        applyPermission();
+      });
+
+      // 點儲存：直接進入密碼二次確認
+      document.getElementById('btn-save-default').addEventListener('click', () => {
+        if (!hasPermission) {
+          alert('您無權限修改此項設定');
+          return;
+        }
+        resetPasswordField();
+        document.getElementById('verify-modal').classList.add('show');
+        const pwd = document.getElementById('verify-password');
+        if (pwd) pwd.focus();
+      });
+
+      // demo 預設密碼（正式環境應由後端比對 session 帳號密碼）
+      const DEMO_ADMIN_PASSWORD = 'admin1234';
+
+      function resetPasswordField() {
+        const pwd = document.getElementById('verify-password');
+        const err = document.getElementById('verify-password-error');
+        if (pwd) pwd.value = '';
+        if (err) err.style.display = 'none';
+      }
+
+      document.getElementById('btn-verify-cancel').addEventListener('click', () => {
+        document.getElementById('verify-modal').classList.remove('show');
+        resetPasswordField();
+      });
+
+      // 密碼欄位：輸入時清掉錯誤提示；Enter 直接送出
+      const pwdInput = document.getElementById('verify-password');
+      const pwdErr = document.getElementById('verify-password-error');
+      if (pwdInput) {
+        pwdInput.addEventListener('input', () => {
+          if (pwdErr) pwdErr.style.display = 'none';
+        });
+        pwdInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('btn-verify-confirm').click();
+          }
+        });
+      }
+
+      // ===================== Matrix 表格行內編輯 =====================
+      (function initDefaultMatrix() {
+        const tbody = document.getElementById('default-matrix-tbody');
+        if (!tbody) return;
+
+        // 從 localStorage 讀取已儲存的空窗期設定
+        const STORE_KEY = 'mgm_default_matrix';
+        function loadMatrix() {
+          try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch { return null; }
+        }
+        function saveMatrix(data) {
+          try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch {}
+        }
+
+        const saved = loadMatrix();
+        if (saved) {
+          tbody.querySelectorAll('tr[data-project-key]').forEach((row) => {
+            const key = row.dataset.projectKey;
+            const d = saved[key];
+            if (!d) return;
+            const triggerSel = row.querySelector('.trigger-input');
+            const bonusInput = row.querySelector('.bonus-input');
+            const enabledCb  = row.querySelector('input[type="checkbox"]');
+            if (triggerSel) triggerSel.value = d.trigger || triggerSel.value;
+            if (bonusInput) bonusInput.value = d.bonus ?? bonusInput.value;
+            if (enabledCb)  enabledCb.checked = !!d.enabled;
+          });
+        }
+
+        tbody.addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-row-action]');
+          if (!btn) return;
+          const row  = btn.closest('tr');
+          const act  = btn.dataset.rowAction;
+          const inputs = row.querySelectorAll('.inline-input');
+          const enabledCb = row.querySelector('input[type="checkbox"]');
+
+          if (act === 'edit') {
+            inputs.forEach(el => el.disabled = false);
+            if (enabledCb) enabledCb.disabled = false;
+            row.querySelector('[data-row-action="edit"]').hidden  = true;
+            row.querySelector('[data-row-action="save"]').hidden  = false;
+            row.querySelector('[data-row-action="cancel"]').hidden = false;
+            row.dataset._snapshot = JSON.stringify({
+              trigger: row.querySelector('.trigger-input')?.value,
+              bonus:   row.querySelector('.bonus-input')?.value,
+              enabled: enabledCb?.checked,
+            });
+          } else if (act === 'cancel') {
+            const snap = JSON.parse(row.dataset._snapshot || 'null');
+            if (snap) {
+              const t = row.querySelector('.trigger-input');
+              const b = row.querySelector('.bonus-input');
+              if (t) t.value = snap.trigger;
+              if (b) b.value = snap.bonus;
+              if (enabledCb) enabledCb.checked = snap.enabled;
+            }
+            inputs.forEach(el => el.disabled = true);
+            if (enabledCb) enabledCb.disabled = true;
+            row.querySelector('[data-row-action="edit"]').hidden  = false;
+            row.querySelector('[data-row-action="save"]').hidden  = true;
+            row.querySelector('[data-row-action="cancel"]').hidden = true;
+          } else if (act === 'save') {
+            inputs.forEach(el => el.disabled = true);
+            if (enabledCb) enabledCb.disabled = true;
+            row.querySelector('[data-row-action="edit"]').hidden  = false;
+            row.querySelector('[data-row-action="save"]').hidden  = true;
+            row.querySelector('[data-row-action="cancel"]').hidden = true;
+            // 持久化
+            const current = loadMatrix() || {};
+            const key = row.dataset.projectKey;
+            current[key] = {
+              trigger: row.querySelector('.trigger-input')?.value,
+              bonus:   row.querySelector('.bonus-input')?.value,
+              enabled: enabledCb?.checked,
+            };
+            saveMatrix(current);
+          }
+        });
+      })();
+
+      document.getElementById('btn-verify-confirm').addEventListener('click', () => {
+        const pwd = (document.getElementById('verify-password').value || '').trim();
+        if (!pwd) {
+          if (pwdErr) {
+            pwdErr.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> 請輸入後台登入密碼';
+            pwdErr.style.display = 'block';
+          }
+          return;
+        }
+        if (pwd !== DEMO_ADMIN_PASSWORD) {
+          if (pwdErr) {
+            pwdErr.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> 密碼有誤，請再試一次（demo 提示：admin1234）';
+            pwdErr.style.display = 'block';
+          }
+          return;
+        }
+
+        // 寫入新值並紀錄稽核（含「修改前後」對比）
+        const base  = document.getElementById('default-base').value || '0';
+        const ratio = document.getElementById('default-ratio').value || '0';
+        const cap   = document.getElementById('default-cap').value || '0';
+        try {
+          localStorage.setItem('mgm_default_base', base);
+          localStorage.setItem('mgm_default_ratio', ratio);
+          localStorage.setItem('mgm_default_cap', cap);
+          // 寫入稽核軌跡（與其他風控操作共用 key）
+          const auditKey = 'mgm_risk_audit_log';
+          const log = JSON.parse(localStorage.getItem(auditKey) || '[]');
+          log.unshift({
+            time: new Date().toLocaleString('zh-TW'),
+            actor: 'Admin User（已通過後台密碼二次確認）',
+            action: '修改活動空窗期獎金設定',
+            target: '風控管理 / 活動空窗期獎金設定',
+            note: `底包 $${base} / 比例 ${ratio}% / 上限 $${cap}（已通過後台密碼確認）`,
+          });
+          if (log.length > 200) log.length = 200;
+          localStorage.setItem(auditKey, JSON.stringify(log));
+        } catch {}
+
+        document.getElementById('verify-modal').classList.remove('show');
+        resetPasswordField();
+        const t = document.createElement('div');
+        t.style.cssText =
+          'position:fixed;top:80px;right:24px;background:#10b981;color:#fff;' +
+          'padding:12px 18px;border-radius:10px;font-size:14px;z-index:9999;';
+        t.innerHTML = '<i class="fa-solid fa-check"></i> 預設值已儲存，並寫入稽核軌跡（含密碼確認）';
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2500);
+      });
+    </script>
+  </body>
+</html>

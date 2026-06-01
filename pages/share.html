@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我要分享 - 理財通 MGM</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/share.css" />
+  </head>
+  <body>
+    <main class="share fade-in">
+      <!-- ============== 凍結會員：分享功能停用 ============== -->
+      <section class="ex-locked-card" id="frozen-locked-card" hidden>
+        <i class="fa-solid fa-ban"></i>
+        <h2>您的帳號目前為封鎖身分</h2>
+        <p>
+          被封鎖身分的用戶目前僅可查看此提示訊息，<strong>分享與獎金功能皆無法使用</strong>。
+          若需進一步了解，請聯繫客服。
+        </p>
+      </section>
+
+      <!-- ============== 離職員工尚未完成前置驗證 ============== -->
+      <section class="ex-locked-card" id="ex-precheck-card" hidden>
+        <i class="fa-solid fa-user-shield"></i>
+        <h2>請先完成離職員工驗證流程</h2>
+        <p>
+          使用分享功能前，請先完成：<strong>LINE 好友綁定</strong>與<strong>表單手機資料驗證</strong>。
+          驗證完成後即可正常進行分享與提領。
+        </p>
+        <a class="btn btn-primary" href="../ex-employee.html" style="margin-top:14px;">
+          <i class="fa-solid fa-right-to-bracket"></i>前往離職員工入口完成驗證
+        </a>
+      </section>
+
+      <div id="share-main-wrap">
+      <!-- ============== 推薦碼主視覺卡（含 QR Code） ============== -->
+      <section class="share-hero" aria-label="您的專屬推薦碼">
+        <h2>您的專屬推薦碼</h2>
+        <div class="share-hero-code">A1B2C3D</div>
+
+        <!-- QR Code -->
+        <div class="qr-wrap" aria-label="推薦碼 QR Code">
+          <img id="qr-img" src="" alt="正在產生 QR Code…" />
+        </div>
+
+        <div class="share-actions">
+          <button type="button" id="btn-copy-url" class="btn btn-outline share-action-btn">
+            <i class="fa-solid fa-link"></i>複製連結
+          </button>
+        </div>
+      </section>
+
+      <!-- ============== 當期活動文案（由後台維護） ============== -->
+      <section class="campaign-content-card" aria-label="分享獎金制度說明">
+        <article class="cc-body" id="campaign-content">
+          <!-- 由 share.js 從 localStorage 或預設文案載入 -->
+        </article>
+        <div class="cc-foot">
+          <i class="fa-regular fa-circle-question"></i>
+          我們提供分享獎金制度，實際認定仍以平台活動辦法與審核結果為準。
+        </div>
+      </section>
+
+      <!-- ============== 分享規則 ============== -->
+      <section class="rule-list" aria-label="分享規則">
+        <h3><i class="fa-solid fa-circle-info"></i>分享前請了解</h3>
+        <ol>
+          <li>每位推薦人擁有一組<strong>專屬固定推薦碼</strong>，可長期使用、無需更換。</li>
+          <li>不可推薦自己（本人手機/身分證），系統將自動註銷分潤資格。</li>
+        </ol>
+      </section>
+      </div><!-- /#share-main-wrap -->
+    </main>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/share.js"></script>
+  </body>
+</html>

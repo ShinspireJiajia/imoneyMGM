@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>個人設定 - 理財通 MGM</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/profile-settings.css" />
+  </head>
+  <body>
+    <main class="profile-settings fade-in">
+
+      <!-- ============== 聯絡資料 ============== -->
+      <div class="ps-section">
+        <div class="ps-section-title">
+          <i class="fa-solid fa-address-card"></i>聯絡資料
+        </div>
+
+        <div class="ps-row">
+          <div class="ps-row-info">
+            <div class="ps-row-label">手機號碼</div>
+            <div class="ps-row-value" id="phone-display">—</div>
+          </div>
+          <button type="button" class="ps-edit-btn" id="btn-edit-phone">
+            <i class="fa-solid fa-pen"></i>編輯
+          </button>
+        </div>
+
+        <!-- 手機編輯 panel -->
+        <div class="ps-edit-panel" id="phone-edit-panel" hidden>
+          <div class="field">
+            <label class="field-label field-required" for="inp-new-phone">新手機號碼</label>
+            <input class="field-input" id="inp-new-phone" type="tel" maxlength="10"
+              placeholder="0912345678" autocomplete="tel" />
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-send-phone-otp">
+            <i class="fa-solid fa-paper-plane"></i>發送驗證碼
+          </button>
+
+          <!-- OTP step（發送後才顯示） -->
+          <div id="phone-otp-step" hidden>
+            <p class="ps-hint" style="margin-top:14px;">
+              驗證碼已發送至 <strong id="phone-otp-target">—</strong>
+            </p>
+            <div class="otp-row" id="ps-otp-row">
+              <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼第 1 位" />
+              <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼第 2 位" />
+              <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼第 3 位" />
+              <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼第 4 位" />
+              <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼第 5 位" />
+              <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼第 6 位" />
+            </div>
+            <p class="ps-otp-timer">
+              剩餘時間：<strong id="phone-otp-timer" style="color:var(--color-primary-dark,#5b21b6);">03:00</strong>
+              &nbsp;
+              <button type="button" class="ps-resend-btn" id="btn-resend-otp" disabled>重新發送</button>
+            </p>
+            <p class="ps-hint" style="color:#6b7280;font-size:12px;">Demo：輸入任意 6 位數即可通過</p>
+          </div>
+
+          <div class="ps-edit-actions">
+            <button type="button" class="btn btn-ghost" id="btn-cancel-phone">取消</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============== 常用提領資料 ============== -->
+      <div class="ps-section">
+        <div class="ps-section-title">
+          <i class="fa-solid fa-building-columns"></i>常用提領資料
+        </div>
+        <p class="ps-section-hint">提領申請時可一鍵帶入，無需重複填寫。</p>
+
+        <!-- 匯款入帳 -->
+        <div class="ps-card">
+          <div class="ps-card-head">
+            <div class="ps-card-title">
+              <i class="fa-solid fa-money-bill-transfer"></i>匯款入帳
+            </div>
+            <button type="button" class="ps-edit-btn" id="btn-edit-bank">
+              <i class="fa-solid fa-pen"></i>編輯
+            </button>
+          </div>
+          <div class="ps-info-list" id="bank-display">
+            <div class="ps-info-row">
+              <span class="ps-info-label">銀行 / 分行</span>
+              <span class="ps-info-value ps-empty" id="bank-name-display">尚未設定</span>
+            </div>
+            <div class="ps-info-row">
+              <span class="ps-info-label">戶名</span>
+              <span class="ps-info-value ps-empty" id="bank-acct-name-display">—</span>
+            </div>
+            <div class="ps-info-row">
+              <span class="ps-info-label">帳號</span>
+              <span class="ps-info-value ps-empty" id="bank-acct-no-display">—</span>
+            </div>
+          </div>
+          <div class="ps-edit-panel" id="bank-edit-panel" hidden>
+            <div class="field">
+              <label class="field-label field-required" for="inp-bank-name">銀行 / 分行</label>
+              <input class="field-input" id="inp-bank-name" type="text" placeholder="玉山銀行 信義分行" />
+            </div>
+            <div class="field">
+              <label class="field-label field-required" for="inp-bank-acct-name">戶名</label>
+              <input class="field-input" id="inp-bank-acct-name" type="text" placeholder="與存摺相同" />
+            </div>
+            <div class="field">
+              <label class="field-label field-required" for="inp-bank-acct-no">帳號</label>
+              <input class="field-input" id="inp-bank-acct-no" type="text" inputmode="numeric"
+                placeholder="請輸入完整帳號" />
+            </div>
+
+            <div class="field" style="margin-top:18px;">
+              <label class="field-label">存摺封面影本</label>
+              <span class="field-hint" style="margin-bottom:8px;display:block;">上傳後將自動加入「僅限理財通使用」浮水印</span>
+              <div class="upload-list" id="bank-upload-list">
+                <label class="upload-row">
+                  <div class="upload-row-main">
+                    <i class="fa-solid fa-book"></i>
+                    <div class="upload-row-texts">
+                      <span class="upload-row-title">存摺封面影本</span>
+                      <span class="upload-row-filename">尚未上傳</span>
+                    </div>
+                    <button type="button" class="upload-row-reselect" hidden>重新選擇</button>
+                  </div>
+                  <img class="upload-row-preview" alt="存摺封面預覽" hidden />
+                  <input type="file" accept="image/*" data-label="存摺封面影本" />
+                </label>
+              </div>
+            </div>
+
+            <div class="ps-edit-actions">
+              <button type="button" class="btn btn-ghost" id="btn-cancel-bank">取消</button>
+              <button type="button" class="btn btn-primary" id="btn-save-bank">
+                <i class="fa-solid fa-check"></i>儲存
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============== 身分資料 ============== -->
+      <div class="ps-section">
+        <div class="ps-section-title">
+          <i class="fa-solid fa-id-card"></i>身分資料
+        </div>
+        <p class="ps-section-hint">提領申請時可一鍵帶入，免於每次重複填寫稅務所需資料。</p>
+
+        <div class="ps-card">
+          <div class="ps-card-head">
+            <div class="ps-card-title">
+              <i class="fa-solid fa-user-check"></i>稅務申報資料
+            </div>
+            <button type="button" class="ps-edit-btn" id="btn-edit-identity">
+              <i class="fa-solid fa-pen"></i>編輯
+            </button>
+          </div>
+          <div class="ps-info-list" id="identity-display">
+            <div class="ps-info-row">
+              <span class="ps-info-label">真實姓名</span>
+              <span class="ps-info-value ps-empty" id="identity-name-display">尚未設定</span>
+            </div>
+            <div class="ps-info-row">
+              <span class="ps-info-label">身分證字號</span>
+              <span class="ps-info-value ps-empty" id="identity-id-display">—</span>
+            </div>
+            <div class="ps-info-row">
+              <span class="ps-info-label">戶籍地址</span>
+              <span class="ps-info-value ps-empty" id="identity-address-display">—</span>
+            </div>
+          </div>
+          <div class="ps-edit-panel" id="identity-edit-panel" hidden>
+            <div class="field">
+              <label class="field-label field-required" for="inp-identity-name">真實姓名</label>
+              <input class="field-input" id="inp-identity-name" type="text" placeholder="與身分證相同" />
+            </div>
+            <div class="field">
+              <label class="field-label field-required" for="inp-identity-id">身分證字號</label>
+              <input class="field-input" id="inp-identity-id" type="text" maxlength="10" placeholder="A123456789" />
+            </div>
+            <div class="field">
+              <label class="field-label field-required" for="inp-identity-address">戶籍地址</label>
+              <input class="field-input" id="inp-identity-address" type="text" placeholder="請輸入完整戶籍地址" />
+              <span class="field-hint">扣繳憑單將以此地址申報</span>
+            </div>
+
+            <div class="field" style="margin-top:18px;">
+              <label class="field-label">證件影本</label>
+              <span class="field-hint" style="margin-bottom:8px;display:block;">上傳後將自動加入「僅限理財通使用」浮水印</span>
+              <div class="upload-list" id="identity-upload-list">
+                <label class="upload-row">
+                  <div class="upload-row-main">
+                    <i class="fa-solid fa-id-card"></i>
+                    <div class="upload-row-texts">
+                      <span class="upload-row-title">身分證正面</span>
+                      <span class="upload-row-filename">尚未上傳</span>
+                    </div>
+                    <button type="button" class="upload-row-reselect" hidden>重新選擇</button>
+                  </div>
+                  <img class="upload-row-preview" alt="身分證正面預覽" hidden />
+                  <input type="file" accept="image/*" data-label="身分證正面" />
+                </label>
+                <label class="upload-row">
+                  <div class="upload-row-main">
+                    <i class="fa-regular fa-id-card"></i>
+                    <div class="upload-row-texts">
+                      <span class="upload-row-title">身分證反面</span>
+                      <span class="upload-row-filename">尚未上傳</span>
+                    </div>
+                    <button type="button" class="upload-row-reselect" hidden>重新選擇</button>
+                  </div>
+                  <img class="upload-row-preview" alt="身分證反面預覽" hidden />
+                  <input type="file" accept="image/*" data-label="身分證反面" />
+                </label>
+              </div>
+            </div>
+
+            <div class="ps-edit-actions">
+              <button type="button" class="btn btn-ghost" id="btn-cancel-identity">取消</button>
+              <button type="button" class="btn btn-primary" id="btn-save-identity">
+                <i class="fa-solid fa-check"></i>儲存
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/profile-settings.js"></script>
+  </body>
+</html>

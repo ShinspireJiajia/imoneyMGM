@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>推播通知管理 - 後台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/common.css" />
+    <style>
+      /* ── layout ── */
+      body { background: var(--color-bg, #f4f6fb); font-family: 'Noto Sans TC', sans-serif; margin: 0; }
+      .page-wrap { padding: 24px 28px; max-width: 1280px; margin: 0 auto; }
+
+      .page-header { display: flex; align-items: flex-start; margin-bottom: 22px; }
+      .ph-title h1 { font-size: 20px; font-weight: 700; margin: 0 0 4px; color: #1f2937; }
+      .ph-title p  { margin: 0; font-size: 13px; color: #6b7280; }
+
+      /* ── top tabs ── */
+      .notify-tabs { display: flex; gap: 2px; border-bottom: 2px solid #e5e7eb; margin-bottom: 22px; }
+      .ntab {
+        padding: 10px 22px; border: none; background: none; cursor: pointer;
+        font-size: 14px; font-weight: 500; color: #6b7280;
+        border-bottom: 2px solid transparent; margin-bottom: -2px;
+        display: flex; align-items: center; gap: 7px; transition: color .15s;
+        font-family: 'Noto Sans TC', sans-serif;
+      }
+      .ntab:hover { color: #6366f1; }
+      .ntab.active { color: #6366f1; border-bottom-color: #6366f1; font-weight: 600; }
+      .ntab-panel { display: none; }
+      .ntab-panel.active { display: block; }
+
+      /* ── send layout ── */
+      .send-layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
+
+      /* ── recipient panel ── */
+      .rcpt-panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+      .rcpt-header {
+        padding: 13px 16px; border-bottom: 1px solid #e5e7eb;
+        display: flex; align-items: center; justify-content: space-between;
+      }
+      .rcpt-header-title { font-weight: 600; font-size: 13px; color: #1f2937; }
+      .rcpt-sel-count { font-size: 12px; color: #6366f1; font-weight: 700; }
+      .rcpt-search {
+        display: flex; align-items: center; gap: 8px;
+        padding: 9px 14px; border-bottom: 1px solid #f3f4f6; background: #fafafa;
+      }
+      .rcpt-search-icon { color: #9ca3af; font-size: 12px; }
+      .rcpt-search input {
+        flex: 1; border: none; background: transparent; font-size: 13px; outline: none;
+        color: #1f2937; font-family: 'Noto Sans TC', sans-serif;
+      }
+      .rcpt-search input::placeholder { color: #c0c4cc; }
+      .rcpt-filters {
+        display: flex; gap: 6px; padding: 8px 14px;
+        border-bottom: 1px solid #f3f4f6; background: #fafafa;
+      }
+      .rcpt-filter-btn {
+        padding: 3px 11px; border-radius: 20px; border: 1px solid #e5e7eb;
+        font-size: 12px; cursor: pointer; background: #fff; color: #374151;
+        font-family: 'Noto Sans TC', sans-serif; transition: all .15s;
+      }
+      .rcpt-filter-btn.active { background: #ede9fe; border-color: #6366f1; color: #6366f1; font-weight: 600; }
+      .rcpt-actions {
+        display: flex; gap: 6px; padding: 7px 14px; border-bottom: 1px solid #f3f4f6;
+        align-items: center;
+      }
+      .rcpt-act-btn {
+        font-size: 12px; padding: 3px 10px; border-radius: 6px; cursor: pointer;
+        border: 1px solid #e5e7eb; background: #fff; color: #374151;
+        font-family: 'Noto Sans TC', sans-serif; transition: background .12s;
+      }
+      .rcpt-act-btn:hover { background: #f3f4f6; }
+      .rcpt-act-btn--line { margin-left: auto; border-color: #bbf7d0; color: #15803d; background: #f0fdf4; }
+      .rcpt-list { max-height: 440px; overflow-y: auto; }
+      .rcpt-item {
+        display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+        border-bottom: 1px solid #f9fafb; cursor: pointer; transition: background .1s;
+      }
+      .rcpt-item:last-child { border-bottom: none; }
+      .rcpt-item:hover { background: #fafafa; }
+      .rcpt-item.is-selected { background: #eef2ff; }
+      .rcpt-item.is-selected .rcpt-name { color: #4338ca; }
+      .rcpt-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #6366f1; flex-shrink: 0; }
+      .rcpt-info { flex: 1; min-width: 0; }
+      .rcpt-name { font-size: 13px; font-weight: 600; color: #1f2937; }
+      .rcpt-id   { font-size: 10px; color: #9ca3af; font-weight: 400; margin-left: 4px; }
+      .rcpt-sub  { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+      .rcpt-badges { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+      .rbadge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
+      .rbadge--line { background: #dcfce7; color: #15803d; }
+      .rbadge--sms  { background: #dbeafe; color: #1d4ed8; }
+      .rbadge--no   { background: #f3f4f6; color: #9ca3af; }
+
+      /* ── compose panel ── */
+      .compose-panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 22px 24px; }
+      .cs { margin-bottom: 20px; }
+      .cs-label {
+        font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase;
+        letter-spacing: .6px; margin-bottom: 9px;
+      }
+
+      /* channel row */
+      .ch-row { display: flex; gap: 10px; }
+      .ch-option {
+        display: flex; align-items: center; gap: 7px; padding: 9px 16px;
+        border: 2px solid #e5e7eb; border-radius: 9px; cursor: pointer;
+        font-size: 13px; font-weight: 500; color: #374151; transition: all .15s;
+        user-select: none;
+      }
+      .ch-option.is-on { border-color: #6366f1; background: #eef2ff; color: #4338ca; }
+      .ch-option input[type=checkbox] { display: none; }
+      .ch-icon { font-size: 17px; }
+      .no-line-warn {
+        display: none; margin-top: 8px; padding: 7px 12px;
+        background: #fffbeb; border: 1px solid #fde68a; border-radius: 7px;
+        font-size: 12px; color: #92400e;
+      }
+
+      /* template select */
+      .tpl-select {
+        width: 100%; padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 8px;
+        font-size: 13px; background: #fff; color: #1f2937; outline: none;
+        font-family: 'Noto Sans TC', sans-serif; cursor: pointer;
+      }
+      .tpl-select:focus { border-color: #6366f1; }
+
+      /* msg tab */
+      .msg-tabs { display: flex; gap: 2px; margin-bottom: 0; }
+      .msg-tab {
+        padding: 5px 14px; font-size: 12px; border-radius: 7px 7px 0 0;
+        border: 1px solid #e5e7eb; border-bottom: none; cursor: pointer;
+        background: #f9fafb; color: #9ca3af; font-family: 'Noto Sans TC', sans-serif;
+        transition: all .15s;
+      }
+      .msg-tab.active { background: #fff; color: #6366f1; font-weight: 600; border-color: #e5e7eb; }
+      .msg-box {
+        border: 1px solid #e5e7eb; border-radius: 0 8px 8px 8px; padding: 1px;
+      }
+      .msg-textarea {
+        width: 100%; box-sizing: border-box; min-height: 96px; padding: 10px 12px;
+        border: none; border-radius: 7px; font-size: 13px; font-family: 'Noto Sans TC', sans-serif;
+        resize: vertical; outline: none; color: #1f2937;
+      }
+      .msg-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+      .var-chips { display: flex; gap: 5px; flex-wrap: wrap; }
+      .var-chip {
+        font-size: 11px; padding: 2px 9px; background: #f3f4f6; border-radius: 10px;
+        color: #374151; cursor: pointer; border: 1px solid #e5e7eb; transition: all .1s;
+      }
+      .var-chip:hover { background: #ede9fe; border-color: #a5b4fc; color: #4338ca; }
+      .char-count { font-size: 11px; color: #9ca3af; white-space: nowrap; }
+      .char-count.warn { color: #ef4444; font-weight: 700; }
+
+      /* preview */
+      .preview-card {
+        background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 9px;
+        padding: 13px 15px; font-size: 13px; line-height: 1.7; color: #374151;
+        white-space: pre-wrap; min-height: 58px;
+      }
+      .preview-hint { font-size: 11px; color: #c0c4cc; margin-top: 5px; }
+
+      /* send bar */
+      .send-bar {
+        display: flex; align-items: center; justify-content: space-between;
+        padding-top: 16px; border-top: 1px solid #f3f4f6; gap: 12px;
+      }
+      .send-rcpt-info { font-size: 13px; color: #6b7280; flex: 1; min-width: 0; }
+      .send-rcpt-info strong { color: #1f2937; }
+      .btn-send {
+        padding: 10px 24px; background: #6366f1; color: #fff; border: none;
+        border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer;
+        display: flex; align-items: center; gap: 8px; white-space: nowrap;
+        font-family: 'Noto Sans TC', sans-serif; transition: background .15s; flex-shrink: 0;
+      }
+      .btn-send:hover:not(:disabled) { background: #4f46e5; }
+      .btn-send:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+
+      /* ── settings tab ── */
+      .tpl-cards { display: flex; flex-direction: column; gap: 20px; }
+      .tpl-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+      .tpl-card-head {
+        display: flex; align-items: flex-start; gap: 14px; padding: 16px 20px;
+        background: linear-gradient(135deg, #f8f8ff 0%, #eef2ff 100%);
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .tpl-icon {
+        width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center; font-size: 19px;
+      }
+      .tpl-icon--payout    { background: #dcfce7; color: #15803d; }
+      .tpl-icon--transfer  { background: #dbeafe; color: #1d4ed8; }
+      .tpl-card-title { font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 5px; }
+      .tpl-trigger { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 5px; }
+      .tpl-trigger-code {
+        background: #f3f4f6; border-radius: 4px; padding: 1px 7px;
+        font-family: monospace; font-size: 11px; color: #374151;
+      }
+      .tpl-body { padding: 20px; }
+      .tpl-ch-tabs { display: flex; gap: 5px; margin-bottom: 12px; }
+      .tpl-ch-tab {
+        padding: 4px 14px; font-size: 12px; border-radius: 20px; cursor: pointer;
+        border: 1px solid #e5e7eb; background: #f9fafb; color: #6b7280;
+        font-family: 'Noto Sans TC', sans-serif; transition: all .15s;
+      }
+      .tpl-ch-tab.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+      .tpl-var-row { margin-bottom: 9px; }
+      .tpl-var-label { font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
+      .tpl-textarea {
+        width: 100%; box-sizing: border-box; min-height: 88px; padding: 10px 12px;
+        border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px;
+        font-family: 'Noto Sans TC', sans-serif; resize: vertical; outline: none;
+        color: #1f2937;
+      }
+      .tpl-textarea:focus { border-color: #6366f1; }
+      .tpl-save-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+      .tpl-char-info { font-size: 11px; color: #9ca3af; }
+      .tpl-char-info.warn { color: #ef4444; font-weight: 700; }
+      .btn-tpl-save {
+        padding: 7px 18px; background: #6366f1; color: #fff; border: none;
+        border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+        font-family: 'Noto Sans TC', sans-serif; transition: background .15s;
+      }
+      .btn-tpl-save:hover { background: #4f46e5; }
+
+      /* ── log tab ── */
+      .log-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+      .log-card-head {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 20px; border-bottom: 1px solid #e5e7eb;
+      }
+      .log-card-title { font-weight: 700; font-size: 14px; color: #1f2937; }
+      .btn-refresh {
+        font-size: 12px; padding: 4px 12px; border: 1px solid #e5e7eb; border-radius: 6px;
+        cursor: pointer; background: #fff; font-family: 'Noto Sans TC', sans-serif;
+      }
+      .log-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      .log-table thead th {
+        padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600;
+        color: #9ca3af; background: #f9fafb; border-bottom: 1px solid #e5e7eb; white-space: nowrap;
+      }
+      .log-table tbody td { padding: 11px 14px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+      .log-table tbody tr:last-child td { border-bottom: none; }
+      .log-table tbody tr:hover td { background: #fafafa; }
+      .log-ch-badge {
+        display: inline-flex; align-items: center; gap: 3px;
+        font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+      }
+      .log-ch-badge--sms  { background: #dbeafe; color: #1d4ed8; }
+      .log-ch-badge--line { background: #dcfce7; color: #15803d; }
+      .log-sent { font-size: 11px; padding: 2px 9px; border-radius: 10px; background: #d1fae5; color: #065f46; font-weight: 600; }
+
+      /* ── log detail button ── */
+      .log-detail-btn {
+        font-size: 11px; padding: 3px 10px; border: 1px solid #e0e7ff;
+        border-radius: 5px; cursor: pointer; background: #eef2ff; color: #6366f1;
+        font-family: 'Noto Sans TC', sans-serif; transition: all .12s;
+        white-space: nowrap; font-weight: 500; display: block; margin-top: 5px;
+      }
+      .log-detail-btn:hover { background: #6366f1; color: #fff; border-color: #6366f1; }
+
+      /* ── 發送明細 Modal ── */
+      .notify-modal {
+        position: fixed; inset: 0; z-index: 300;
+        display: flex; align-items: center; justify-content: center; padding: 16px;
+      }
+      .notify-modal[hidden] { display: none; }
+      .notify-modal-backdrop {
+        position: absolute; inset: 0; background: rgba(17,12,40,.50); cursor: pointer;
+      }
+      .notify-modal-panel {
+        position: relative; background: #fff; width: 100%;
+        max-width: 600px; max-height: 90vh;
+        display: flex; flex-direction: column;
+        border-radius: 14px; box-shadow: 0 24px 60px rgba(0,0,0,.28);
+        animation: nmSlide .2s ease;
+      }
+      @keyframes nmSlide {
+        from { transform: translateY(10px); opacity:.5; }
+        to   { transform: translateY(0);    opacity:1; }
+      }
+      .notify-modal-head {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 15px 20px; border-bottom: 1px solid #e5e7eb;
+        background: linear-gradient(135deg,#f8f9ff,#eef2ff);
+        border-radius: 14px 14px 0 0; flex-shrink: 0;
+      }
+      .notify-modal-title {
+        font-size: 15px; font-weight: 700; color: #1f2937;
+        display: flex; align-items: center; gap: 8px;
+      }
+      .notify-modal-close {
+        width: 30px; height: 30px; border: 1px solid #e5e7eb; border-radius: 7px;
+        background: #fff; color: #9ca3af; cursor: pointer; font-size: 13px;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      }
+      .notify-modal-close:hover { background: #f3f4f6; color: #374151; }
+      .notify-modal-body { padding: 18px 20px; overflow-y: auto; flex: 1; }
+      .notify-modal-foot {
+        padding: 12px 20px; border-top: 1px solid #e5e7eb; flex-shrink: 0;
+        display: flex; justify-content: flex-end;
+      }
+      .nm-meta {
+        display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        padding: 10px 12px; background: #f9fafb; border-radius: 8px;
+        margin-bottom: 16px; font-size: 12px; color: #6b7280;
+        border: 1px solid #f3f4f6;
+      }
+      .nm-meta strong { color: #1f2937; }
+      .nm-meta-sep { color: #d1d5db; }
+      .nm-section { margin-bottom: 18px; }
+      .nm-section:last-child { margin-bottom: 0; }
+      .nm-section-title {
+        font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase;
+        letter-spacing: .6px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+      }
+      .nm-rcpt-list { display: flex; flex-direction: column; gap: 5px; }
+      .nm-rcpt-item {
+        font-size: 13px; color: #1f2937; font-weight: 600;
+        padding: 7px 11px; background: #f8faff; border-radius: 7px;
+        border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 6px;
+      }
+      .nm-rcpt-meta { color: #9ca3af; font-weight: 400; font-size: 12px; }
+      .nm-rcpt-line { margin-left: auto; font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: 999px; }
+      .nm-rcpt-line--yes { background: #dcfce7; color: #15803d; }
+      .nm-rcpt-line--no  { background: #f3f4f6; color: #9ca3af; }
+      .nm-ch-head {
+        font-size: 12px; font-weight: 700; display: flex; align-items: center;
+        gap: 5px; margin-bottom: 7px;
+      }
+      .nm-ch-head--sms  { color: #1d4ed8; }
+      .nm-ch-head--line { color: #15803d; }
+      .nm-msg-box {
+        background: #fafbff; border: 1px solid #e5e7eb; border-radius: 8px;
+        padding: 13px 15px; font-size: 13px; line-height: 1.8; color: #374151;
+        white-space: pre-wrap; font-family: 'Noto Sans TC', sans-serif;
+        word-break: break-word;
+      }
+      .nm-msg-note {
+        font-size: 11px; color: #c0c4cc; margin-top: 5px;
+      }
+      .nm-close-btn {
+        padding: 8px 24px; background: #6366f1; color: #fff; border: none;
+        border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+        font-family: 'Noto Sans TC', sans-serif; transition: background .15s;
+      }
+      .nm-close-btn:hover { background: #4f46e5; }
+    </style>
+  </head>
+  <body class="admin">
+    <div class="page-wrap fade-in">
+
+      <div class="page-header">
+        <div class="ph-title">
+          <h1></i>推播通知管理</h1>
+          
+        </div>
+      </div>
+
+      <!-- ── Tabs ── -->
+      <div class="notify-tabs">
+        <button class="ntab active" data-ntab="send">
+          <i class="fa-solid fa-paper-plane"></i> 發送推播
+        </button>
+        <button class="ntab" data-ntab="settings">
+          <i class="fa-solid fa-sliders"></i> 推播設定
+        </button>
+        <button class="ntab" data-ntab="log">
+          <i class="fa-solid fa-clock-rotate-left"></i> 發送紀錄
+        </button>
+      </div>
+
+      <!-- ══════════════════════════════════
+           TAB 1 — 發送推播
+      ══════════════════════════════════ -->
+      <div class="ntab-panel active" id="panel-send">
+        <div class="send-layout">
+
+          <!-- LEFT: recipient selector -->
+          <div class="rcpt-panel">
+            <div class="rcpt-header">
+              <span class="rcpt-header-title">
+                <i class="fa-solid fa-users" style="color:#6366f1;margin-right:6px;font-size:12px;"></i>選擇推薦人
+              </span>
+              <span class="rcpt-sel-count" id="sel-count-label">已選 0 人</span>
+            </div>
+            <div class="rcpt-search">
+              <i class="fa-solid fa-magnifying-glass rcpt-search-icon"></i>
+              <input id="rcpt-search-input" type="text" placeholder="搜尋姓名 / 會員編號（如 U240105002）…" />
+            </div>
+            <div class="rcpt-filters">
+              <button class="rcpt-filter-btn active" data-filter="all">全部</button>
+              <button class="rcpt-filter-btn" data-filter="line">有LINE</button>
+              <button class="rcpt-filter-btn" data-filter="sms">僅簡訊</button>
+            </div>
+            <div class="rcpt-actions">
+              <button class="rcpt-act-btn" id="btn-sel-all">全選</button>
+              <button class="rcpt-act-btn" id="btn-sel-clear">清除</button>
+              <button class="rcpt-act-btn rcpt-act-btn--line" id="btn-sel-line">
+                <i class="fa-brands fa-line"></i> 選有LINE
+              </button>
+            </div>
+            <div class="rcpt-list" id="rcpt-list"></div>
+          </div>
+
+          <!-- RIGHT: compose -->
+          <div class="compose-panel">
+
+            <!-- Channel -->
+            <div class="cs">
+              <div class="cs-label">推播管道</div>
+              <div class="ch-row">
+                <label class="ch-option is-on" id="ch-sms-opt">
+                  <input type="checkbox" id="ch-sms" checked />
+                  <i class="fa-solid fa-comment-sms ch-icon" style="color:#0284c7;"></i>
+                  簡訊 SMS
+                </label>
+                <label class="ch-option is-on" id="ch-line-opt">
+                  <input type="checkbox" id="ch-line" checked />
+                  <i class="fa-brands fa-line ch-icon" style="color:#15803d;"></i>
+                  LINE 推播
+                </label>
+              </div>
+              <div class="no-line-warn" id="no-line-warn">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                已選推薦人中有 <strong id="no-line-count">0</strong> 人尚未綁定 LINE，將只能透過 SMS 發送
+              </div>
+            </div>
+
+            <!-- Template -->
+            <div class="cs">
+              <div class="cs-label">套用母版</div>
+              <select class="tpl-select" id="tpl-picker">
+                <option value="">── 自訂訊息（不套用母版）──</option>
+                <option value="tpl-payout">核款通知 — 提醒推薦人至平台選擇提領方式</option>
+                <option value="tpl-transferred">已撥款通知 — 告知推薦人獎金已撥款</option>
+              </select>
+            </div>
+
+            <!-- Message -->
+            <div class="cs">
+              <div class="cs-label">訊息內容</div>
+              <div class="msg-tabs" id="compose-msg-tabs">
+                <button class="msg-tab active" data-ch="sms">
+                  <i class="fa-solid fa-comment-sms"></i> SMS
+                </button>
+                <button class="msg-tab" data-ch="line">
+                  <i class="fa-brands fa-line"></i> LINE
+                </button>
+              </div>
+
+              <div class="msg-box">
+                <div id="sms-area">
+                  <textarea class="msg-textarea" id="msg-sms-text" placeholder="輸入 SMS 訊息內容…"></textarea>
+                </div>
+                <div id="line-area" style="display:none;">
+                  <textarea class="msg-textarea" id="msg-line-text" placeholder="輸入 LINE 推播訊息內容（建議 50 字以內）…"></textarea>
+                </div>
+              </div>
+              <div class="msg-foot">
+                <div class="var-chips">
+                  <span class="var-chip" data-var="{姓名}">{姓名}</span>
+                  <span class="var-chip" data-var="{URL}">{URL}</span>
+                  <span class="var-chip" data-var="{效期}">{效期}</span>
+                </div>
+                <span class="char-count" id="compose-char-count">0 字</span>
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="cs">
+              <div class="cs-label">預覽（範例：王大明）</div>
+              <div class="preview-card" id="msg-preview">（尚未輸入訊息）</div>
+              <div class="preview-hint">* {姓名}、{URL}、{效期} 將於發送時自動帶入各推薦人資料</div>
+            </div>
+
+            <!-- Send bar -->
+            <div class="send-bar">
+              <div class="send-rcpt-info">
+                收件人：<strong id="send-rcpt-display">尚未選擇推薦人</strong>
+              </div>
+              <button class="btn-send" id="btn-send-notify" disabled>
+                <i class="fa-solid fa-paper-plane"></i> 發送推播
+              </button>
+            </div>
+
+          </div><!-- /compose-panel -->
+        </div><!-- /send-layout -->
+      </div><!-- /panel-send -->
+
+      <!-- ══════════════════════════════════
+           TAB 2 — 推播設定
+      ══════════════════════════════════ -->
+      <div class="ntab-panel" id="panel-settings">
+        <div class="tpl-cards" id="tpl-cards-container">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           TAB 3 — 發送紀錄
+      ══════════════════════════════════ -->
+      <div class="ntab-panel" id="panel-log">
+        <div class="log-card">
+          <div class="log-card-head">
+            <span class="log-card-title">
+              <i class="fa-solid fa-clock-rotate-left" style="color:#6366f1;margin-right:6px;"></i>推播發送紀錄
+            </span>
+            <button class="btn-refresh" id="btn-refresh-log">
+              <i class="fa-solid fa-rotate-right"></i> 重新整理
+            </button>
+          </div>
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>發送時間</th>
+                <th>操作人員</th>
+                <th>收件推薦人</th>
+                <th>管道</th>
+                <th>母版 / 訊息摘要</th>
+                <th>狀態</th>
+              </tr>
+            </thead>
+            <tbody id="log-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /page-wrap -->
+
+    <!-- ============== 發送明細 Modal ============== -->
+    <div id="notify-detail-modal" class="notify-modal" hidden>
+      <div class="notify-modal-backdrop" id="nm-backdrop"></div>
+      <div class="notify-modal-panel" role="dialog" aria-modal="true" aria-labelledby="nm-title">
+        <header class="notify-modal-head">
+          <div class="notify-modal-title" id="nm-title">
+            <i class="fa-solid fa-rectangle-list" style="color:#6366f1;"></i>推播發送明細
+          </div>
+          <button class="notify-modal-close" id="nm-close" aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+        <div class="notify-modal-body" id="nm-body">
+          <!-- filled by JS -->
+        </div>
+        <footer class="notify-modal-foot">
+          <button class="nm-close-btn" id="nm-close-foot">關閉</button>
+        </footer>
+      </div>
+    </div>
+
+    <script src="../js/admin-notify.js"></script>
+  </body>
+</html>

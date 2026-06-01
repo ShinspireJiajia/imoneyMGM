@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>員工帳號管理 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-referrers.css" />
+    <link rel="stylesheet" href="../css/admin-employees.css" />
+  </head>
+  <body class="admin">
+    <main class="employees-page fade-in page-wrap">
+
+      <div class="page-crumb">會員管理 / 員工帳號管理</div>
+
+      <div class="page-toolbar">
+        <div>
+          <div class="page-title">員工帳號管理</div>
+          
+        </div>
+      </div>
+
+      <!-- 篩選列 -->
+      <section class="filter-bar emp-filter-bar">
+        <div class="field">
+          <label class="field-label">帳號</label>
+          <input class="field-input" id="f-account" type="text" placeholder="例如 @mgm.com" />
+        </div>
+        <div class="field">
+          <label class="field-label">姓名</label>
+          <input class="field-input" id="f-name" type="text" placeholder="員工姓名" />
+        </div>
+        <div class="field">
+          <label class="field-label">狀態</label>
+          <select class="field-select" id="f-status">
+            <option value="all">全部</option>
+            <option value="active">啟用</option>
+            <option value="inactive">停用</option>
+            <option value="resigned">離職員工</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-primary" id="btn-search">查詢</button>
+      </section>
+
+      <!-- 列表 -->
+      <section class="list-card">
+        <div class="list-head">
+          <h3>員工清單</h3>
+          <div class="list-head-hint">
+            離職員工透過前台完成身分綁定後，將同步寫入推薦人清單
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>帳號</th>
+                <th>姓名</th>
+                <th>綁定手機</th>
+                <th>狀態</th>
+                <th>離職時間</th>
+                <th>MGM 推薦資格</th>
+                <th style="min-width: 220px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="employees-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <div class="pagination">
+            <button class="pg-btn" disabled>«</button>
+            <button class="pg-btn pg-active">1</button>
+            <button class="pg-btn" disabled>»</button>
+          </div>
+          <div class="pg-total">共: <span id="emp-pg-total">0</span> 筆</div>
+        </div>
+      </section>
+    </main>
+
+    <script src="../js/admin-employees.js"></script>
+  </body>
+</html>

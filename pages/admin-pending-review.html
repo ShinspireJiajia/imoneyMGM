@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>超量待審佇列 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-campaigns.css" />
+    <link rel="stylesheet" href="../css/admin-referrers.css" />
+    <link rel="stylesheet" href="../css/admin-pending-review.css" />
+  </head>
+  <body class="admin">
+    <main class="pending-review-page page-wrap fade-in">
+      <div class="page-crumb">財務管理 / 超量待審佇列</div>
+
+      <!-- 工具列 -->
+      <div class="page-toolbar">
+        
+        <div class="page-actions">
+          <button type="button" id="btn-export-csv" class="btn btn-outline">
+            <i class="fa-solid fa-file-excel"></i>匯出資料
+          </button>
+        </div>
+      </div>
+
+      <!-- 統計列 -->
+      <section class="stats-row stats-row-3">
+        <div class="stat-card">
+          <span class="stat-label">本月待審</span>
+          <span class="stat-value" id="stat-pending">0</span>
+          <span class="stat-unit">筆</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">本月已放行</span>
+          <span class="stat-value" id="stat-approved">0</span>
+          <span class="stat-unit">筆</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">本月已拒絕</span>
+          <span class="stat-value" id="stat-rejected">0</span>
+          <span class="stat-unit">筆</span>
+        </div>
+      </section>
+
+      <!-- 篩選列 -->
+      <section class="filter-bar">
+        <div class="field">
+          <label class="field-label">關鍵字</label>
+          <input id="f-keyword" class="field-input" type="text" placeholder="推薦人、案號、客戶編號…" />
+        </div>
+        <div class="field">
+          <label class="field-label">來源</label>
+          <select id="f-source" class="field-select">
+            <option value="">全部</option>
+            <option value="overrun">超量送單</option>
+            <option value="blacklist">黑名單會員獎金</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">推薦人標籤</label>
+          <select id="f-tag" class="field-select">
+            <option value="">全部</option>
+            <option value="會員">會員</option>
+            <option value="員工">員工</option>
+            <option value="離職員工">離職員工</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">狀態</label>
+          <select id="f-status" class="field-select">
+            <option value="pending">待審</option>
+            <option value="all">全部</option>
+            <option value="approved">已放行</option>
+            <option value="rejected">已拒絕</option>
+            <option value="blacklisted">已轉黑名單</option>
+          </select>
+        </div>
+        <button id="btn-search" type="button" class="btn btn-primary">查詢</button>
+      </section>
+
+      <!-- 列表 -->
+      <section class="list-card">
+
+        <!-- 批次工具列 -->
+        <div class="batch-bar" id="batch-bar" hidden>
+          <div class="batch-info">
+            已勾選 <strong id="batch-count">0</strong> 筆
+            <span class="batch-amount">合計 <strong id="batch-amount">$0</strong></span>
+          </div>
+          <div class="batch-actions">
+            <button type="button" class="action-btn success" id="btn-batch-approve">
+              <i class="fa-solid fa-check"></i>批次放行
+            </button>
+            <button type="button" class="action-btn danger" id="btn-batch-reject">
+              <i class="fa-solid fa-xmark"></i>批次拒絕
+            </button>
+            <button type="button" class="action-btn note" id="btn-batch-blacklist">
+              <i class="fa-solid fa-ban"></i>批次轉黑名單
+            </button>
+            <button type="button" class="action-btn" id="btn-batch-cancel">取消勾選</button>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="data-table data-table-pr">
+            <thead>
+              <tr>
+                <th style="width: 36px;"><input type="checkbox" id="cb-all" /></th>
+                <th>來源</th>
+                <th>案號</th>
+                <th>推薦人</th>
+                <th>客戶編號</th>
+                <th>標籤</th>
+                <th>金額</th>
+                <th>狀態</th>
+                <th style="min-width: 240px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="pr-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- 分頁 -->
+        <div class="pagination-bar">
+          <div class="pagination">
+            <button class="pg-btn" disabled>«</button>
+            <button class="pg-btn pg-active">1</button>
+            <button class="pg-btn" disabled>»</button>
+          </div>
+          <div class="pg-total">共: <span id="pg-total-count">0</span> 筆</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============== 轉黑名單 Modal ============== -->
+    <div id="bl-modal" class="ce-modal" hidden>
+      <div class="ce-modal-backdrop" data-close></div>
+      <div class="ce-modal-panel" style="max-width: 520px;">
+        <header class="ce-modal-header">
+          <div>
+            <h3>
+              <i class="fa-solid fa-ban" style="color: var(--color-danger);"></i>轉入洗單黑名單
+            </h3>
+            <div class="ce-subtitle">
+              <span id="bl-target-desc" class="ce-hint">—</span>
+            </div>
+          </div>
+          <button type="button" class="ce-close" data-close>
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+
+        <div class="ce-modal-body" style="padding: 18px 22px;">
+          <div class="field">
+            <label class="field-label">凍結原因（必填，將寫入稽核軌跡）</label>
+            <textarea id="bl-reason" class="field-input" rows="4" placeholder="例：本月送單顯著超量、IP 多為境外 VPN、推薦來源疑似為論壇陌生客…"></textarea>
+          </div>
+          <div class="bl-warn">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>
+              <strong>本操作將立即生效。</strong>該推薦人之所有推薦碼將失效，已送出但未撥款之案件改判「未符合資格」。同時本批次內所有被選取之案件會一併拒絕。
+            </div>
+          </div>
+        </div>
+
+        <footer class="ce-modal-footer">
+          <div></div>
+          <div class="ce-footer-right">
+            <button type="button" class="btn btn-outline" data-close>取消</button>
+            <button id="bl-confirm" type="button" class="btn btn-primary" style="background: var(--color-danger);">
+              <i class="fa-solid fa-ban"></i>確認轉黑名單
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <script src="../js/admin-pending-review.js"></script>
+  </body>
+</html>

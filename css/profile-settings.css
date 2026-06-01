@@ -1,0 +1,237 @@
+/* ==========================================================
+   profile-settings.css - 個人設定頁 + dashboard 設定按鈕
+   ========================================================== */
+
+/* ── 整頁容器 ── */
+.profile-settings {
+  padding: 0 0 48px;
+  background: var(--color-bg-alt, #f5f5f7);
+  min-height: 100%;
+}
+
+/* ── Section 區塊 ── */
+.ps-section {
+  background: #fff;
+  padding: 20px 16px 8px;
+  margin-bottom: 8px;
+}
+
+.ps-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ps-section-hint {
+  font-size: 13px;
+  color: var(--color-text-muted, #6b7280);
+  margin: 4px 0 14px;
+  line-height: 1.5;
+}
+
+/* ── 單列（手機號碼） ── */
+.ps-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.ps-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ps-row-label {
+  font-size: 12px;
+  color: var(--color-text-muted, #6b7280);
+  margin-bottom: 3px;
+}
+
+.ps-row-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.04em;
+}
+
+/* ── 提領資料卡片 ── */
+.ps-card {
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: #fff;
+}
+
+.ps-card:last-child {
+  margin-bottom: 8px;
+}
+
+.ps-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ps-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text, #1f2937);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ps-card-title i {
+  color: var(--color-primary, #7c3aed);
+  font-size: 13px;
+}
+
+/* ── 編輯按鈕 ── */
+.ps-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary, #7c3aed);
+  background: none;
+  border: 1.5px solid var(--color-primary, #7c3aed);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.ps-edit-btn:hover {
+  background: rgba(124, 58, 237, 0.06);
+}
+
+.ps-edit-btn i {
+  font-size: 11px;
+}
+
+/* ── 資訊清單（遮碼顯示） ── */
+.ps-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ps-info-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.ps-info-label {
+  flex-shrink: 0;
+  width: 70px;
+  font-size: 12px;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.ps-info-value {
+  color: var(--color-text, #1f2937);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  word-break: break-all;
+}
+
+.ps-info-value.ps-empty {
+  font-family: inherit;
+  color: var(--color-text-muted, #6b7280);
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* ── 編輯 panel ── */
+.ps-edit-panel {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.ps-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  justify-content: flex-end;
+}
+
+/* ── 提示文字 ── */
+.ps-hint {
+  font-size: 13px;
+  color: var(--color-text-muted, #6b7280);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+/* ── OTP 計時器 + 重送 ── */
+.ps-otp-timer {
+  font-size: 13px;
+  color: var(--color-text-muted, #6b7280);
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ps-resend-btn {
+  font-size: 12px;
+  color: var(--color-primary, #7c3aed);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.ps-resend-btn:disabled {
+  color: var(--color-text-muted, #9ca3af);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+/* ── dashboard 頭像區塊：設定按鈕 ── */
+.profile-avatar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.profile-settings-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+}

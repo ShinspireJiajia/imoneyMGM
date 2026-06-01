@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>活動檔期管理 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-campaigns.css" />
+  </head>
+  <body class="admin">
+    <main class="page-wrap fade-in">
+
+      <!-- 麵包屑（iframe 內也呈現一份） -->
+      <div class="page-crumb">
+        行銷設定 / 活動檔期管理
+      </div>
+
+      <!-- 卡片容器 -->
+      <section class="page-card">
+
+        <!-- 工具列 -->
+        <div class="card-toolbar">
+          <button id="btn-new-campaign" type="button" class="btn-primary">
+            <i class="fa-solid fa-plus"></i>新增活動
+          </button>
+        </div>
+
+
+
+        <!-- 篩選 card -->
+        <section class="filter-card">
+          <div class="filter-card-head">
+            <button type="button" class="btn-outline btn-sm" id="btn-toggle-advanced">
+              <i class="fa-solid fa-chevron-up"></i>收合篩選
+            </button>
+          </div>
+
+          <div class="filter-grid" id="filter-grid">
+            <div class="field-row">
+              <label class="field-label">關鍵字</label>
+              <input class="field-input" type="text" placeholder="活動名稱、編號…" id="f-keyword" />
+            </div>
+            <div class="field-row">
+              <label class="field-label">狀態</label>
+              <select class="field-select" id="f-status">
+                <option value="">全部</option>
+                <option value="active">進行中</option>
+                <option value="upcoming">未開始</option>
+                <option value="ended">已結束</option>
+              </select>
+            </div>
+            <div class="field-row">
+              <label class="field-label">活動日期</label>
+              <div class="field-date-range">
+                <input class="field-input" type="date" id="f-date-from" />
+                <span class="dash">~</span>
+                <input class="field-input" type="date" id="f-date-to" />
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-card-actions">
+            <button type="button" class="btn-outline" id="btn-clear-filter">清除所有篩選</button>
+            <button type="button" class="btn-primary" id="btn-search">查詢</button>
+          </div>
+        </section>
+
+        <!-- 列表 -->
+        <section class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="min-width: 80px;">活動編號</th>
+                <th style="min-width: 160px;">活動名稱</th>
+                <th style="min-width: 190px;">活動日期</th>
+                <th>狀態</th>
+                <th>累積案件</th>
+                <th>已發放</th>
+                <th style="min-width: 280px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="campaign-tbody"></tbody>
+          </table>
+
+          <!-- 分頁 -->
+          <div class="pagination-bar">
+            <div class="pagination">
+              <button class="pg-btn" disabled>«</button>
+              <button class="pg-btn pg-active">1</button>
+              <button class="pg-btn" disabled>»</button>
+            </div>
+            <div class="pg-total">共: <span id="pg-total-count">0</span> 筆</div>
+          </div>
+        </section>
+
+        <!-- 空窗銜接提醒 -->
+        <div class="page-alert">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <div>
+            <strong>銜接提醒：</strong>若兩檔活動之間有任何時間落差，落在該空窗期送出的訪客表單將自動套用「<strong>活動空窗期獎金設定</strong>」（位於風控管理）。建議於現行檔期結束前 7 天內完成下一檔設定。
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <script src="../js/admin-campaigns.js"></script>
+  </body>
+</html>

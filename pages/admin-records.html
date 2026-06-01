@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>推薦案件管理 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-referrers.css" />
+    <link rel="stylesheet" href="../css/admin-records.css" />
+  </head>
+  <body class="admin">
+    <main class="records-page fade-in page-wrap">
+      
+      <div class="page-crumb">案件管理 / 推薦案件管理</div>
+<!-- 工具列 -->
+      <div class="page-toolbar">
+        <div class="page-actions">
+          <button type="button" class="btn btn-outline" id="btn-export-csv">
+            <i class="fa-solid fa-download"></i>匯出資料
+          </button>
+        </div>
+      </div>
+
+      <!-- 篩選列 -->
+      <section class="filter-bar">
+        <div class="field">
+          <label class="field-label">推薦人（編號 / 姓名）</label>
+          <input class="field-input" id="f-referrer-query" type="text" placeholder="推薦人編號或姓名" />
+        </div>
+        <div class="field">
+          <label class="field-label">被推薦人（手機號碼 / 姓名）</label>
+          <input class="field-input" id="f-referee-query" type="text" placeholder="被推薦人手機號碼或姓名" />
+        </div>
+        <div class="field">
+          <label class="field-label">案號</label>
+          <input class="field-input" id="f-case-id" type="text" placeholder="例如 M2026052301" />
+        </div>
+        <div class="field">
+          <label class="field-label">狀態</label>
+          <select class="field-select" id="f-status">
+            <option value="all">全部</option>
+            <option value="reviewing">審核中</option>
+            <option value="pending_review">人工審核中</option>
+            <option value="pending_approval">待放行</option>
+            <option value="rewardable">可提領</option>
+            <option value="withdrawn">已提領</option>
+            <option value="invalid">未符合資格</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">推薦人標籤</label>
+          <select class="field-select" id="f-tag">
+            <option value="">全部</option>
+            <option value="會員">會員</option>
+            <option value="員工">員工</option>
+            <option value="離職員工">離職員工</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">申請日期起</label>
+          <input class="field-input" id="f-date-from" type="date" />
+        </div>
+        <div class="field">
+          <label class="field-label">申請日期迄</label>
+          <input class="field-input" id="f-date-to" type="date" />
+        </div>
+        <button id="btn-search" type="button" class="btn btn-primary">查詢</button>
+      </section>
+
+      <!-- 記錄表格 -->
+      <section class="list-card">
+        <div class="list-head">
+          <h3>案件列表（共 <span id="total-count">0</span> 筆）</h3>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>案號</th>
+                <th>類型</th>
+                <th>收款類型</th>
+                <th>標籤</th>
+                <th>會員編號</th>
+                <th>姓名</th>
+                <th>被推薦人</th>
+                <th>被推薦人手機號碼</th>
+                <th>申請日 <span class="th-hint" title="被推薦人提出申請單的日期"><i class="fa-solid fa-circle-question"></i></span></th>
+                <th>狀態</th>
+                <th>對應獎金</th>
+                <th style="min-width: 100px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="records-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <div class="pagination">
+            <button class="pg-btn" disabled>«</button>
+            <button class="pg-btn pg-active">1</button>
+            <button class="pg-btn" disabled>»</button>
+          </div>
+          <div class="pg-total">共: <span id="rec-pg-total">0</span> 筆</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============== 查看案件詳情 Modal ============== -->
+    <div id="rec-view-modal" class="rec-modal" hidden>
+      <div class="rec-modal-backdrop" data-close></div>
+      <div class="rec-modal-panel" role="dialog" aria-modal="true" aria-labelledby="rec-view-title">
+        <header class="rec-modal-head">
+          <h3 id="rec-view-title">
+            <i class="fa-solid fa-circle-info"></i>案件詳情
+            <span class="rec-case-id" id="rv-caseid">—</span>
+          </h3>
+          <button type="button" class="rec-modal-close" data-close aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+
+        <div class="rec-modal-body">
+          <section class="rv-section">
+            <h4>推薦關係</h4>
+            <div class="rv-grid">
+              <div class="rv-row"><span class="rv-label">推薦人</span><span class="rv-value" id="rv-referrer">—</span></div>
+              <div class="rv-row"><span class="rv-label">會員編號</span><span class="rv-value mono" id="rv-referrer-cid">—</span></div>
+              <div class="rv-row"><span class="rv-label">身份</span><span class="rv-value" id="rv-tag">—</span></div>
+              <div class="rv-row"><span class="rv-label">諮詢單號</span><span class="rv-value mono" id="rv-neg">—</span></div>
+              <div class="rv-row"><span class="rv-label">被推薦人</span><span class="rv-value" id="rv-referee">—</span></div>
+              <div class="rv-row"><span class="rv-label">被推薦人手機號碼</span><span class="rv-value mono" id="rv-referee-cid">—</span></div>
+            </div>
+          </section>
+
+          <section class="rv-section">
+            <h4>案件資訊</h4>
+            <div class="rv-grid">
+              <div class="rv-row"><span class="rv-label">案號</span><span class="rv-value mono" id="rv-caseid2">—</span></div>
+              <div class="rv-row"><span class="rv-label">專案類型</span><span class="rv-value" id="rv-projects">—</span></div>
+              <div class="rv-row"><span class="rv-label">符合活動編號</span><span class="rv-value mono" id="rv-campaign">—</span></div>
+              <div class="rv-row"><span class="rv-label">申請日期</span><span class="rv-value mono" id="rv-submit">—</span></div>
+              <div class="rv-row"><span class="rv-label">撥款日</span><span class="rv-value mono" id="rv-payout">—</span></div>
+              <div class="rv-row"><span class="rv-label">收款單號</span><span class="rv-value mono" id="rv-receipt-no">—</span></div>
+              <div class="rv-row"><span class="rv-label">應收服務費</span><span class="rv-value mono" id="rv-expected-fee">—</span></div>
+              <div class="rv-row"><span class="rv-label">實收服務費</span><span class="rv-value mono" id="rv-actual-fee">—</span></div>
+              <div class="rv-row"><span class="rv-label">狀態</span><span class="rv-value" id="rv-status">—</span></div>
+              <div class="rv-row rv-row-full"><span class="rv-label">對應獎金</span><span class="rv-value mono rv-amount-emph" id="rv-amount">—</span></div>
+            </div>
+          </section>
+
+          <section class="rv-section" id="rv-section-conditions" hidden>
+            <h4>條件旗標</h4>
+            <div id="rv-condition-flags"></div>
+          </section>
+
+
+
+          <section class="rv-section" id="rv-section-snapshot" hidden>
+            <h4>送單時快照參數</h4>
+            <div class="rv-snapshot" id="rv-snapshot">—</div>
+            <p class="rv-foot">※ 快照於送單當下擷取，後續活動規則調整不影響本案件。</p>
+          </section>
+        </div>
+
+        <footer class="rec-modal-foot">
+          <button type="button" class="btn btn-outline" data-close>關閉</button>
+        </footer>
+      </div>
+    </div>
+
+    <script src="../js/admin-records.js"></script>
+  </body>
+</html>
