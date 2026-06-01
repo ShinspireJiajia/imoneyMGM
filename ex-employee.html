@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>離職員工 / 一般訪客驗證入口 - 理財通 MGM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/ex-login.css" />
+  </head>
+  <body class="ex-login-body">
+    <header class="ex-header">
+      <div class="ex-header-brand">
+        <div class="ex-header-brand-icon">
+          <i class="fa-solid fa-user-check"></i>
+        </div>
+        <div class="ex-header-brand-text">
+          理財通 MGM
+          <small>離職員工 / 一般訪客驗證入口</small>
+        </div>
+      </div>
+      <a class="ex-header-help" href="#" id="btn-open-help">
+        <i class="fa-regular fa-circle-question"></i>需要協助
+      </a>
+    </header>
+
+    <main class="ex-main">
+      <section class="ex-card">
+        <div class="ex-steps" id="steps-bar">
+          <div class="ex-step active">
+            <span class="num">1</span>
+            <span class="label">LINE 好友</span>
+          </div>
+          <div class="ex-step">
+            <span class="num">2</span>
+            <span class="label">手機驗證</span>
+          </div>
+          <div class="ex-step">
+            <span class="num">3</span>
+            <span class="label">資料比對</span>
+          </div>
+        </div>
+
+        <div class="ex-panel active" id="panel-1">
+          <h1 class="ex-title">外部驗證入口</h1>
+          <p class="ex-subtitle">
+            不需先選擇身份。請先完成 LINE 好友加入，再填寫手機號碼，系統會依該號碼進行資料比對與後續驗證。
+          </p>
+
+          <div class="line-mock-card">
+            <div class="line-mock-head">
+              <div>
+                <span class="line-badge">LINE 官方帳號</span>
+                <strong>理財通 MGM 驗證助理</strong>
+              </div>
+              <span class="line-status-dot"><i class="fa-solid fa-circle"></i>線上</span>
+            </div>
+            <div class="line-mock-chat">
+              <div class="line-bubble line-bubble-system">
+                您好，請先加入 LINE 好友，完成後系統才會開放資料比對表單。
+              </div>
+              <div class="line-bubble line-bubble-user">
+                我要開始驗證流程。
+              </div>
+              <div class="line-bubble line-bubble-system" id="line-flow-copy">
+                完成好友加入後，請填寫手機號碼。系統會先比對是否為離職員工；若不是，則再比對債務平台名單，確認是否可繼續驗證。
+              </div>
+            </div>
+            <button id="btn-line-friend-check" type="button" class="btn btn-outline btn-block">
+              <i class="fa-brands fa-line"></i>我已完成 LINE 好友加入
+            </button>
+            <span id="line-friend-status" class="field-hint" style="display:block;margin-top:8px;">尚未完成 LINE 好友加入</span>
+          </div>
+
+          <div class="security-tip" style="margin-top: 12px; background: #eff6ff; color: #1d4ed8;">
+            <i class="fa-solid fa-file-signature"></i>
+            <div>
+              <strong>下一步會進入表單模擬畫面：</strong>
+              加入好友後，需先輸入手機號碼並完成 OTP 驗證，系統才會進一步做資料比對。
+            </div>
+          </div>
+
+          <div class="demo-tip-box" id="role-demo-tip">
+            <strong>Demo 測試資料</strong>
+            <p>離職員工：0912345678。一般訪客未匹配：0911666888。一般訪客已匹配債務平台名單：0935566777。黑名單離職員工：0955222222。</p>
+          </div>
+
+          <button id="btn-go-form" type="button" class="btn btn-primary btn-block" disabled>
+            <i class="fa-solid fa-arrow-right"></i>前往資料表單
+          </button>
+        </div>
+
+        <div class="ex-panel" id="panel-2">
+          <h1 class="ex-title" id="form-panel-title">手機驗證</h1>
+          <p class="ex-subtitle" id="form-panel-subtitle">
+            請先輸入手機號碼並完成 OTP 驗證。驗證成功後，系統才會進行身分資料比對。
+          </p>
+
+          <div class="form-stage-card">
+            <div class="field">
+              <label class="field-label field-required" for="inp-phone">手機號碼</label>
+              <input class="field-input" id="inp-phone" type="tel" maxlength="10" placeholder="0912345678" autocomplete="tel" />
+              <span class="field-hint" id="form-phone-hint">請輸入完整 10 碼，OTP 驗證完成後才會進行資料比對</span>
+            </div>
+
+            <button id="btn-send-otp" type="button" class="btn btn-primary btn-block">
+              <i class="fa-solid fa-paper-plane"></i>發送 OTP 驗證碼
+            </button>
+          </div>
+
+          <button id="btn-back-step1" type="button" class="btn btn-outline btn-block" style="margin-top: 14px;">
+            <i class="fa-solid fa-arrow-left"></i>返回 LINE 好友步驟
+          </button>
+        </div>
+
+        <div class="ex-panel" id="panel-3">
+          <h1 class="ex-title">請輸入簡訊驗證碼</h1>
+          <p class="ex-subtitle">
+            我們已將 6 位數驗證碼發送至您的手機 <strong id="phone-mask">—</strong>，請先完成手機驗證，驗證通過後才會進行資料比對。
+          </p>
+
+          <div class="otp-row">
+            <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼" />
+            <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼" />
+            <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼" />
+            <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼" />
+            <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼" />
+            <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼" />
+          </div>
+
+          <div class="resend">
+            <span>剩餘時間：<strong id="otp-timer" style="color: var(--color-primary-dark);">03:00</strong></span>
+            <button id="btn-resend" type="button" class="resend-btn" disabled>
+              <i class="fa-solid fa-rotate-right"></i>重新發送
+            </button>
+          </div>
+
+          <div class="security-tip" style="margin-top: 22px;">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+              <strong>Demo 提示：</strong>輸入任意 6 位數即可通過（正式環境需與簡訊內容相符）。完成後系統會自動進行資料比對。
+            </div>
+          </div>
+        </div>
+
+        <div class="ex-panel" id="panel-4">
+          <h1 class="ex-title">身分資料比對</h1>
+          <p class="ex-subtitle">
+            手機 OTP 驗證完成後，請再輸入身分證字號。系統會以手機號碼與身分證字號進行綁定比對。
+          </p>
+
+          <div class="form-stage-card" id="id-compare-form">
+            <p class="field-hint" style="margin-bottom: 12px; display: block;">
+              已驗證手機：<strong id="id-compare-phone-mask">—</strong>
+            </p>
+
+            <div class="field">
+              <label class="field-label field-required" for="inp-id-verify">身分證字號</label>
+              <input class="field-input" id="inp-id-verify" type="text" maxlength="10" placeholder="A123456789" autocomplete="off" />
+              <span class="field-hint">需輸入完整 10 碼，系統會以此與債務系統留存資料比對。</span>
+            </div>
+
+            <button id="btn-submit-id-match" type="button" class="btn btn-primary btn-block">
+              <i class="fa-solid fa-id-card"></i>送出身分資料比對
+            </button>
+          </div>
+
+          <div class="result-card" id="match-result" hidden></div>
+
+          <div class="result-actions" id="match-actions" hidden>
+            <button id="btn-confirm-match" type="button" class="btn btn-primary">
+              <i class="fa-solid fa-circle-check"></i>進入平台
+            </button>
+          </div>
+
+          <button id="btn-back-home" type="button" class="btn btn-outline btn-block" style="margin-top: 14px;">
+            <i class="fa-solid fa-arrow-left"></i>返回驗證首頁
+          </button>
+        </div>
+
+        <div class="ex-panel" id="panel-blocked">
+          <div class="ex-blocked">
+            <div class="blocked-icon"><i class="fa-solid fa-ban"></i></div>
+            <h2>帳戶暫無法登入</h2>
+            <p>
+              您的帳戶目前處於<strong>風控停用</strong>狀態，登入功能已暫時停用。
+              系統不會發送簡訊驗證碼。
+            </p>
+          </div>
+
+          <div class="blocked-card">
+            <h4><i class="fa-solid fa-circle-info"></i>後續處理方式</h4>
+            <ul>
+              <li>請主動聯繫<strong>人資 / 風控窗口</strong>確認帳號狀態</li>
+              <li>聯繫時請提供您的<strong>姓名</strong>與<strong>手機末 4 碼</strong>，承辦人會至後台調閱</li>
+            </ul>
+            <div class="blocked-meta">
+              <span><i class="fa-solid fa-hashtag"></i>事件編號</span>
+              <strong id="blocked-incident-id">—</strong>
+            </div>
+          </div>
+
+          <button type="button" id="btn-back-to-login" class="btn btn-outline btn-block" style="margin-top: 16px;">
+            <i class="fa-solid fa-arrow-left"></i>返回驗證首頁
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="ex-footer">
+      <p>© 2026 理財通 MGM Platform · 本頁為離職員工 / 一般訪客驗證入口</p>
+    </footer>
+
+    <div id="help-modal" class="ex-help-modal" hidden>
+      <div class="ex-help-backdrop" data-close></div>
+      <div class="ex-help-panel" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+        <header class="ex-help-head">
+          <h3 id="help-modal-title">
+            <i class="fa-regular fa-circle-question"></i>需要協助
+          </h3>
+          <button type="button" class="ex-help-close" data-close aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+        <div class="ex-help-body">
+          <section class="ex-help-section">
+            <h4><i class="fa-brands fa-line"></i>驗證流程</h4>
+            <p>
+              所有外部使用者都需先完成 <strong>LINE 好友加入</strong>。接著先輸入手機號碼完成 OTP 驗證，系統才會做資料比對。一般訪客若未匹配到債務平台名單，可直接使用服務；若匹配成功，則需先確認是否為本人。
+            </p>
+          </section>
+
+          <section class="ex-help-section">
+            <h4><i class="fa-solid fa-comment-sms"></i>未收到簡訊驗證碼</h4>
+            <p>簡訊發送可能延遲數秒至 1 分鐘，請耐心等候；若仍未收到，可待倒數結束後點「重新發送」。</p>
+          </section>
+        </div>
+        <footer class="ex-help-foot">
+          <button type="button" class="btn btn-primary" data-close>我已了解</button>
+        </footer>
+      </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script src="js/ex-login.js"></script>
+  </body>
+</html>

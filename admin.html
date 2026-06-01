@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>理財通 MGM - 行銷後台管理</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/admin-layout.css" />
+  </head>
+  <body class="admin">
+    <div class="admin-frame">
+      <!-- ============== Sidebar ============== -->
+      <aside class="admin-sidebar" aria-label="主導覽">
+        <div class="admin-logo">
+          <div class="admin-logo-icon">
+            <i class="fa-solid fa-coins"></i>
+          </div>
+          <div class="admin-logo-text">
+            理財通 MGM
+            <small>行銷後台</small>
+          </div>
+        </div>
+
+        <nav class="admin-nav">
+          <div class="admin-nav-section">行銷設定</div>
+          <a class="admin-nav-item active" data-page="admin-campaigns" href="#admin-campaigns">
+            <span>活動檔期管理</span>
+          </a>
+          <a class="admin-nav-item" data-page="admin-share-rules" href="#admin-share-rules">
+            <span>分享制度說明維護</span>
+          </a>
+
+          <div class="admin-nav-section">會員管理</div>
+          <a class="admin-nav-item" data-page="admin-employees" href="#admin-employees">
+            <span>員工帳號管理</span>
+          </a>
+          <a class="admin-nav-item" data-page="admin-referrers" href="#admin-referrers">
+            <span>推薦人管理</span>
+          </a>
+
+          <div class="admin-nav-section">推播管理</div>
+          <a class="admin-nav-item" data-page="admin-notify" href="#admin-notify">
+            <span>推播通知管理</span>
+          </a>
+
+          <div class="admin-nav-section">案件管理</div>
+          <a class="admin-nav-item" data-page="admin-records" href="#admin-records">
+            <span>推薦案件管理</span>
+          </a>
+          <a class="admin-nav-item" data-page="admin-reports" href="#admin-reports">
+            <span>推薦案件報表</span>
+          </a>
+
+          <div class="admin-nav-section">財務管理</div>
+          <a class="admin-nav-item" data-page="admin-payout" href="#admin-payout">
+            <span>推薦案件獎金核款</span>
+            <span class="badge-num" id="nav-payout-badge">3</span>
+          </a>
+          <a class="admin-nav-item" data-page="admin-payments" href="#admin-payments">
+            <span>提領功能管理</span>
+          </a>
+          <a class="admin-nav-item" data-page="admin-pending-review" href="#admin-pending-review">
+            <span>超量待審佇列</span>
+            <span class="badge-num">3</span>
+          </a>
+
+          <div class="admin-nav-section">風控管理</div>
+          <a class="admin-nav-item" data-page="admin-plan-switch" href="#admin-plan-switch">
+            <span>全站方案開關</span>
+          </a>
+          <a class="admin-nav-item" data-page="admin-limits" href="#admin-limits">
+            <span>提領限制與時效管理</span>
+          </a>
+          <a class="admin-nav-item" data-page="admin-default" href="#admin-default">
+            <span>活動空窗期獎金設定</span>
+          </a>
+          <a class="admin-nav-item" data-page="admin-blacklist" href="#admin-blacklist">
+            <span>黑名單管理</span>
+          </a>
+
+          <div class="admin-nav-section">其他</div>
+          <a class="admin-nav-item" href="index.html">
+            <span>切換到推薦人前台</span>
+          </a>
+          <a class="admin-nav-item" href="ex-employee.html">
+            <span>員工專屬登入頁</span>
+          </a>
+        </nav>
+
+        <div class="admin-sidebar-footer">© 2026 理財通 MGM Platform</div>
+      </aside>
+
+      <!-- ============== Header ============== -->
+      <header class="admin-header">
+        <div class="admin-header-right">
+          <div class="admin-icon-btn" title="搜尋">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+          <div class="admin-icon-btn" title="通知">
+            <i class="fa-regular fa-bell"></i>
+            <span class="dot"></span>
+          </div>
+          <div class="admin-user">
+            <div class="admin-user-avatar">AD</div>
+            <div class="admin-user-info">
+              <div class="name">Admin User</div>
+              <div class="role">行銷管理員</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ============== Main iframe ============== -->
+      <main class="admin-main">
+        <iframe
+          id="admin-iframe"
+          class="admin-iframe"
+          src="pages/admin-campaigns.html"
+          title="後台內容"
+        ></iframe>
+      </main>
+    </div>
+
+    <script src="js/admin-layout.js"></script>
+  </body>
+</html>

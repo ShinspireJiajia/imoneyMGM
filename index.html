@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>理財通 MGM 推薦獎金平台</title>
+
+    <!-- 字型：Sans 漢字 + Noto Serif TC（標題）+ JetBrains Mono（數字） -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome 圖示 CDN -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- 共用樣式 -->
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+  </head>
+  <body>
+    <!-- ==========================================================
+         主框架：模擬 LINE OA 內嵌的手機畫面（桌機置中顯示）
+         結構：portal-header + portal-content(iframe) + portal-bottom-nav
+         ========================================================== -->
+    <div class="portal-frame" role="application">
+      <!-- Header 區塊 -->
+      <header class="portal-header">
+        <div class="portal-header-left">
+          <button
+            type="button"
+            id="portal-header-back"
+            class="portal-header-back"
+            aria-label="返回上一頁"
+            style="visibility: hidden"
+          >
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <span id="portal-header-title" class="portal-header-title">
+            理財通 MGM
+          </span>
+        </div>
+        <div class="portal-header-right">
+          <div class="portal-header-referrer">
+            <span class="portal-header-referrer-label">推薦人編號</span>
+            <span id="portal-header-referrer-uid" class="portal-header-referrer-uid">-</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- 主內容區：使用 iframe 載入各功能頁 -->
+      <iframe
+        id="portal-iframe"
+        class="portal-content"
+        title="功能模組內容"
+        src="pages/dashboard.html"
+      ></iframe>
+
+      <!-- 底部導覽 -->
+      <nav class="portal-bottom-nav" aria-label="主要導覽">
+        <a class="nav-item active" data-page="dashboard" href="#dashboard">
+          <i class="fa-solid fa-house"></i>
+          <span>首頁</span>
+        </a>
+        <a class="nav-item" data-page="share" href="#share">
+          <i class="fa-solid fa-share-nodes"></i>
+          <span>分享</span>
+        </a>
+        <a class="nav-item" data-page="records" href="#records">
+          <i class="fa-solid fa-list-check"></i>
+          <span>紀錄</span>
+        </a>
+        <a class="nav-item" data-page="rewards" href="#rewards">
+          <i class="fa-solid fa-coins"></i>
+          <span>獎金</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Demo 切換工具列：桌機顯示，方便快速切到後台 / 離職員工頁 -->
+    <aside class="demo-switcher" aria-label="Demo 切換">
+      <div class="demo-switcher-title">
+        <i class="fa-solid fa-flask"></i>Demo 入口
+      </div>
+      <a href="index.html#dashboard">
+        <i class="fa-solid fa-mobile-screen"></i>推薦人前台（有績效）
+      </a>
+      <a href="index.html#dashboard-empty">
+        <i class="fa-regular fa-hand-peace"></i>推薦人前台（新會員）
+      </a>
+      <a href="admin.html">
+        <i class="fa-solid fa-gauge-high"></i>行銷後台 (Admin)
+      </a>
+      <a href="employee-login.html">
+        <i class="fa-solid fa-user-shield"></i>在職員工登入入口
+      </a>
+      <a href="ex-employee.html">
+        <i class="fa-solid fa-id-card"></i>離職員工 / 一般訪客驗證入口
+      </a>
+
+      <div class="demo-switcher-title" style="margin-top: 10px;">
+        <i class="fa-solid fa-user-shield"></i>身分切換（Demo）
+      </div>
+      <div class="demo-plan-toggle" id="demo-plan-toggle" role="radiogroup" aria-label="切換目前使用者方案">
+        <button type="button" data-plan="customer"     data-page="dashboard"       class="dpt-btn active">有績效會員</button>
+        <button type="button" data-plan="customer-new" data-page="dashboard-empty" class="dpt-btn">無績效會員</button>
+        <button type="button" data-plan="blacklisted"  data-page="dashboard"       class="dpt-btn">被封鎖會員</button>
+        <button type="button" data-plan="employee"           data-page="dashboard" class="dpt-btn">在職員工</button>
+        <button type="button" data-plan="converted-employee" data-page="dashboard" class="dpt-btn">入職員工（前推薦客）</button>
+        <button type="button" data-plan="ex-employee"         data-page="dashboard" class="dpt-btn">離職員工</button>
+      </div>
+      <div class="demo-plan-status" id="demo-plan-status">目前以 <strong>有績效會員</strong> 身分瀏覽，方案<span id="demo-plan-paused"></span></div>
+    </aside>
+
+    <script>
+      // Demo 身分切換 — 寫 localStorage 並通知 AppRouter 重新渲染
+      (function () {
+        const btns = document.querySelectorAll('#demo-plan-toggle .dpt-btn');
+        const statusEl = document.getElementById('demo-plan-status');
+        const pausedEl = document.getElementById('demo-plan-paused');
+
+        const LABEL = {
+          customer:              '有績效會員',
+          'customer-new':        '無績效會員',
+          blacklisted:           '被封鎖會員',
+          employee:              '在職員工',
+          'converted-employee':  '入職員工（前推薦客）',
+          'ex-employee':         '離職員工',
+        };
+
+        function setDemoPersonProfile(profile) {
+          try {
+            if (window.MGMCommon && window.MGMCommon.setPersonProfile) {
+              window.MGMCommon.setPersonProfile(profile);
+              return;
+            }
+            sessionStorage.setItem('mgm_person_profile', JSON.stringify(profile));
+          } catch {}
+        }
+
+        function detectCurrent() {
+          try {
+            if (window.MGMCommon && window.MGMCommon.resolvePermissionLevel) {
+              const level = window.MGMCommon.resolvePermissionLevel();
+              if (level === 'resigned-employee') return 'ex-employee';
+              if (level === 'employee') return 'employee';
+            }
+          } catch {}
+          // 1. sessionStorage 顯式身分（離職員工 2FA）優先
+          try {
+            const explicit = sessionStorage.getItem('mgm_login_identity');
+            if (explicit === '離職員工') return 'ex-employee';
+            if (explicit === '員工') return 'employee';
+          } catch {}
+          // 2. demo 旗標：入職員工（前推薦客）— 手機在員工主檔但以會員方式登入
+          try {
+            if (sessionStorage.getItem('mgm_demo_converted_employee') === '1') return 'converted-employee';
+          } catch {}
+          // 3. demo 旗標：判定被封鎖會員（須優先於 customer-new，避免被覆蓋）
+          try {
+            if (sessionStorage.getItem('mgm_blacklisted') === '1') return 'blacklisted';
+          } catch {}
+          // 4. demo 旗標：判定無績效會員（手動 demo 用）
+          try {
+            if (sessionStorage.getItem('mgm_demo_empty') === '1') return 'customer-new';
+          } catch {}
+          // 5. localStorage plan
+          try {
+            const plan = localStorage.getItem('mgm_current_user_plan');
+            if (plan === 'employee') return 'employee';
+          } catch {}
+          return 'customer';
+        }
+
+        function refresh() {
+          const cur = detectCurrent();
+          btns.forEach(b => b.classList.toggle('active', b.dataset.plan === cur));
+          const label = LABEL[cur] || '有績效會員';
+          // 暫停狀態：員工方案與會員方案分流
+          const planKey = (cur === 'employee') ? 'employee' : 'customer';
+          const paused = (function () {
+            try { return localStorage.getItem('mgm_plan_paused_' + planKey) === '1'; } catch { return false; }
+          })();
+          statusEl.querySelector('strong').textContent = label;
+          pausedEl.textContent = paused ? '：已暫停' : '：啟用中';
+          pausedEl.style.color = paused ? '#E55E5E' : '#059669';
+          pausedEl.style.fontWeight = '700';
+        }
+        refresh();
+
+        btns.forEach(b => {
+          b.addEventListener('click', () => {
+            // Demo 切換器：若使用者目前正在 ex-employee 真實 2FA session，先取得授權再清除
+            try {
+              const realLogin = sessionStorage.getItem('mgm_login_identity');
+              if (realLogin) {
+                const ok = confirm(
+                  `您目前以「${realLogin}」身分登入。\n切換 Demo 身分會清除目前登入狀態，確定切換？`
+                );
+                if (!ok) return;
+              }
+              // 一律清掉舊的 session 身分與 demo 旗標
+              sessionStorage.removeItem('mgm_login_identity');
+              sessionStorage.removeItem('mgm_login_name');
+              sessionStorage.removeItem('mgm_person_profile');
+              sessionStorage.removeItem('mgm_ex_resign_date');
+              sessionStorage.removeItem('mgm_demo_empty');
+              sessionStorage.removeItem('mgm_blacklisted');
+              sessionStorage.removeItem('mgm_demo_converted_employee');
+              sessionStorage.removeItem('mgm_login_uid');
+              sessionStorage.removeItem('mgm_login_phone');
+              sessionStorage.removeItem('mgm_login_source');
+              sessionStorage.removeItem('mgm_ex_line_friend');
+              sessionStorage.removeItem('mgm_ex_form_phone');
+            } catch {}
+
+            const plan = b.dataset.plan;
+            const targetPage = b.dataset.page || 'dashboard';
+            try {
+              // 寫入身分 + 方案
+              if (plan === 'employee') {
+                // 在職員工：純員工方案，無離職日，絕不會觸發已離職文案
+                localStorage.setItem('mgm_current_user_plan', 'employee');
+                setDemoPersonProfile({
+                  personId: 'C123456789',
+                  identityNo: 'C123456789',
+                  mobile: '0911222333',
+                  lineUserId: 'U240105002',
+                  uid: 'U240105002',
+                  name: '李大華',
+                  source: 'demo-switcher',
+                  userRole: 'Employee',
+                  employeeFlag: 'Y',
+                  employeeStatus: 'Active',
+                });
+                sessionStorage.setItem('mgm_login_identity', '員工');
+                sessionStorage.setItem('mgm_login_uid', 'U240105002');
+                sessionStorage.setItem('mgm_login_name', '李大華');
+                sessionStorage.setItem('mgm_login_phone', '0911222333');
+                sessionStorage.setItem('mgm_login_id_number', 'C123456789');
+              } else if (plan === 'customer-new') {
+                // 無績效會員：會員方案 + 走到 dashboard-empty
+                localStorage.setItem('mgm_current_user_plan', 'customer');
+                sessionStorage.setItem('mgm_demo_empty', '1');
+                setDemoPersonProfile({
+                  personId: 'A123456789',
+                  identityNo: 'A123456789',
+                  mobile: '0935566777',
+                  lineUserId: 'U250310001',
+                  uid: 'U250310001',
+                  name: '王小毅',
+                  source: 'demo-switcher',
+                  userRole: 'Visitor',
+                  employeeFlag: 'N',
+                  employeeStatus: null,
+                });
+                sessionStorage.setItem('mgm_login_identity', '會員');
+                sessionStorage.setItem('mgm_login_uid', 'U250310001');
+                sessionStorage.setItem('mgm_login_name', '王小毅');
+                sessionStorage.setItem('mgm_login_phone', '0935566777');
+                sessionStorage.setItem('mgm_login_id_number', 'A123456789');
+              } else if (plan === 'blacklisted') {
+                // 被封鎖會員：會員方案 + 黑名單旗標 + 對應已凍結 UID（與 admin-blacklist demo 資料對齊）
+                localStorage.setItem('mgm_current_user_plan', 'customer');
+                sessionStorage.setItem('mgm_blacklisted', '1');
+                setDemoPersonProfile({
+                  personId: 'B223456789',
+                  identityNo: 'B223456789',
+                  mobile: '0933678111',
+                  lineUserId: 'U250115005',
+                  uid: 'U250115005',
+                  name: '張○維',
+                  source: 'demo-switcher',
+                  userRole: 'Visitor',
+                  employeeFlag: 'N',
+                  employeeStatus: null,
+                });
+                sessionStorage.setItem('mgm_login_identity', '會員');
+                sessionStorage.setItem('mgm_login_uid', 'U250115005');
+                sessionStorage.setItem('mgm_login_name', '張○維');
+                sessionStorage.setItem('mgm_login_phone', '0933678111');
+                sessionStorage.setItem('mgm_login_id_number', 'B223456789');
+              } else if (plan === 'converted-employee') {
+                // 前推薦客入職員工：蘇建志（mobile 0966123456）已在員工主檔
+                // Profile 存為 Visitor；resolvePersonProfile() 透過 applyEmployeeMasterOverride 自動升級為 Employee
+                localStorage.setItem('mgm_current_user_plan', 'employee');
+                sessionStorage.setItem('mgm_demo_converted_employee', '1');
+                setDemoPersonProfile({
+                  personId: 'D966123456',
+                  identityNo: 'D966123456',
+                  mobile: '0966123456',
+                  lineUserId: 'U250601010',
+                  uid: 'U250601010',
+                  name: '蘇建志',
+                  source: 'demo-switcher',
+                  userRole: 'Visitor',
+                  employeeFlag: 'N',
+                  employeeStatus: null,
+                });
+                sessionStorage.setItem('mgm_login_identity', '員工');
+                sessionStorage.setItem('mgm_login_uid', 'U250601010');
+                sessionStorage.setItem('mgm_login_name', '蘇建志');
+                sessionStorage.setItem('mgm_login_phone', '0966123456');
+                sessionStorage.setItem('mgm_login_id_number', 'D966123456');
+              } else if (plan === 'ex-employee') {
+                localStorage.setItem('mgm_current_user_plan', 'customer');
+                setDemoPersonProfile({
+                  personId: 'B123456789',
+                  identityNo: 'B123456789',
+                  mobile: '0912345678',
+                  lineUserId: 'U230620004',
+                  uid: 'U230620004',
+                  name: '陳前輩',
+                  source: 'demo-switcher',
+                  resignDate: '2026/05/20',
+                  userRole: 'Visitor',
+                  employeeFlag: 'Y',
+                  employeeStatus: 'Resigned',
+                });
+                sessionStorage.setItem('mgm_login_identity', '離職員工');
+                sessionStorage.setItem('mgm_login_uid', 'U230620004');
+                sessionStorage.setItem('mgm_login_name', '陳前輩');
+                sessionStorage.setItem('mgm_login_phone', '0912345678');
+                sessionStorage.setItem('mgm_login_id_number', 'B123456789');
+                sessionStorage.setItem('mgm_ex_resign_date', '2026/05/20');
+                sessionStorage.setItem('mgm_ex_line_friend', '1');
+                sessionStorage.setItem('mgm_ex_form_phone', '0912345678');
+              } else {
+                // 有績效會員：會員方案 + 一般 dashboard
+                localStorage.setItem('mgm_current_user_plan', 'customer');
+                setDemoPersonProfile({
+                  personId: 'A123456789',
+                  identityNo: 'A123456789',
+                  mobile: '0935566777',
+                  lineUserId: 'U250310001',
+                  uid: 'U250310001',
+                  name: '王小毅',
+                  source: 'demo-switcher',
+                  userRole: 'Visitor',
+                  employeeFlag: 'N',
+                  employeeStatus: null,
+                });
+                sessionStorage.setItem('mgm_login_identity', '會員');
+                sessionStorage.setItem('mgm_login_uid', 'U250310001');
+                sessionStorage.setItem('mgm_login_name', '王小毅');
+                sessionStorage.setItem('mgm_login_phone', '0935566777');
+                sessionStorage.setItem('mgm_login_id_number', 'A123456789');
+              }
+              sessionStorage.setItem('mgm_login_source', 'demo-switcher');
+            } catch {}
+
+            // 先套用方案，再導頁至指定頁
+            const planForRouter = (plan === 'employee' || plan === 'converted-employee') ? 'employee' : 'customer';
+            if (window.AppRouter && window.AppRouter.setCurrentUserPlan) {
+              window.AppRouter.setCurrentUserPlan(planForRouter);
+              if (window.AppRouter.go) window.AppRouter.go(targetPage);
+            } else {
+              location.hash = '#' + targetPage;
+              location.reload();
+            }
+            refresh();
+          });
+        });
+
+        window.addEventListener('storage', refresh);
+      })();
+    </script>
+
+    <!-- master frame 行為控制（common 必須先載入，提供身分判定與工具函式） -->
+    <script src="js/common.js"></script>
+    <script src="js/layout.js"></script>
+  </body>
+</html>

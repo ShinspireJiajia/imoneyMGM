@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>在職員工登入入口 - 理財通 MGM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/ex-login.css" />
+  </head>
+  <body class="ex-login-body">
+    <header class="ex-header">
+      <div class="ex-header-brand">
+        <div class="ex-header-brand-icon">
+          <i class="fa-solid fa-user-shield"></i>
+        </div>
+        <div class="ex-header-brand-text">
+          理財通 MGM
+          <small>在職員工登入入口</small>
+        </div>
+      </div>
+      <a class="ex-header-help" href="#" id="btn-open-help">
+        <i class="fa-regular fa-circle-question"></i>需要協助
+      </a>
+    </header>
+
+    <main class="ex-main">
+      <section class="ex-card">
+        <div class="ex-steps">
+          <div class="ex-step active">
+            <span class="num">1</span>
+            <span class="label">帳號登入</span>
+          </div>
+          <div class="ex-step">
+            <span class="num">2</span>
+            <span class="label">手機綁定</span>
+          </div>
+          <div class="ex-step">
+            <span class="num">3</span>
+            <span class="label">進入看板</span>
+          </div>
+        </div>
+
+        <div class="ex-panel active" id="panel-1">
+          <h1 class="ex-title">在職員工登入</h1>
+          <p class="ex-subtitle">
+            請先輸入公司帳號與密碼。首次登入或尚未完成手機驗證者，需先完成手機 OTP 綁定。
+          </p>
+
+          <div class="field">
+            <label class="field-label field-required" for="inp-email">員工 Email</label>
+            <input class="field-input" id="inp-email" type="email" placeholder="name@mgm-demo.com" autocomplete="username" />
+          </div>
+
+          <div class="field">
+            <label class="field-label field-required" for="inp-password">登入密碼</label>
+            <input class="field-input" id="inp-password" type="password" placeholder="請輸入密碼" autocomplete="current-password" />
+            <span class="field-hint">Demo 可使用：amy.lin@mgm-demo.com / Pass@1234</span>
+          </div>
+
+          <button id="btn-employee-login" type="button" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-arrow-right"></i>下一步
+          </button>
+
+          <div class="security-tip" style="margin-top: 12px; background: #eff6ff; color: #1d4ed8;">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+            <div>
+              <strong>首次登入提醒：</strong>
+              首次登入完成後，系統會引導您綁定手機並完成 OTP 驗證，後續提領會直接沿用此手機資料。
+            </div>
+          </div>
+        </div>
+
+        <div class="ex-panel" id="panel-2">
+          <h1 class="ex-title">手機 OTP 綁定</h1>
+          <p class="ex-subtitle">
+            請確認手機號碼後完成 OTP 驗證。綁定成功後，才會進入一般員工前台。
+          </p>
+
+          <div class="field">
+            <label class="field-label field-required" for="inp-phone">手機號碼</label>
+            <input class="field-input" id="inp-phone" type="tel" maxlength="10" placeholder="0912345678" autocomplete="tel" />
+            <span class="field-hint">需與人資留存資料一致，Demo 可用 0911222333</span>
+          </div>
+
+          <button id="btn-send-employee-otp" type="button" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-paper-plane"></i>發送 OTP 驗證碼
+          </button>
+
+          <div class="security-tip">
+            <i class="fa-solid fa-shield-halved"></i>
+            <div>
+              <strong>驗證用途：</strong>完成綁定後，首頁與提領流程會直接使用這組手機資料。
+            </div>
+          </div>
+        </div>
+
+        <div class="ex-panel" id="panel-3">
+          <h1 class="ex-title">請輸入簡訊驗證碼</h1>
+          <p class="ex-subtitle">
+            驗證碼已發送至 <strong id="phone-mask">—</strong>，請於 3 分鐘內輸入。
+          </p>
+
+          <div class="otp-row">
+            <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼" />
+            <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼" />
+            <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼" />
+            <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼" />
+            <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼" />
+            <input class="otp-input" type="tel" maxlength="1" inputmode="numeric" placeholder="‧" aria-label="驗證碼" />
+          </div>
+
+          <div class="resend">
+            <span>剩餘時間：<strong id="otp-timer" style="color: var(--color-primary-dark);">03:00</strong></span>
+            <button id="btn-resend" type="button" class="resend-btn" disabled>
+              <i class="fa-solid fa-rotate-right"></i>重新發送
+            </button>
+          </div>
+
+          <div class="security-tip" style="margin-top: 22px;">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+              <strong>Demo 提示：</strong>輸入任意 6 位數即可通過。
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="ex-footer">
+      <p>© 2026 理財通 MGM Platform · 在職員工登入入口</p>
+    </footer>
+
+    <div id="help-modal" class="ex-help-modal" hidden>
+      <div class="ex-help-backdrop" data-close></div>
+      <div class="ex-help-panel" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+        <header class="ex-help-head">
+          <h3 id="help-modal-title">
+            <i class="fa-regular fa-circle-question"></i>需要協助
+          </h3>
+          <button type="button" class="ex-help-close" data-close aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+        <div class="ex-help-body">
+          <section class="ex-help-section">
+            <h4><i class="fa-solid fa-user-lock"></i>登入方式</h4>
+            <p>請先輸入公司 Email 與密碼，首次登入者需補完成手機 OTP 綁定，綁定成功後才會進入一般前台。</p>
+          </section>
+
+          <section class="ex-help-section">
+            <h4><i class="fa-solid fa-comment-sms"></i>未收到 OTP</h4>
+            <p>簡訊可能延遲數秒至 1 分鐘，若仍未收到，可待倒數結束後重新發送。</p>
+          </section>
+        </div>
+        <footer class="ex-help-foot">
+          <button type="button" class="btn btn-primary" data-close>我已了解</button>
+        </footer>
+      </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script src="js/employee-login.js"></script>
+  </body>
+</html>
