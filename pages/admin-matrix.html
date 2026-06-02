@@ -179,52 +179,21 @@
           </div>
         </section>
 
-        <!-- 多專案疊加組合規則 -->
-        <section class="matrix-card combo-card">
+        <!-- 條件重疊上限 -->
+        <section class="matrix-card">
           <div class="matrix-card-head">
-            <h3><i class="fa-solid fa-layer-group"></i>組合條件設定（疊加制）</h3>
-            <button id="btn-add-combo" type="button" class="btn btn-outline" style="padding: 6px 14px; font-size: 13px;">
-              <i class="fa-solid fa-plus"></i>新增組合
-            </button>
+            <h3><i class="fa-solid fa-layer-group"></i>條件重疊上限</h3>
           </div>
 
-          <div style="overflow-x: auto;">
-            <table class="matrix-table-full combo-table">
-              <thead>
-                <tr>
-                  <th style="width: 420px;">專案組合（可複選）</th>
-                  <th style="width: 220px;">組合總上限 (TWD)</th>
-                  <th style="width: 140px;">啟用狀態</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody id="combo-tbody">
-                <tr data-row-mode="view">
-                  <td>
-                    <div class="combo-projects">
-                      <label class="combo-check"><input type="checkbox" class="combo-project" value="motor" checked disabled /><span>汽機車小額融資／代書信貸</span></label>
-                      <label class="combo-check"><input type="checkbox" class="combo-project" value="bank" checked disabled /><span>銀行信貸／企貸</span></label>
-                      <label class="combo-check"><input type="checkbox" class="combo-project" value="realestate" disabled /><span>不動產貸款</span></label>
-                      <label class="combo-check"><input type="checkbox" class="combo-project" value="debt" disabled /><span>債務協商</span></label>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input combo-cap" type="number" value="20000" disabled /></span>
-                  </td>
-                  <td class="status-label"><label class="switch"><input type="checkbox" class="combo-enabled" checked disabled /><span class="switch-slider"></span></label></td>
-                  <td class="row-actions">
-                    <button type="button" class="row-action-btn" data-combo-action="edit"><i class="fa-solid fa-pen"></i>編輯</button>
-                    <button type="button" class="row-action-btn primary" data-combo-action="save" hidden><i class="fa-solid fa-check"></i>儲存</button>
-                    <button type="button" class="row-action-btn" data-combo-action="cancel" hidden>取消</button>
-                    <button type="button" class="row-action-btn danger" data-combo-action="remove">移除</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="overlap-cap-row">
+            <label class="overlap-cap-field-label">同一案件觸發多個方案時，獎金加總上限（TWD）</label>
+            <span class="cell-input"><span class="inline-prefix">$</span><input id="overlap-cap-input" class="inline-input" type="number" value="20000" min="0" /></span>
+            <label class="switch"><input type="checkbox" id="overlap-cap-enabled" checked /><span class="switch-slider"></span></label>
+            <span class="overlap-cap-label">啟用上限</span>
           </div>
 
           <div class="combo-note">
-            規則說明：案件同時符合多個類型時，先各自依單專案規則計算獎金後加總，再套用「組合總上限」。
+            規則說明：案件同時符合多個類型時，先各自依單專案規則計算獎金後加總，若啟用上限則總額不超過設定金額；停用時各方案獎金無上限累計。
           </div>
         </section>
 
