@@ -18,6 +18,18 @@
 
   let CURRENT = getCurrentCampaign();
 
+  // Preview mode (?preview=1)：用於簡報 iframe 嵌入，略過 session 要求
+  if (!CURRENT && new URLSearchParams(location.search).get('preview') === '1') {
+    CURRENT = {
+      id: 'CAMP-C-2026Q2',
+      name: '2026 Q2 會員初夏推薦大賞',
+      status: 'active',
+      start: '2026-04-01',
+      end: '2026-06-30',
+      plan: 'member',
+    };
+  }
+
   // 沒帶活動資訊 → 跳回列表
   if (!CURRENT) {
     if (window.parent && window.parent.AdminRouter) {
@@ -382,121 +394,13 @@
     });
   }
 
-  function setComboRowMode(row, mode) {
-    row.dataset.rowMode = mode;
-    const editing = mode === 'edit';
-    row.querySelectorAll('.combo-project, .combo-cap, .combo-enabled').forEach((el) => {
-      el.disabled = !editing;
-    });
-    row.querySelectorAll('[data-combo-action]').forEach((btn) => {
-      const act = btn.dataset.comboAction;
-      if (act === 'edit') btn.hidden = editing;
-      if (act === 'save') btn.hidden = !editing;
-      if (act === 'cancel') btn.hidden = !editing;
-      if (act === 'remove') btn.hidden = editing;
-    });
-  }
-
-  function snapshotComboRow(row) {
-    const snap = [];
-    row.querySelectorAll('.combo-cap').forEach((el) => snap.push({ el, val: el.value }));
-    row.querySelectorAll('.combo-enabled, .combo-project').forEach((el) => snap.push({ el, val: el.checked, isCheck: true }));
-    return snap;
-  }
-
-  function getComboProjectKeys(row) {
-    return Array.from(row.querySelectorAll('.combo-project:checked')).map((el) => el.value).sort();
-  }
-
-  function getComboKey(row) {
-    return getComboProjectKeys(row).join('|');
-  }
-
-  function createComboRow(rule = {}) {
-    const selected = new Set(rule.projects || []);
-    const cap = rule.totalCap != null ? rule.totalCap : 20000;
-    const enabled = rule.enabled !== false;
-    const tr = document.createElement('tr');
-    tr.dataset.rowMode = 'view';
-    tr.innerHTML = `
-      <td>
-        <div class="combo-projects">
-          ${PROJECT_OPTIONS.map((p) => `
-            <label class="combo-check"><input type="checkbox" class="combo-project" value="${p.key}" ${selected.has(p.key) ? 'checked' : ''} disabled /><span>${p.label}</span></label>
-          `).join('')}
-        </div>
-      </td>
-      <td><span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input combo-cap" type="number" value="${cap}" disabled /></span></td>
-      <td class="status-label"><label class="switch"><input type="checkbox" class="combo-enabled" ${enabled ? 'checked' : ''} disabled /><span class="switch-slider"></span></label></td>
-      <td class="row-actions">
-        <button type="button" class="row-action-btn" data-combo-action="edit"><i class="fa-solid fa-pen"></i>編輯</button>
-        <button type="button" class="row-action-btn primary" data-combo-action="save" hidden><i class="fa-solid fa-check"></i>儲存</button>
-        <button type="button" class="row-action-btn" data-combo-action="cancel" hidden>取消</button>
-        <button type="button" class="row-action-btn danger" data-combo-action="remove">移除</button>
-      </td>
-    `;
-    return tr;
-  }
-
-  function bindAddCombo() {
-    const btn = document.getElementById('btn-add-combo');
-    const tbody = document.getElementById('combo-tbody');
-    if (!btn || !tbody) return;
-    btn.addEventListener('click', () => {
-      const row = createComboRow({ projects: [] });
-      tbody.appendChild(row);
-      setComboRowMode(row, 'edit');
-      const firstCheck = row.querySelector('.combo-project');
-      if (firstCheck) firstCheck.focus();
-    });
-  }
-
-  function bindComboRules() {
-    const tbody = document.getElementById('combo-tbody');
-    if (!tbody) return;
-    const snapshots = new WeakMap();
-
-    tbody.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-combo-action]');
-      if (!btn) return;
-      const row = btn.closest('tr');
-      if (!row) return;
-      const action = btn.dataset.comboAction;
-
-      if (action === 'edit') {
-        snapshots.set(row, snapshotComboRow(row));
-        setComboRowMode(row, 'edit');
-      } else if (action === 'save') {
-        const selected = getComboProjectKeys(row);
-        if (selected.length < 2) {
-          alert('組合規則至少需勾選 2 個專案。');
-          return;
-        }
-        const comboKey = selected.join('|');
-        const duplicated = Array.from(tbody.querySelectorAll('tr')).some((x) => x !== row && getComboKey(x) === comboKey);
-        if (duplicated) {
-          alert('相同的專案組合已存在，請直接編輯既有規則。');
-          return;
-        }
-        setComboRowMode(row, 'view');
-        snapshots.delete(row);
-        toast(`已儲存組合規則：${selected.map(getProjectLabel).join(' + ')}`);
-      } else if (action === 'cancel') {
-        const snap = snapshots.get(row);
-        if (snap) restoreRow(snap);
-        if (!getComboKey(row)) {
-          row.remove();
-          snapshots.delete(row);
-          return;
-        }
-        setComboRowMode(row, 'view');
-        snapshots.delete(row);
-      } else if (action === 'remove') {
-        if (!confirm('確定要移除此組合規則？')) return;
-        row.remove();
-        toast('已移除組合規則。');
-      }
-    });
+  function collectOverlapCap() {
+    const capEl = document.getElementById('overlap-cap-input');
+    const enabledEl = document.getElementById('overlap-cap-enabled');
+    return {
+      overlapCap: Number(capEl ? capEl.value : 0) || 0,
+      overlapCapEnabled: !!(enabledEl && enabledEl.checked),
+    };
   }
 
   function collectProjectRules() {
@@ -517,45 +421,23 @@
     }).filter((r) => !!r.projectKey);
   }
 
-  function collectComboRules() {
-    const tbody = document.getElementById('combo-tbody');
-    if (!tbody) return [];
-    return Array.from(tbody.querySelectorAll('tr')).map((row) => {
-      const capEl = row.querySelector('.combo-cap');
-      const enabledEl = row.querySelector('.combo-enabled');
-      return {
-        projects: getComboProjectKeys(row),
-        totalCap: Number(capEl ? capEl.value : 0) || 0,
-        enabled: !!(enabledEl && enabledEl.checked),
-      };
-    }).filter((r) => r.projects.length >= 2);
-  }
-
   function readStoredMatrixRules() {
     const raw = localStorage.getItem(matrixStorageKey());
-    if (!raw) return { projectRules: [], comboRules: [] };
+    if (!raw) return { projectRules: [], overlapCap: 20000, overlapCapEnabled: true };
     try {
       const data = JSON.parse(raw);
       return {
         projectRules: Array.isArray(data.projectRules) ? data.projectRules : [],
-        comboRules: Array.isArray(data.comboRules) ? data.comboRules : [],
+        overlapCap: data.overlapCap != null ? data.overlapCap : 20000,
+        overlapCapEnabled: data.overlapCapEnabled !== false,
       };
     } catch {
-      return { projectRules: [], comboRules: [] };
+      return { projectRules: [], overlapCap: 20000, overlapCapEnabled: true };
     }
-  }
-
-  function comboRuleKey(rule) {
-    return (rule.projects || []).slice().sort().join('|');
   }
 
   function formatProjectRule(rule) {
     return `${getProjectLabel(rule.projectKey)}：獎金 $${Number(rule.bonus || 0).toLocaleString()} / 觸發：${rule.trigger || '—'} / ${rule.enabled ? '啟用' : '停用'}`;
-  }
-
-  function formatComboRule(rule) {
-    const labels = (rule.projects || []).map(getProjectLabel).join(' + ');
-    return `${labels}：組合上限 $${Number(rule.totalCap || 0).toLocaleString()} / ${rule.enabled ? '啟用' : '停用'}`;
   }
 
   function diffProjectRule(prev, next) {
@@ -568,17 +450,6 @@
     }
     if (!!prev.enabled !== !!next.enabled) {
       changes.push(`狀態 ${prev.enabled ? '啟用' : '停用'} → ${next.enabled ? '啟用' : '停用'}`);
-    }
-    return changes;
-  }
-
-  function diffComboRule(prev, next) {
-    const changes = [];
-    if (Number(prev.totalCap || 0) !== Number(next.totalCap || 0)) {
-      changes.push(`組合上限 $${Number(prev.totalCap || 0).toLocaleString()} -> $${Number(next.totalCap || 0).toLocaleString()}`);
-    }
-    if (!!prev.enabled !== !!next.enabled) {
-      changes.push(`狀態 ${prev.enabled ? '啟用' : '停用'} -> ${next.enabled ? '啟用' : '停用'}`);
     }
     return changes;
   }
@@ -610,34 +481,16 @@
       }
     });
 
-    const prevComboMap = new Map((previous.comboRules || []).map((r) => [comboRuleKey(r), r]));
-    const nextComboMap = new Map((next.comboRules || []).map((r) => [comboRuleKey(r), r]));
+    const overlapChanges = [];
+    if (Number(previous.overlapCap || 0) !== Number(next.overlapCap || 0)) {
+      overlapChanges.push(`- 重疊上限金額：$${Number(previous.overlapCap || 0).toLocaleString()} → $${Number(next.overlapCap || 0).toLocaleString()}`);
+    }
+    if (!!previous.overlapCapEnabled !== !!next.overlapCapEnabled) {
+      overlapChanges.push(`- 重疊上限狀態：${previous.overlapCapEnabled ? '啟用' : '停用'} → ${next.overlapCapEnabled ? '啟用' : '停用'}`);
+    }
 
-    const comboAdded = [];
-    const comboUpdated = [];
-    const comboRemoved = [];
-
-    nextComboMap.forEach((rule, key) => {
-      const oldRule = prevComboMap.get(key);
-      if (!oldRule) {
-        comboAdded.push(`- 新增組合：${formatComboRule(rule)}`);
-        return;
-      }
-      const changes = diffComboRule(oldRule, rule);
-      if (changes.length) {
-        const comboName = (rule.projects || []).map(getProjectLabel).join(' + ');
-        comboUpdated.push(`- 調整組合：${comboName}（${changes.join('；')}）`);
-      }
-    });
-
-    prevComboMap.forEach((rule, key) => {
-      if (!nextComboMap.has(key)) {
-        comboRemoved.push(`- 移除組合：${formatComboRule(rule)}`);
-      }
-    });
-
-    lines.push(`專案 ${next.projectRules.length} 筆、組合 ${next.comboRules.length} 筆`);
-    lines.push(...projectAdded, ...projectUpdated, ...projectRemoved, ...comboAdded, ...comboUpdated, ...comboRemoved);
+    lines.push(`專案 ${next.projectRules.length} 筆`);
+    lines.push(...projectAdded, ...projectUpdated, ...projectRemoved, ...overlapChanges);
 
     if (lines.length === 1) {
       lines.push('- 本次未偵測到欄位差異（可能僅重新儲存）');
@@ -647,11 +500,12 @@
   }
 
   function persistMatrixRules() {
+    const { overlapCap, overlapCapEnabled } = collectOverlapCap();
     const payload = {
       projectRules: collectProjectRules(),
-      comboRules: collectComboRules(),
+      overlapCap,
+      overlapCapEnabled,
       updatedAt: new Date().toISOString(),
-      mode: 'additive',
     };
     localStorage.setItem(matrixStorageKey(), JSON.stringify(payload));
     return payload;
@@ -678,8 +532,7 @@
     if (!data) return;
 
     const matrixBody = document.getElementById('matrix-tbody');
-    const comboBody = document.getElementById('combo-tbody');
-    if (!matrixBody || !comboBody) return;
+    if (!matrixBody) return;
 
     const rowByKey = new Map(Array.from(matrixBody.querySelectorAll('tr')).map((row) => [getRowProjectKey(row), row]));
     (data.projectRules || []).forEach((rule) => {
@@ -694,14 +547,10 @@
       }
     });
 
-    if (Array.isArray(data.comboRules) && data.comboRules.length) {
-      comboBody.innerHTML = '';
-      data.comboRules.forEach((rule) => {
-        const row = createComboRow(rule);
-        comboBody.appendChild(row);
-        setComboRowMode(row, 'view');
-      });
-    }
+    const capEl = document.getElementById('overlap-cap-input');
+    const enabledEl = document.getElementById('overlap-cap-enabled');
+    if (capEl && data.overlapCap != null) capEl.value = data.overlapCap;
+    if (enabledEl && data.overlapCapEnabled != null) enabledEl.checked = data.overlapCapEnabled;
   }
 
   function bindMatrixSave() {
@@ -710,7 +559,7 @@
       const payload = persistMatrixRules();
       const detail = buildMatrixChangeSummary(previous, payload);
       appendHistory('matrix', '儲存獎金級距', detail);
-      toast(`已儲存獎金級距設定（專案 ${payload.projectRules.length} 筆、組合 ${payload.comboRules.length} 筆）。`);
+      toast(`已儲存獎金級距設定（專案 ${payload.projectRules.length} 筆）。`);
     });
 
     // 即時試算（固定獎金制：選擇方案即顯示對應金額）
@@ -882,12 +731,16 @@
     fillCampaignHead();
     fillInfoForm();
     bindTabs();
+    // 根據 URL hash 自動切換 tab（例如 #matrix → 獎金級距）
+    const _hashTab = location.hash.slice(1);
+    if (_hashTab) {
+      const _tabEl = document.querySelector('.cd-tab[data-tab="' + _hashTab + '"]');
+      if (_tabEl) _tabEl.click();
+    }
     bindInfoSave();
     bindMatrixSave();
     bindAddProject();
     bindRowToggle();
-    bindAddCombo();
-    bindComboRules();
     bindEditor();
     bindBack();
     loadMatrixRules();
