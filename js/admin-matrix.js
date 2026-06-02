@@ -611,6 +611,7 @@
   }
 
   function bindEditor() {
+    if (!document.getElementById('ce-img-input')) return;
     document.querySelectorAll('#ce-toolbar [data-cmd]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const cmd = btn.dataset.cmd;
