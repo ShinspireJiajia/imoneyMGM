@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>常見問答維護 - 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-campaigns.css" />
+    <link rel="stylesheet" href="../css/admin-faq.css" />
+  </head>
+  <body class="admin">
+    <main class="page-wrap fade-in">
+
+      <div class="page-crumb">內容管理 / 常見問答維護</div>
+
+      <section class="page-card">
+
+        <!-- 工具列 -->
+        <div class="card-toolbar">
+          <div class="faq-intro">
+            <strong>常見問答（FAQ）</strong>
+            <span class="faq-intro-sub">維護前台 <code>/index.html#dashboard</code> 顯示之問答內容，可新增 / 編輯 / 排序 / 啟停。</span>
+          </div>
+          <div class="card-toolbar-actions">
+            <button type="button" class="btn-primary" id="btn-faq-add">
+              <i class="fa-solid fa-plus"></i>新增問答
+            </button>
+          </div>
+        </div>
+
+        <!-- 問答列表 -->
+        <section class="faq-admin-list" id="faq-admin-list" aria-label="常見問答列表"></section>
+
+        <div class="page-alert">
+          <i class="fa-solid fa-circle-info"></i>
+          <div>
+            拖曳「<i class="fa-solid fa-up-down" style="margin: 0 2px;"></i>」手把可調整顯示順序。
+            停用的問答不會出現在前台。儲存後前台於下次重新整理時更新。
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- ============== 新增 / 編輯 Modal ============== -->
+    <div id="faq-editor-modal" class="faq-modal" hidden>
+      <div class="faq-modal-backdrop" data-close></div>
+      <div class="faq-modal-panel" role="dialog" aria-modal="true" aria-labelledby="faq-modal-title">
+        <header class="faq-modal-header">
+          <div>
+            <h3 id="faq-modal-title">
+              <i class="fa-solid fa-pen-to-square"></i>
+              <span id="faq-modal-mode">新增問答</span>
+            </h3>
+            <div class="faq-modal-subtitle">問題與答案均為必填欄位</div>
+          </div>
+          <button type="button" class="faq-modal-close" data-close aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+
+        <div class="faq-modal-body">
+          <!-- 問題 -->
+          <div class="faq-field">
+            <label class="faq-field-label" for="faq-question">
+              <i class="fa-solid fa-circle-question"></i>問題
+            </label>
+            <input
+              type="text"
+              id="faq-question"
+              class="faq-field-input"
+              placeholder="例：如何取得我的推薦連結？"
+              maxlength="120"
+            />
+            <div class="faq-field-hint">建議 50 字以內，簡明描述使用者的疑問</div>
+          </div>
+
+          <!-- 答案 -->
+          <div class="faq-field">
+            <label class="faq-field-label" for="faq-answer">
+              <i class="fa-solid fa-comment-dots"></i>答案
+            </label>
+            <!-- 簡易工具列 -->
+            <div class="faq-toolbar" id="faq-toolbar" aria-label="格式工具列">
+              <button type="button" class="faq-tb-btn" data-cmd="bold" title="粗體">
+                <i class="fa-solid fa-bold"></i>
+              </button>
+              <button type="button" class="faq-tb-btn" data-cmd="insertUnorderedList" title="項目清單">
+                <i class="fa-solid fa-list-ul"></i>
+              </button>
+              <button type="button" class="faq-tb-btn" data-cmd="removeFormat" title="清除格式">
+                <i class="fa-solid fa-eraser"></i>
+              </button>
+              <div class="faq-tb-sep"></div>
+              <button type="button" id="faq-toggle-source" class="faq-tb-btn faq-tb-mode" title="切換 HTML 原始碼">
+                <i class="fa-solid fa-code"></i>原始碼
+              </button>
+            </div>
+            <div
+              id="faq-answer-editor"
+              class="faq-answer-editor"
+              contenteditable="true"
+              spellcheck="false"
+              aria-label="答案內容編輯區"
+            ></div>
+            <textarea
+              id="faq-answer-source"
+              class="faq-answer-source"
+              hidden
+              spellcheck="false"
+              placeholder="<p>請輸入 HTML 內容...</p>"
+            ></textarea>
+          </div>
+
+          <!-- 啟用狀態 -->
+          <div class="faq-field faq-field-row">
+            <label class="faq-field-label" for="faq-enabled">
+              <i class="fa-solid fa-toggle-on"></i>前台顯示
+            </label>
+            <label class="faq-toggle" aria-label="啟用後前台顯示此問答">
+              <input type="checkbox" id="faq-enabled" checked />
+              <span class="faq-toggle-track">
+                <span class="faq-toggle-thumb"></span>
+              </span>
+              <span class="faq-toggle-label" id="faq-enabled-label">啟用</span>
+            </label>
+          </div>
+        </div>
+
+        <footer class="faq-modal-footer">
+          <div class="faq-footer-right">
+            <button type="button" class="btn-outline" data-close>取消</button>
+            <button type="button" class="btn-primary" id="faq-save">
+              <i class="fa-solid fa-check"></i>儲存
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <!-- ============== 刪除確認 Modal ============== -->
+    <div id="faq-delete-modal" class="faq-modal" hidden>
+      <div class="faq-modal-backdrop" data-close></div>
+      <div class="faq-modal-panel faq-modal-panel-sm" role="dialog" aria-modal="true">
+        <header class="faq-modal-header faq-modal-header-danger">
+          <h3><i class="fa-solid fa-triangle-exclamation"></i>確認刪除</h3>
+          <button type="button" class="faq-modal-close" data-close aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+        <div class="faq-modal-body">
+          <p class="faq-delete-text">確定要刪除這筆問答嗎？刪除後無法復原。</p>
+          <blockquote class="faq-delete-preview" id="faq-delete-preview"></blockquote>
+        </div>
+        <footer class="faq-modal-footer">
+          <div class="faq-footer-right">
+            <button type="button" class="btn-outline" data-close>取消</button>
+            <button type="button" class="btn-danger" id="faq-delete-confirm">
+              <i class="fa-solid fa-trash"></i>刪除
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <script src="../js/admin-faq.js"></script>
+  </body>
+</html>

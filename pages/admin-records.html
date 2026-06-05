@@ -86,14 +86,12 @@
             <thead>
               <tr>
                 <th>案號</th>
-                <th>類型</th>
                 <th>收款類型</th>
                 <th>標籤</th>
                 <th>會員編號</th>
                 <th>姓名</th>
                 <th>被推薦人</th>
                 <th>被推薦人手機號碼</th>
-                <th>申請日 <span class="th-hint" title="被推薦人提出申請單的日期"><i class="fa-solid fa-circle-question"></i></span></th>
                 <th>狀態</th>
                 <th>對應獎金</th>
                 <th style="min-width: 100px;">操作</th>
@@ -135,9 +133,10 @@
               <div class="rv-row"><span class="rv-label">推薦人</span><span class="rv-value" id="rv-referrer">—</span></div>
               <div class="rv-row"><span class="rv-label">會員編號</span><span class="rv-value mono" id="rv-referrer-cid">—</span></div>
               <div class="rv-row"><span class="rv-label">身份</span><span class="rv-value" id="rv-tag">—</span></div>
-              <div class="rv-row"><span class="rv-label">諮詢單號</span><span class="rv-value mono" id="rv-neg">—</span></div>
+              <div class="rv-row"><span class="rv-label">諮詢單號</span><a class="rv-value mono rv-ext-link" id="rv-neg" href="#" target="_blank" rel="noopener">—</a></div>
               <div class="rv-row"><span class="rv-label">被推薦人</span><span class="rv-value" id="rv-referee">—</span></div>
               <div class="rv-row"><span class="rv-label">被推薦人手機號碼</span><span class="rv-value mono" id="rv-referee-cid">—</span></div>
+              <div class="rv-row"><span class="rv-label">客戶編號</span><a class="rv-value mono rv-ext-link" id="rv-customer-id" href="#" target="_blank" rel="noopener">—</a></div>
             </div>
           </section>
 
@@ -149,7 +148,7 @@
               <div class="rv-row"><span class="rv-label">符合活動編號</span><span class="rv-value mono" id="rv-campaign">—</span></div>
               <div class="rv-row"><span class="rv-label">申請日期</span><span class="rv-value mono" id="rv-submit">—</span></div>
               <div class="rv-row"><span class="rv-label">撥款日</span><span class="rv-value mono" id="rv-payout">—</span></div>
-              <div class="rv-row"><span class="rv-label">收款單號</span><span class="rv-value mono" id="rv-receipt-no">—</span></div>
+              <div class="rv-row"><span class="rv-label">收款單號</span><a class="rv-value mono rv-ext-link" id="rv-receipt-no" href="#" target="_blank" rel="noopener">—</a></div>
               <div class="rv-row"><span class="rv-label">應收服務費</span><span class="rv-value mono" id="rv-expected-fee">—</span></div>
               <div class="rv-row"><span class="rv-label">實收服務費</span><span class="rv-value mono" id="rv-actual-fee">—</span></div>
               <div class="rv-row"><span class="rv-label">狀態</span><span class="rv-value" id="rv-status">—</span></div>

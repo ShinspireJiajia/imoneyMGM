@@ -43,7 +43,7 @@
         </div>
         <div class="step" data-step="2">
           <div class="step-num">2</div>
-          <div class="step-label">稅務與<br />匯款資料</div>
+          <div class="step-label" id="step2-label">稅務與<br />匯款資料</div>
         </div>
         <div class="step" data-step="3">
           <div class="step-num">3</div>
@@ -110,6 +110,20 @@
             <i class="fa-solid fa-calendar-check"></i>現場預約資訊
           </div>
           <div class="field">
+            <label class="field-label field-required">提領門市</label>
+            <div class="branch-options" id="branch-options" role="group" aria-label="選擇提領門市">
+              <button type="button" class="branch-btn" data-branch="台北">
+                <span class="branch-btn-city">台北</span>
+                <span class="branch-btn-name">板橋分公司</span>
+              </button>
+              <button type="button" class="branch-btn" data-branch="台中">
+                <span class="branch-btn-city">台中</span>
+                <span class="branch-btn-name">中部總公司</span>
+              </button>
+            </div>
+            <div class="branch-address" id="branch-address" hidden></div>
+          </div>
+          <div class="field">
             <label class="field-label field-required" for="inp-cash-date">預約日期</label>
             <select class="field-input" id="inp-cash-date">
               <option value="">請先選擇日期</option>
@@ -118,7 +132,7 @@
           </div>
           <div class="cash-business-hours">
             <i class="fa-regular fa-clock"></i>
-            <span>營業時間固定：9:00-18:00</span>
+            <span>營業時間固定：10:00-17:00</span>
           </div>
         </div>
 
@@ -165,20 +179,7 @@
           </div>
 
           <h3 class="form-section-title" style="margin-top: 18px;">
-            <i class="fa-solid fa-building-columns"></i>匯款資料
-          </h3>
-
-          <div class="field">
-            <label class="field-label field-required" for="inp-bank">銀行 / 分行</label>
-            <input class="field-input" id="inp-bank" type="text" placeholder="例：玉山銀行 信義分行" />
-          </div>
-          <div class="field">
-            <label class="field-label field-required" for="inp-bank-account">帳號</label>
-            <input class="field-input" id="inp-bank-account" type="text" placeholder="僅可使用本人名下帳戶" />
-          </div>
-
-          <h3 class="form-section-title" style="margin-top: 18px;">
-            <i class="fa-solid fa-camera"></i>證件上傳
+            <i class="fa-solid fa-camera"></i>身分證上傳
           </h3>
           <div class="upload-list">
             <label class="upload-row">
@@ -206,19 +207,39 @@
               <img class="upload-row-preview" alt="身分證反面預覽" hidden />
               <input type="file" accept="image/*" data-label="身分證反面" />
             </label>
+          </div>
 
-            <label class="upload-row">
-              <div class="upload-row-main">
-                <i class="fa-solid fa-book"></i>
-                <div class="upload-row-texts">
-                  <span class="upload-row-title">存摺封面影本</span>
-                  <span class="upload-row-filename">尚未上傳</span>
+          <div id="transfer-section">
+            <h3 class="form-section-title" style="margin-top: 18px;">
+              <i class="fa-solid fa-building-columns"></i>匯款資料
+            </h3>
+
+            <div class="field">
+              <label class="field-label field-required" for="inp-bank">銀行 / 分行</label>
+              <input class="field-input" id="inp-bank" type="text" placeholder="例：玉山銀行 信義分行" />
+            </div>
+            <div class="field">
+              <label class="field-label field-required" for="inp-bank-account">帳號</label>
+              <input class="field-input" id="inp-bank-account" type="text" placeholder="僅可使用本人名下帳戶" />
+            </div>
+
+            <h3 class="form-section-title" style="margin-top: 18px;">
+              <i class="fa-solid fa-camera"></i>存摺上傳
+            </h3>
+            <div class="upload-list">
+              <label class="upload-row">
+                <div class="upload-row-main">
+                  <i class="fa-solid fa-book"></i>
+                  <div class="upload-row-texts">
+                    <span class="upload-row-title">存摺封面影本</span>
+                    <span class="upload-row-filename">尚未上傳</span>
+                  </div>
+                  <button type="button" class="upload-row-reselect" hidden>重新選擇</button>
                 </div>
-                <button type="button" class="upload-row-reselect" hidden>重新選擇</button>
-              </div>
-              <img class="upload-row-preview" alt="存摺封面預覽" hidden />
-              <input type="file" accept="image/*" data-label="存摺封面影本" />
-            </label>
+                <img class="upload-row-preview" alt="存摺封面預覽" hidden />
+                <input type="file" accept="image/*" data-label="存摺封面影本" />
+              </label>
+            </div>
           </div>
 
           <label class="consent">

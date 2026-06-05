@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>提領功能管理（現場提領）- 後台</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-matrix.css" />
+    <link rel="stylesheet" href="../css/admin-referrers.css" />
+    <link rel="stylesheet" href="../css/admin-payments.css" />
+  </head>
+  <body class="admin">
+    <main class="payments-page fade-in page-wrap">
+
+      <div class="page-crumb">財務管理 / 提領功能管理(現場提領)</div>
+
+      <div class="page-toolbar">
+        <div></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <label class="perm-toggle" title="開啟後每筆現場提領記錄會出現「編輯」按鈕">
+            <input type="checkbox" id="perm-edit-cash" />
+            <span class="perm-toggle-track"><span class="perm-toggle-knob"></span></span>
+            <span class="perm-toggle-label">
+              <i class="fa-solid fa-key"></i>
+              權限：編輯現場提領
+            </span>
+          </label>
+          <button id="btn-export-cash" type="button" class="btn btn-outline">
+            <i class="fa-solid fa-download"></i>匯出對帳檔
+          </button>
+        </div>
+      </div>
+
+      <!-- 每日刊版 -->
+      <section class="daily-board-section">
+        <div class="daily-board-header">
+          <h3><i class="fa-solid fa-calendar-day"></i>每日刊版 — <span id="daily-board-range-label">近五日</span>現場提領</h3>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div class="daily-range-tabs">
+              <button type="button" class="daily-range-tab active" data-range="5">近五日</button>
+              <button type="button" class="daily-range-tab" data-range="14">近兩週</button>
+            </div>
+            <span class="daily-board-subtitle">依預計領取日 / 分台北・台中顯示</span>
+          </div>
+        </div>
+        <div class="daily-board-grid" id="daily-board-grid">
+          <!-- JS 動態渲染 -->
+        </div>
+      </section>
+
+      <!-- 篩選 -->
+      <section class="filter-bar cash-filter-bar">
+        <div class="field">
+          <label class="field-label">關鍵字搜尋</label>
+          <input id="cash-filter-keyword" class="field-input" type="text" placeholder="款項編號、案號、推薦人…" />
+        </div>
+        <div class="field">
+          <label class="field-label">狀態</label>
+          <select class="field-select" id="cash-filter-status">
+            <option value="all">全部</option>
+            <option value="pending">待確認</option>
+            <option value="pickup">待領取</option>
+            <option value="completed">已領取</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">門市</label>
+          <select class="field-select" id="cash-filter-branch">
+            <option value="all">全部門市</option>
+            <option value="台北">台北（板橋分公司）</option>
+            <option value="台中">台中（中部總公司）</option>
+          </select>
+        </div>
+        <button id="btn-cash-search" type="button" class="btn btn-primary">
+          <i class="fa-solid fa-magnifying-glass"></i>查詢
+        </button>
+      </section>
+
+      <!-- 清單 -->
+      <section class="list-card">
+        <div class="list-head">
+          <h3><i class="fa-solid fa-store"></i>現場提領清單</h3>
+          <div style="font-size:var(--font-xs);color:var(--color-text-secondary);">
+            勾選後可使用下方批次操作
+          </div>
+        </div>
+
+        <!-- 批次操作條 -->
+        <div id="cash-batch-bar" class="batch-bar hidden">
+          <div class="batch-bar-row">
+            <span>已勾選 <span class="batch-count" id="cash-batch-count">0</span> 筆
+              <span class="batch-amount" id="cash-batch-amount">$0</span>
+            </span>
+            <div class="batch-spacer"></div>
+            <button id="btn-cash-batch-completed" type="button" class="btn btn-success" style="padding:6px 14px;font-size:12px;">
+              <i class="fa-solid fa-handshake"></i>批次標記「已領取」
+            </button>
+            <button id="btn-cash-batch-cancel" type="button" class="btn btn-outline" style="padding:6px 14px;font-size:12px;">
+              取消勾選
+            </button>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table class="data-table data-table-payments">
+            <thead>
+              <tr>
+                <th style="width:36px;"></th>
+                <th>款項編號</th>
+                <th>案號</th>
+                <th>推薦人</th>
+                <th>標籤</th>
+                <th>金額</th>
+                <th>門市</th>
+                <th>預計領取日</th>
+                <th>申請日</th>
+                <th>狀態</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="cash-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <div class="pg-size">
+            每頁
+            <select id="cash-page-size">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="50">50</option>
+            </select>
+            筆
+          </div>
+          <div class="pagination" id="cash-pagination"></div>
+          <div class="pg-total">共 <span id="cash-pg-total">0</span> 筆 · 第 <span id="cash-pg-cur">1</span> / <span id="cash-pg-max">1</span> 頁</div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 編輯備註 Modal -->
+    <div id="note-pay-modal" class="history-modal-bg">
+      <div class="history-modal" style="max-width:480px;">
+        <div class="history-modal-head">
+          <h3>
+            <i class="fa-regular fa-note-sticky"></i>編輯備註
+            <span style="font-size:13px;margin-left:8px;font-family:'Courier New',monospace;color:var(--color-primary-dark);" id="note-pay-id">—</span>
+          </h3>
+          <span id="btn-note-pay-close" class="history-modal-close" role="button" tabindex="0"><i class="fa-solid fa-xmark"></i></span>
+        </div>
+        <div class="history-modal-body" style="padding:18px 22px;">
+          <div class="field">
+            <label class="field-label">備註內容（將寫入該筆款項並追加至異動歷程）</label>
+            <textarea id="note-pay-text" class="field-input" rows="4" placeholder="例：已通知推薦人攜帶身分證…"></textarea>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+            <button id="btn-note-pay-cancel" type="button" class="btn btn-outline">取消</button>
+            <button id="btn-note-pay-save" type="button" class="btn btn-primary">
+              <i class="fa-solid fa-check"></i>儲存備註
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 編輯現場提領 Modal -->
+    <div id="edit-pay-modal" class="history-modal-bg">
+      <div class="history-modal" style="max-width:480px;">
+        <div class="history-modal-head">
+          <h3>
+            <i class="fa-solid fa-pen-to-square"></i>編輯現場提領資訊
+            <span style="font-size:13px;margin-left:8px;font-family:'Courier New',monospace;color:var(--color-primary-dark);" id="edit-pay-id">—</span>
+          </h3>
+          <span id="btn-edit-pay-close" class="history-modal-close" role="button" tabindex="0">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </div>
+        <div class="history-modal-body" style="padding:18px 22px;">
+          <div class="field">
+            <label class="field-label">推薦人</label>
+            <input id="edit-pay-ref" class="field-input" type="text" disabled />
+          </div>
+          <div class="field">
+            <label class="field-label">狀態（人工維護）</label>
+            <select id="edit-pay-status" class="field-select">
+              <option value="pending">待確認</option>
+              <option value="pickup">待領取</option>
+              <option value="completed">已領取</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">門市</label>
+            <select id="edit-pay-branch-select" class="field-select">
+              <option value="板橋分公司">台北（板橋分公司）</option>
+              <option value="中部總公司">台中（中部總公司）</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">預計領取日期</label>
+            <input id="edit-pay-expected-pickup" class="field-input" type="date" />
+          </div>
+          <div class="field">
+            <label class="field-label">變更原因（將寫入歷程）</label>
+            <textarea id="edit-pay-reason" class="field-input" rows="2" placeholder="例：推薦人更改領取門市"></textarea>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+            <button id="btn-edit-pay-cancel" type="button" class="btn btn-outline">取消</button>
+            <button id="btn-edit-pay-save" type="button" class="btn btn-primary">
+              <i class="fa-solid fa-check"></i>儲存變更
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 異動歷程 Modal -->
+    <div id="history-modal" class="history-modal-bg">
+      <div class="history-modal">
+        <div class="history-modal-head">
+          <h3>
+            <i class="fa-solid fa-clock-rotate-left"></i>款項異動歷程
+            <span style="font-size:13px;margin-left:8px;font-family:'Courier New',monospace;color:var(--color-primary-dark);" id="history-payid">—</span>
+          </h3>
+          <span id="btn-history-close" class="history-modal-close" role="button" tabindex="0">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </div>
+        <div class="history-modal-body">
+          <div class="history-payment-summary">
+            <div class="item">推薦人 <strong id="history-ref">—</strong></div>
+            <div class="item">金額 <strong id="history-amount">—</strong></div>
+            <div class="item">門市 <strong id="history-branch">—</strong></div>
+            <div class="item">預計領取日 <strong id="history-pickup">—</strong></div>
+            <div class="item">目前狀態 <strong id="history-status">—</strong></div>
+          </div>
+          <div id="history-timeline" class="timeline-vertical"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/admin-cash-payments.js"></script>
+  </body>
+</html>
