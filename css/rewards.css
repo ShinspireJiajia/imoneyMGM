@@ -1034,6 +1034,25 @@
 }
 .reward-edit-btn:hover { background: #e0f2fe; }
 
+/* 預約近三天：請聯繫專員 */
+.reward-contact-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 6px;
+  font-size: var(--font-xs);
+  color: #92400e;
+  font-weight: 500;
+}
+.reward-contact-hint i {
+  flex-shrink: 0;
+  color: #d97706;
+}
+
 /* 修改提領資料表單 */
 .rw-edit-form {
   display: flex;

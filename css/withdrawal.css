@@ -562,6 +562,59 @@
   white-space: nowrap;
 }
 
+/* ============== 門市選擇 ============== */
+.branch-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.branch-btn {
+  padding: 10px 12px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.2s;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.branch-btn:hover {
+  border-color: var(--color-primary-light);
+}
+
+.branch-btn.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-50);
+}
+
+.branch-btn-city {
+  font-size: var(--font-md);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.branch-btn-name {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+}
+
+.branch-address {
+  margin-top: 6px;
+  padding: 8px 12px;
+  background: var(--color-primary-50);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-xs);
+  color: var(--color-primary-dark);
+  line-height: 1.5;
+}
+
 /* ============== 帶入上次資料 banner ============== */
 .prefill-banner {
   display: flex;

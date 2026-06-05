@@ -403,6 +403,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+a.rv-ext-link {
+  color: var(--color-primary, #2563eb);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+a.rv-ext-link:hover { opacity: 0.75; }
+
 .rv-reason {
   padding: 12px 14px;
   border-radius: 6px;
