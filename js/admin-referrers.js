@@ -195,25 +195,25 @@
   // 來自 admin-records demo（caseId 應與該頁同步）
   const REFERRER_CASES = {
     U250310001: [
-      { caseId: 'M2026052301', refereePhone: '0912345456', refereeName: '陳志明', submitAt: '2026/05/22', status: 'reviewing' },
-      { caseId: 'M2026052102', refereePhone: '0922456789', refereeName: '林佳華', submitAt: '2026/05/20', status: 'confirmed' },
-      { caseId: 'M2026051205', refereePhone: '0955333222', refereeName: '吳雅芳', submitAt: '2026/05/12', status: 'rewardable' },
-      { caseId: 'M2026050207', refereePhone: '0966444333', refereeName: '蔡佳婷', submitAt: '2026/05/02', status: 'invalid' },
-      { caseId: 'M2026052810', refereePhone: '0921457632', refereeName: '游佳淇', submitAt: '2026/05/28', status: 'pending_review' },
+      { caseId: 'M2026052301', refereePhone: '0912345456', refereeName: '陳志明', submitAt: '2026/05/22', status: 'reviewing', refereeTag: '新客戶' },
+      { caseId: 'M2026052102', refereePhone: '0922456789', refereeName: '林佳華', submitAt: '2026/05/20', status: 'confirmed', refereeTag: '新客戶' },
+      { caseId: 'M2026051205', refereePhone: '0955333222', refereeName: '吳雅芳', submitAt: '2026/05/12', status: 'rewardable', refereeTag: '新客戶' },
+      { caseId: 'M2026050207', refereePhone: '0966444333', refereeName: '蔡佳婷', submitAt: '2026/05/02', status: 'invalid', refereeTag: '既有客戶' },
+      { caseId: 'M2026052810', refereePhone: '0921457632', refereeName: '游佳淇', submitAt: '2026/05/28', status: 'pending_review', refereeTag: '新客戶' },
     ],
     U240105002: [
-      { caseId: 'M2026051504', refereePhone: '0933678111', refereeName: '張俊豪', submitAt: '2026/05/15', status: 'rewardable' },
-      { caseId: 'M2026052712', refereePhone: '0941456209', refereeName: '宋雨恩', submitAt: '2026/05/27', status: 'pending_review' },
+      { caseId: 'M2026051504', refereePhone: '0933678111', refereeName: '張俊豪', submitAt: '2026/05/15', status: 'rewardable', refereeTag: '新客戶' },
+      { caseId: 'M2026052712', refereePhone: '0941456209', refereeName: '宋雨恩', submitAt: '2026/05/27', status: 'pending_review', refereeTag: '新客戶' },
     ],
     U230620004: [
-      { caseId: 'M2026050806', refereePhone: '0911455333', refereeName: '李文仁', submitAt: '2026/05/08', status: 'withdrawn' },
+      { caseId: 'M2026050806', refereePhone: '0911455333', refereeName: '李文仁', submitAt: '2026/05/08', status: 'withdrawn', refereeTag: '新客戶' },
     ],
     U250115005: [],
     U240328006: [],
     U250220007: [],
     U250601010: [
-      { caseId: 'M2026042001', refereePhone: '0977654321', refereeName: '吳啟明', submitAt: '2026/04/20', status: 'rewardable' },
-      { caseId: 'M2026051801', refereePhone: '0944321100', refereeName: '林淑芬', submitAt: '2026/05/18', status: 'reviewing' },
+      { caseId: 'M2026042001', refereePhone: '0977654321', refereeName: '吳啟明', submitAt: '2026/04/20', status: 'rewardable', refereeTag: '新客戶' },
+      { caseId: 'M2026051801', refereePhone: '0944321100', refereeName: '林淑芬', submitAt: '2026/05/18', status: 'reviewing', refereeTag: '新客戶' },
     ],
   };
 
@@ -496,18 +496,26 @@
 
     const { pageItems, safePage } = getPagedItems(sortedCases, viewPagerState.cases);
     viewPagerState.cases = safePage;
+    const REFEREE_TAG_CLS = { '新客戶': 'badge-blue', '既有客戶': 'badge-gray' };
     casesWrap.innerHTML = `
       <table class="view-cases-table">
-        <thead><tr><th>案號</th><th>被推薦人手機號碼</th><th>被推薦人</th><th>申請日期</th><th>申請進度</th></tr></thead>
+        <thead><tr><th>案號</th><th>被推薦人手機號碼</th><th>被推薦人</th><th>身份</th><th>申請日期</th><th>申請進度</th></tr></thead>
         <tbody>
-          ${pageItems.map(c => `
+          ${pageItems.map(c => {
+            const rtCls = REFEREE_TAG_CLS[c.refereeTag] || 'badge-gray';
+            const rtBadge = c.refereeTag
+              ? `<span class="tag-pill ${rtCls}" style="font-size:11px;">${c.refereeTag}</span>`
+              : '—';
+            return `
             <tr>
               <td class="mono">${c.caseId}</td>
               <td class="mono">${c.refereePhone || '—'}</td>
               <td>${c.refereeName}</td>
+              <td>${rtBadge}</td>
               <td class="mono dim">${c.submitAt}</td>
               <td>${CASE_PROGRESS_LABEL[c.status] || '申請中'}</td>
-            </tr>`).join('')}
+            </tr>`;
+          }).join('')}
         </tbody>
       </table>
       ${renderInnerPager('cases', sortedCases.length, safePage)}
@@ -749,9 +757,6 @@
     document.getElementById('view-uid').textContent = r.uid;
     document.getElementById('view-name').textContent = r.name;
     document.getElementById('view-tag').textContent = tagLabel;
-    document.getElementById('view-user-role').textContent = getRoleLabel(r);
-    document.getElementById('view-employee-flag').textContent = getEmployeeFlagLabel(r);
-    document.getElementById('view-employee-status').textContent = getEmployeeStatusLabel(r);
     const retiredAtRow = document.getElementById('view-retired-at-row');
     if (retiredAtRow) retiredAtRow.hidden = !isResignedReferrer(r);
     document.getElementById('view-retired-at').textContent = isResignedReferrer(r) ? (formatDateYmd(r.retiredAt) || '—') : '—';

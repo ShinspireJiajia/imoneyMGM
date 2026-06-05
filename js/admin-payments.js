@@ -49,10 +49,10 @@
       product: '汽車貸款',
       amount: 3000,
       method: 'cash',
-      branch: '現場',
+      branch: '板橋分公司',
       expectedPickupDate: '2026/06/05',
       appliedAt: '2026/05/22 16:00',
-      status: 'pending',
+      status: 'pickup',
       campaignId: 'CAMP-C-2026Q2',
     },
     {
@@ -79,8 +79,8 @@
       product: '汽車貸款',
       amount: 1800,
       method: 'cash',
-      branch: '現場',
-      expectedPickupDate: '2026/05/23',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/05',
       appliedAt: '2026/05/20 11:20',
       status: 'pickup',
       campaignId: 'CAMP-C-2026Q2',
@@ -110,11 +110,87 @@
       product: '信用貸款',
       amount: 500,
       method: 'cash',
-      branch: '現場',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/03/28',
       appliedAt: '2026/03/25 14:00',
       pickedUpAt: '2026/03/28 11:30',
       status: 'completed',
       campaignId: 'CAMP-C-2026Q1',
+    },
+    {
+      id: 'PAY-26060301',
+      caseId: 'M2026052801',
+      memberId: 'U250601011',
+      referrer: '陳小玲',
+      tag: '會員',
+      product: '房屋貸款',
+      amount: 3200,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/03',
+      appliedAt: '2026/06/01 09:30',
+      status: 'pickup',
+      campaignId: 'CAMP-C-2026Q2',
+    },
+    {
+      id: 'PAY-26060302',
+      caseId: 'M2026052802',
+      memberId: 'U250601012',
+      referrer: '蔡明芳',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 2200,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/05',
+      appliedAt: '2026/06/01 14:00',
+      status: 'pending',
+      campaignId: 'CAMP-C-2026Q2',
+    },
+    {
+      id: 'PAY-26060303',
+      caseId: 'M2026052803',
+      memberId: 'U250601013',
+      referrer: '林正豪',
+      tag: '員工',
+      product: '房屋貸款',
+      amount: 4500,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/06',
+      appliedAt: '2026/06/02 10:15',
+      status: 'pending',
+      campaignId: 'CAMP-E-2026Q2',
+    },
+    {
+      id: 'PAY-26060304',
+      caseId: 'M2026052804',
+      memberId: 'U250601014',
+      referrer: '謝佳慧',
+      tag: '會員',
+      product: '汽車貸款',
+      amount: 1500,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/07',
+      appliedAt: '2026/06/02 15:30',
+      status: 'pending',
+      campaignId: 'CAMP-C-2026Q2',
+    },
+    {
+      id: 'PAY-26060305',
+      caseId: 'M2026052805',
+      memberId: 'U250601015',
+      referrer: '吳志遠',
+      tag: '離職員工',
+      product: '房屋貸款',
+      amount: 3800,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/07',
+      appliedAt: '2026/06/02 16:45',
+      status: 'pending',
+      campaignId: 'CAMP-E-2026Q2',
     },
     {
       id: 'PAY-26050309',
@@ -340,7 +416,7 @@
 
   function getFiltered() {
     const kw = filters.keyword.trim().toLowerCase();
-    return PAYMENTS.filter((p) => {
+    const result = PAYMENTS.filter((p) => {
       if (filters.status !== 'all' && p.status !== filters.status) return false;
       if (filters.method !== 'all' && p.method !== filters.method) return false;
       if (!isInDateRange(p, filters.dateFrom, filters.dateTo)) return false;
@@ -351,6 +427,12 @@
         .join(' ')
         .toLowerCase();
       return haystack.includes(kw);
+    });
+    // 申請日期近到遠（新到舊）
+    return result.sort((a, b) => {
+      const ta = String(a.appliedAt || '').replace(/\//g, '-');
+      const tb = String(b.appliedAt || '').replace(/\//g, '-');
+      return tb.localeCompare(ta);
     });
   }
 
@@ -982,6 +1064,7 @@
     bindPermToggle();
     bindPageSize();
     setDefaultDateRangeLast30Days();
+    filters.method = 'transfer';
     bindFilters();
     applyFiltersFromUI();
     bindBatchActions();

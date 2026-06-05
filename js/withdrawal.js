@@ -6,6 +6,12 @@
 (function () {
   'use strict';
 
+  // 門市資訊
+  const BRANCH_INFO = {
+    '台北': { name: '板橋分公司', address: '新北市板橋區中山路一段141號8樓' },
+    '台中': { name: '中部總公司', address: '台中市西區大隆路20號B棟13樓之1' },
+  };
+
   // 偽資料：本系統中該帳號是否已建立過稅務資料（首次提領為 false）
   const HAS_TAX_PROFILE = false;
 
@@ -114,6 +120,7 @@
     useHistory: HAS_TAX_PROFILE,
     cashDate: '',
     cashDateLabel: '',
+    cashBranch: '',       // 'taipei' | 'taichung'
     editMode: false,      // 從獎金頁「修改提領資料」進入
     editTargetId: null,   // 對應 mgm_pending_withdraw_apply 中的 id
   };
@@ -215,6 +222,52 @@
     card.style.display = state.method === 'cash' ? 'block' : 'none';
   }
 
+  function toggleTransferSection() {
+    const section = document.getElementById('transfer-section');
+    if (!section) return;
+    section.style.display = state.method === 'cash' ? 'none' : '';
+  }
+
+  function updateStep2Label() {
+    const labelEl = document.getElementById('step2-label');
+    if (!labelEl) return;
+    labelEl.innerHTML = state.method === 'cash' ? '稅務與<br />預約資料' : '稅務與<br />匯款資料';
+  }
+
+  function updateNextBtnText() {
+    const btn = document.getElementById('btn-next-1');
+    if (!btn) return;
+    if (state.method === 'cash') {
+      btn.innerHTML = '下一步：選擇門市與日期<i class="fa-solid fa-arrow-right"></i>';
+    } else {
+      btn.innerHTML = '下一步：填寫匯款資料<i class="fa-solid fa-arrow-right"></i>';
+    }
+  }
+
+  function selectBranch(branchKey) {
+    state.cashBranch = branchKey;
+    document.querySelectorAll('.branch-btn').forEach((btn) => {
+      btn.classList.toggle('selected', btn.dataset.branch === branchKey);
+    });
+    const addrEl = document.getElementById('branch-address');
+    if (addrEl) {
+      const info = BRANCH_INFO[branchKey];
+      if (info) {
+        addrEl.textContent = info.address;
+        addrEl.hidden = false;
+      } else {
+        addrEl.hidden = true;
+      }
+    }
+  }
+
+  function branchKeyFromName(name) {
+    for (const [key, info] of Object.entries(BRANCH_INFO)) {
+      if (info.name === name) return key;
+    }
+    return '';
+  }
+
   function renderSummary() {
     const items = getSelectedItems();
     const total = items.reduce((s, r) => s + r.amount, 0);
@@ -256,13 +309,19 @@
     if (method !== 'cash') {
       state.cashDate = '';
       state.cashDateLabel = '';
+      state.cashBranch = '';
       const select = document.getElementById('inp-cash-date');
       if (select) select.value = '';
+      document.querySelectorAll('.branch-btn').forEach((b) => b.classList.remove('selected'));
+      const addrEl = document.getElementById('branch-address');
+      if (addrEl) addrEl.hidden = true;
     }
     document.querySelectorAll('.method-option').forEach((el) => {
       el.classList.toggle('selected', el.dataset.method === method);
     });
     updateCashSummaryCard();
+    updateNextBtnText();
+    updateStep2Label();
     document.getElementById('btn-next-1').disabled = false;
   }
 
@@ -305,6 +364,7 @@
   function gotoTax() {
     if (!state.method) return;
     toggleCashAppointmentCard();
+    toggleTransferSection();
     // 依是否有歷史資料，顯示不同 panel
     document
       .getElementById('history-card')
@@ -340,8 +400,17 @@
       const id = sessionStorage.getItem('mgm_edit_withdrawal_id');
       if (!id) return null;
       sessionStorage.removeItem('mgm_edit_withdrawal_id');
+      // 優先從使用者送出記錄查（localStorage）
       const list = JSON.parse(localStorage.getItem('mgm_pending_withdraw_apply') || '[]');
-      return list.find((a) => a.id === id) || null;
+      const found = list.find((a) => a.id === id);
+      if (found) return found;
+      // fallback：從 demo 共用資料源查（demo 預置的申請中記錄不在 localStorage）
+      const demoList = (window.MGMCommon && window.MGMCommon.getRewardsDemo)
+        ? window.MGMCommon.getRewardsDemo()
+        : [];
+      return demoList.find(
+        (r) => r.id === id && (r.status === 'transferring' || r.status === 'pending_pickup')
+      ) || null;
     } catch {
       return null;
     }
@@ -378,21 +447,33 @@
     setVal('inp-bank',         target.bankName);
     setVal('inp-bank-account', target.bankAccount);
 
-    // 現場領取：預選原預約日期（若仍在可選範圍內）
-    if (target.method === 'cash' && target.appointmentDate) {
-      const select = document.getElementById('inp-cash-date');
-      if (select) {
-        const normalized = (target.appointmentDate || '').replace(/\//g, '-');
-        for (const opt of select.options) {
-          if (opt.value === normalized || opt.value === target.appointmentDate) {
-            select.value = opt.value;
-            state.cashDate = opt.value;
-            state.cashDateLabel = opt.textContent;
-            break;
-          }
-        }
-        updateCashSummaryCard();
+    // 現場領取：預選門市與預約日期
+    if (target.method === 'cash') {
+      if (target.branch) {
+        const branchKey = branchKeyFromName(target.branch);
+        if (branchKey) selectBranch(branchKey);
       }
+      if (target.appointmentDate) {
+        const select = document.getElementById('inp-cash-date');
+        if (select) {
+          const normalized = (target.appointmentDate || '').replace(/\//g, '-');
+          for (const opt of select.options) {
+            if (opt.value === normalized || opt.value === target.appointmentDate) {
+              select.value = opt.value;
+              state.cashDate = opt.value;
+              state.cashDateLabel = opt.textContent;
+              break;
+            }
+          }
+          updateCashSummaryCard();
+        }
+      }
+    }
+
+    // 鎖定「上一步」：編輯模式下只能透過原方式修改，不可回步驟 1 變更方式
+    const backBtn = document.getElementById('btn-back-2');
+    if (backBtn) {
+      backBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>取消修改';
     }
   }
 
@@ -401,6 +482,10 @@
     // 編輯模式：只驗付款相關欄位，更新既有 localStorage 記錄後直接顯示完成頁
     if (state.editMode && state.editTargetId) {
       if (state.method === 'cash') {
+        if (!state.cashBranch) {
+          alert('請選擇提領門市（台北板橋分公司 或 台中中部總公司）');
+          return;
+        }
         if (!state.cashDate) {
           alert('請先選擇現場預約日期（僅可選下三週的週二或週四）');
           return;
@@ -496,6 +581,10 @@
     }
 
     if (state.method === 'cash') {
+      if (!state.cashBranch) {
+        alert('請選擇提領門市（台北板橋分公司 或 台中中部總公司）');
+        return;
+      }
       if (!state.cashDate) {
         alert('請先選擇現場預約日期（僅可選下三週的週二或週四）');
         return;
@@ -543,7 +632,7 @@
       const _bankName    = HAS_TAX_PROFILE ? HISTORY_TAX.bankName    : (document.getElementById('inp-bank')?.value.trim()         || '');
       const _bankAccount = HAS_TAX_PROFILE ? HISTORY_TAX.bankAccount : (document.getElementById('inp-bank-account')?.value.trim() || '');
       const meta = state.method === 'cash'
-        ? { branch: '現場', appointmentDate: state.cashDate, appointmentHours: '9:00-18:00',
+        ? { branch: (BRANCH_INFO[state.cashBranch]?.name || state.cashBranch), appointmentDate: state.cashDate, appointmentHours: '9:00-18:00',
             realName: _realName, idNumber: _idNumber, address: _address }
         : { bankName: _bankName, bankAccount: _bankAccount, bankLast4: _bankAccount.slice(-4),
             realName: _realName, idNumber: _idNumber, address: _address };
@@ -725,8 +814,21 @@
       el.addEventListener('click', () => selectMethod(el.dataset.method));
     });
 
+    document.querySelectorAll('.branch-btn').forEach((el) => {
+      el.addEventListener('click', () => selectBranch(el.dataset.branch));
+    });
+
     document.getElementById('btn-next-1').addEventListener('click', gotoTax);
-    document.getElementById('btn-back-2').addEventListener('click', () => showStep(1));
+    document.getElementById('btn-back-2').addEventListener('click', () => {
+      if (state.editMode) {
+        // 編輯模式：取消修改，返回獎金清單（不可回步驟 1 變更提領方式）
+        if (window.MGMCommon && window.MGMCommon.navigate) {
+          window.MGMCommon.navigate('rewards');
+        }
+        return;
+      }
+      showStep(1);
+    });
     document.getElementById('btn-submit').addEventListener('click', submitWithdraw);
 
     const reuseBtn = document.getElementById('btn-reuse-history');

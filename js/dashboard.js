@@ -241,11 +241,93 @@
     }
   }
 
+  // ============================================================
+  // 常見問答 FAQ
+  // ============================================================
+  const FAQ_KEY = 'mgm_faq_items';
+
+  const DEFAULT_FAQ = [
+    {
+      id: 'faq-1',
+      question: '如何取得我的推薦連結？',
+      answer: '<p>請在首頁點選「複製連結」按鈕，系統即會將您的專屬推薦連結複製至剪貼簿，您可以直接貼到 LINE、FB 等社群平台分享給親友。</p>',
+      enabled: true,
+    },
+    {
+      id: 'faq-2',
+      question: '推薦獎金何時可以提領？',
+      answer: '<p>當您推薦的親友成功送出申請並通過審核後，獎金會顯示為「可提領」狀態。請前往「我的獎金」頁面選擇提領方式（現場領取或匯款入帳）。</p>',
+      enabled: true,
+    },
+    {
+      id: 'faq-3',
+      question: '一組推薦碼可以無限次分享嗎？',
+      answer: '<p>是的，您的推薦碼為<strong>固定碼</strong>，可長期、無限次使用。每位親友的歸屬以首次送單時使用的推薦碼為準，同一親友重複送單不會重複計算獎金。</p>',
+      enabled: true,
+    },
+    {
+      id: 'faq-4',
+      question: '如何確認推薦是否成功登錄？',
+      answer: '<p>您可前往底部「紀錄」頁面查看所有透過您連結送出的案件，包含「審核中」、「已核款」及「未通過」等狀態，並可查看對應獎金明細。</p>',
+      enabled: true,
+    },
+    {
+      id: 'faq-5',
+      question: '獎金需要申報稅務嗎？',
+      answer: '<p>推薦獎金將計入年度「執行業務所得／其他所得」申報。超過免稅門檻時，平台將於每年二月提供所得資料協助申報，請留意相關通知。</p>',
+      enabled: true,
+    },
+  ];
+
+  function loadFaq() {
+    try {
+      const stored = localStorage.getItem(FAQ_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return DEFAULT_FAQ;
+  }
+
+  function renderFaq() {
+    const container = document.getElementById('faq-list');
+    if (!container) return;
+    const items = loadFaq().filter(function (f) { return f.enabled !== false; });
+    if (!items.length) {
+      container.innerHTML = '<p class="faq-empty">暫無問答資料</p>';
+      return;
+    }
+    container.innerHTML = items.map(function (f) {
+      return (
+        '<div class="faq-item" data-faq-id="' + f.id + '" role="listitem">' +
+          '<div class="faq-q" role="button" tabindex="0" aria-expanded="false">' +
+            '<span class="faq-q-text">' + f.question + '</span>' +
+            '<span class="faq-q-icon" aria-hidden="true"><i class="fa-solid fa-chevron-down"></i></span>' +
+          '</div>' +
+          '<div class="faq-a">' + f.answer + '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    container.querySelectorAll('.faq-q').forEach(function (q) {
+      q.addEventListener('click', function () { toggleFaq(q.closest('.faq-item')); });
+      q.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFaq(q.closest('.faq-item')); }
+      });
+    });
+  }
+
+  function toggleFaq(item) {
+    const isOpen = item.classList.contains('faq-open');
+    item.classList.toggle('faq-open', !isOpen);
+    const q = item.querySelector('.faq-q');
+    if (q) q.setAttribute('aria-expanded', String(!isOpen));
+  }
+
   // 初始化
   document.addEventListener('DOMContentLoaded', () => {
     applyIdentity();
     updateCampaignLabel();
     updateRewardsSummary();
+    renderFaq();
 
     // 本月提領上限進度條已依需求移除（用戶端不顯示）
 
@@ -277,6 +359,10 @@
       if (e.key === 'mgm_blacklist_released_ids' || e.key === 'mgm_frozen_uids') {
         applyIdentity();
         updateRewardsSummary();
+      }
+      // 後台更新 FAQ 時，同步刷新前台
+      if (e.key === FAQ_KEY) {
+        renderFaq();
       }
     });
   });

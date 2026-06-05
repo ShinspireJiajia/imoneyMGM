@@ -57,6 +57,11 @@
       breadcrumb: '財務管理 / 提領功能管理',
       file: 'pages/admin-payments.html',
     },
+    'admin-cash-payments': {
+      title: '提領功能管理(現場提領)',
+      breadcrumb: '財務管理 / 提領功能管理(現場提領)',
+      file: 'pages/admin-cash-payments.html',
+    },
     'admin-plan-switch': {
       title: '全站方案開關',
       breadcrumb: '風控管理 / 全站方案開關',
@@ -81,6 +86,11 @@
       title: '推播通知管理',
       breadcrumb: '推播管理 / 推播通知管理',
       file: 'pages/admin-notify.html',
+    },
+    'admin-faq': {
+      title: '常見問答維護',
+      breadcrumb: '內容管理 / 常見問答維護',
+      file: 'pages/admin-faq.html',
     },
   };
 

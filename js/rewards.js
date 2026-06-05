@@ -180,6 +180,30 @@
     return d;
   }
 
+  // 計算今天距離 appointmentDate 還有幾個工作天
+  function businessDaysUntil(appointmentDate) {
+    const d = parseDate(appointmentDate);
+    if (!d) return Infinity;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    d.setHours(0, 0, 0, 0);
+    if (d <= today) return 0;
+    let count = 0;
+    const cursor = new Date(today);
+    while (cursor < d) {
+      cursor.setDate(cursor.getDate() + 1);
+      if (cursor.getDay() !== 0 && cursor.getDay() !== 6) count++;
+    }
+    return count;
+  }
+
+  // 現場提領：預約日期超過 3 個工作天才允許用戶自行變更
+  function canModifyPickup(r) {
+    if (r.status !== 'pending_pickup') return true;
+    if (!r.appointmentDate) return true;
+    return businessDaysUntil(r.appointmentDate) > 3;
+  }
+
   // 可提領效期規則：案件達成月份次月 25 日核款（遇假日順延），次日起算 180 天內可提領
   function getRewardableValidity(r) {
     if (window.MGMCommon && window.MGMCommon.getRewardableWindow) {
@@ -275,11 +299,18 @@
       ? `<div class="reward-item-meta"><span class="meta-label">可提領效期</span><span class="meta-value">${formatDateYmdSlash(validity.validFrom)} ~ ${formatDateYmdSlash(validity.validTo)}</span></div>`
       : '';
 
-    const editBtnHtml = isApplying(r)
-      ? `<button type="button" class="reward-edit-btn" data-edit-id="${r.id}">
-           <i class="fa-solid fa-pen-to-square"></i>修改提領資料
-         </button>`
-      : '';
+    let editBtnHtml = '';
+    if (isApplying(r)) {
+      if (r.status === 'pending_pickup' && !canModifyPickup(r)) {
+        editBtnHtml = `<div class="reward-contact-hint">
+          <i class="fa-solid fa-headset"></i>預約日期即將到來，如需變更請聯繫專員協助
+        </div>`;
+      } else {
+        editBtnHtml = `<button type="button" class="reward-edit-btn" data-edit-id="${r.id}">
+          <i class="fa-solid fa-pen-to-square"></i>修改提領資料
+        </button>`;
+      }
+    }
 
     return `
       <article class="reward-item status-${r.status}" data-id="${r.id}">

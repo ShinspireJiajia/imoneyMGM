@@ -48,7 +48,7 @@
       resignedAt: null,
       mgmJoined: false,
       referrerUid: null,
-      phone: null,
+      phone: '0945-678-901',
     },
     {
       id: 'E005',
@@ -58,7 +58,7 @@
       resignedAt: null,
       mgmJoined: false,
       referrerUid: null,
-      phone: null,
+      phone: '0956-789-012',
     },
     {
       id: 'E006',
@@ -68,7 +68,7 @@
       resignedAt: null,
       mgmJoined: false,
       referrerUid: null,
-      phone: null,
+      phone: '0967-890-123',
     },
   ];
 

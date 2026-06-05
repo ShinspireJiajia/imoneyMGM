@@ -370,14 +370,12 @@
     return `
       <tr data-id="${r.caseId}">
         <td class="mono">${r.caseId} ${defaultBadge}</td>
-        <td>${productTxt}</td>
         <td>${receiptTypeBadge(r)}</td>
         <td>${r.referrerTag}</td>
         <td class="mono">${referrerCidOf(r.referrerUid)}</td>
         <td class="cell-name">${referrerName}</td>
         <td class="cell-name">${refereeName}</td>
         <td class="mono">${r.refereePhone || '—'}</td>
-        <td class="mono dim">${submitDate}</td>
         <td><span class="${statusCls}">${statusLabel}</span></td>
         <td class="num money">${amountTxt}</td>
         <td>
@@ -393,7 +391,7 @@
     const items = getFiltered();
     tbody.innerHTML = items.length
       ? items.map(renderRow).join('')
-      : '<tr><td colspan="12" style="padding:32px;text-align:center;color:var(--color-text-muted);">沒有符合條件的案件</td></tr>';
+      : '<tr><td colspan="10" style="padding:32px;text-align:center;color:var(--color-text-muted);">沒有符合條件的案件</td></tr>';
     const tc = document.getElementById('total-count');
     if (tc) tc.textContent = items.length;
     const pgc = document.getElementById('rec-pg-total');
@@ -427,15 +425,34 @@
     if (!r) return;
     const modal = document.getElementById('rec-view-modal');
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    const setLink = (id, text, href) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      if (href && text !== '—') {
+        el.href = href;
+        el.style.pointerEvents = '';
+        el.style.opacity = '';
+      } else {
+        el.href = '#';
+        el.style.pointerEvents = 'none';
+        el.style.opacity = '0.5';
+      }
+    };
+
+    // URL base constants — replace with actual system endpoints
+    const CRM_BASE      = 'https://crm.shinda.com.tw';
+    const RECEIPT_BASE  = 'https://erp.shinda.com.tw';
 
     set('rv-caseid', r.caseId);
     set('rv-caseid2', r.caseId);
     set('rv-referrer', plainNameOf(r.referrerName));
     set('rv-referrer-cid', referrerCidOf(r.referrerUid));
     set('rv-tag', r.referrerTag);
-    set('rv-neg', r.negotiationId);
+    setLink('rv-neg', r.negotiationId || '—', r.negotiationId ? `${CRM_BASE}/negotiation/${r.negotiationId}` : null);
     set('rv-referee', plainNameOf(r.refereeName));
     set('rv-referee-cid', r.refereePhone || '—');
+    setLink('rv-customer-id', r.customerId || '—', r.customerId ? `${CRM_BASE}/customer/${r.customerId}` : null);
 
     const matchedProjects = getMatchedProjects(r);
     set('rv-projects', matchedProjects.length ? matchedProjects.join(' + ') : '—');
@@ -443,7 +460,8 @@
     set('rv-campaign', r.campaignId || '—');
     set('rv-submit', fmtDateYmd(r.submitAt));
     set('rv-payout', r.payoutAt || '—');
-    set('rv-receipt-no', receiptNoOf(r));
+    const rno = receiptNoOf(r);
+    setLink('rv-receipt-no', rno, rno !== '—' ? `${RECEIPT_BASE}/receipt/${rno}` : null);
     set('rv-expected-fee', r.expectedServiceFee == null ? '—' : fmt(r.expectedServiceFee));
     set('rv-actual-fee', r.actualServiceFee == null ? '—' : fmt(r.actualServiceFee));
 
