@@ -21,16 +21,6 @@
     <main class="pending-review-page page-wrap fade-in">
       <div class="page-crumb">財務管理 / 超量待審佇列</div>
 
-      <!-- 工具列 -->
-      <div class="page-toolbar">
-        
-        <div class="page-actions">
-          <button type="button" id="btn-export-csv" class="btn btn-outline">
-            <i class="fa-solid fa-file-excel"></i>匯出資料
-          </button>
-        </div>
-      </div>
-
       <!-- 統計列 -->
       <section class="stats-row stats-row-3">
         <div class="stat-card">
@@ -51,43 +41,61 @@
       </section>
 
       <!-- 篩選列 -->
-      <section class="filter-bar">
-        <div class="field">
-          <label class="field-label">關鍵字</label>
-          <input id="f-keyword" class="field-input" type="text" placeholder="推薦人、案號、客戶編號…" />
+      <section class="filter-card">
+        <div class="filter-card-head">
+          <button type="button" class="btn-outline btn-sm" id="btn-toggle-advanced">
+            <i class="fa-solid fa-chevron-up"></i>收合篩選
+          </button>
         </div>
-        <div class="field">
-          <label class="field-label">來源</label>
-          <select id="f-source" class="field-select">
-            <option value="">全部</option>
-            <option value="overrun">超量送單</option>
-            <option value="blacklist">黑名單會員獎金</option>
-          </select>
+        <div class="filter-grid" id="filter-grid">
+          <div class="field-row">
+            <label class="field-label">關鍵字</label>
+            <input id="f-keyword" class="field-input" type="text" placeholder="推薦人、案號、會員編號…" />
+          </div>
+          <div class="field-row">
+            <label class="field-label">來源</label>
+            <select id="f-source" class="field-select">
+              <option value="">全部</option>
+              <option value="overrun">超量送單</option>
+              <option value="blacklist">黑名單會員獎金</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">推薦人標籤</label>
+            <select id="f-tag" class="field-select">
+              <option value="">全部</option>
+              <option value="會員">會員</option>
+              <option value="員工">員工</option>
+              <option value="離職員工">離職員工</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">狀態</label>
+            <select id="f-status" class="field-select">
+              <option value="pending">待審</option>
+              <option value="all">全部</option>
+              <option value="approved">已放行</option>
+              <option value="rejected">已拒絕</option>
+              <option value="blacklisted">已轉黑名單</option>
+            </select>
+          </div>
         </div>
-        <div class="field">
-          <label class="field-label">推薦人標籤</label>
-          <select id="f-tag" class="field-select">
-            <option value="">全部</option>
-            <option value="會員">會員</option>
-            <option value="員工">員工</option>
-            <option value="離職員工">離職員工</option>
-          </select>
+        <div class="filter-card-actions">
+          <button type="button" class="btn-outline" id="btn-clear-filter">清除所有篩選</button>
+          <button id="btn-search" type="button" class="btn-primary">
+            <i class="fa-solid fa-magnifying-glass"></i>查詢
+          </button>
         </div>
-        <div class="field">
-          <label class="field-label">狀態</label>
-          <select id="f-status" class="field-select">
-            <option value="pending">待審</option>
-            <option value="all">全部</option>
-            <option value="approved">已放行</option>
-            <option value="rejected">已拒絕</option>
-            <option value="blacklisted">已轉黑名單</option>
-          </select>
-        </div>
-        <button id="btn-search" type="button" class="btn btn-primary">查詢</button>
       </section>
 
       <!-- 列表 -->
       <section class="list-card">
+        <div class="list-head">
+          <h3>超量待審清單（共 <span id="pr-total-count">0</span> 筆）</h3>
+          <button type="button" class="btn btn-outline" id="btn-export-csv" style="font-size:12px;padding:4px 12px;white-space:nowrap;">
+            <i class="fa-solid fa-file-excel"></i>匯出資料
+          </button>
+        </div>
 
         <!-- 批次工具列 -->
         <div class="batch-bar" id="batch-bar" hidden>
@@ -117,7 +125,7 @@
                 <th>來源</th>
                 <th>案號</th>
                 <th>推薦人</th>
-                <th>客戶編號</th>
+                <th>會員編號</th>
                 <th>標籤</th>
                 <th>金額</th>
                 <th>狀態</th>

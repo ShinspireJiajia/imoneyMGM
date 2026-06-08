@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../css/admin-matrix.css" />
     <link rel="stylesheet" href="../css/admin-referrers.css" />
     <link rel="stylesheet" href="../css/admin-records.css" />
+    <link rel="stylesheet" href="../css/admin-campaigns.css" />
     <link rel="stylesheet" href="../css/admin-payments.css" />
     <style>
       .warn-chips-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
@@ -51,19 +52,31 @@
       }
       tr.has-warn-code > td { background: #f3f4f6; }
       tr.has-warn-code:hover > td { background: #e5e7eb !important; }
+      /* 收款單號多筆連結 */
+      .receipt-link-list { display: flex; flex-direction: column; gap: 5px; }
+      .receipt-link-item { display: flex; align-items: center; gap: 8px; }
+      .receipt-link {
+        font-family: 'Courier New', monospace; font-size: 12px;
+        color: #4338ca; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 5px;
+      }
+      .receipt-link:hover { text-decoration: underline; }
+      .receipt-amount { font-size: 12px; color: var(--color-text-muted); }
+      /* 名單系統會員編號 badge */
+      .list-id-link {
+        display: inline-flex; align-items: center; gap: 4px;
+        margin-left: 8px; font-family: 'Courier New', monospace; font-size: 11px;
+        color: #4338ca; text-decoration: none;
+        background: #eef2ff; border: 1px solid #c7d2fe;
+        padding: 1px 7px; border-radius: 4px; vertical-align: middle;
+      }
+      .list-id-link:hover { text-decoration: underline; }
     </style>
   </head>
   <body class="admin">
     <main class="records-page fade-in page-wrap">
       <div class="page-crumb">財務管理 / 推薦案件獎金核款</div>
 
-
-        <div class="page-actions">
-          <button type="button" class="btn btn-outline" id="btn-export-csv">
-            <i class="fa-solid fa-download"></i>匯出資料
-          </button>
-        </div>
-      </div>
 
       <!-- KPI -->
       <section class="kpi-grid" style="margin-bottom: 16px;">
@@ -105,46 +118,58 @@
       </section>
 
       <!-- 篩選列 -->
-      <section class="filter-bar">
-        <div class="field">
-          <label class="field-label">推薦人（編號 / 姓名）</label>
-          <input class="field-input" id="f-referrer" type="text" placeholder="推薦人編號或姓名" />
+      <section class="filter-card">
+        <div class="filter-card-head">
+          <button type="button" class="btn-outline btn-sm" id="btn-toggle-advanced">
+            <i class="fa-solid fa-chevron-up"></i>收合篩選
+          </button>
         </div>
-        <div class="field">
-          <label class="field-label">案號</label>
-          <input class="field-input" id="f-case-id" type="text" placeholder="例如 M2026052301" />
+        <div class="filter-grid" id="filter-grid">
+          <div class="field-row">
+            <label class="field-label">推薦人</label>
+            <input class="field-input" id="f-referrer" type="text" placeholder="推薦人編號或姓名" />
+          </div>
+          <div class="field-row">
+            <label class="field-label">案號</label>
+            <input class="field-input" id="f-case-id" type="text" placeholder="例如 M2026052301" />
+          </div>
+          <div class="field-row">
+            <label class="field-label">類型</label>
+            <select class="field-select" id="f-type">
+              <option value="all">全部</option>
+              <option value="general">一般貸款案件</option>
+              <option value="negotiation">債務協商案件</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">狀態</label>
+            <select class="field-select" id="f-status">
+              <option value="all">全部</option>
+              <option value="pending_approval" selected>待核款</option>
+              <option value="rewardable">已核款</option>
+              <option value="rejected">已拒絕</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">警示代碼</label>
+            <select class="field-select" id="f-warn-code">
+              <option value="all">全部</option>
+              <option value="has_warn">有警示</option>
+              <option value="no_warn">無警示</option>
+              <option value="E-150">E-150</option>
+              <option value="E-180">E-180</option>
+              <option value="E-OLD">E-OLD</option>
+              <option value="E-BLK">E-BLK</option>
+              <option value="E-PAY">E-PAY</option>
+            </select>
+          </div>
         </div>
-        <div class="field">
-          <label class="field-label">類型</label>
-          <select class="field-select" id="f-type">
-            <option value="all">全部</option>
-            <option value="general">一般貸款案件</option>
-            <option value="negotiation">債務協商案件</option>
-          </select>
+        <div class="filter-card-actions">
+          <button type="button" class="btn-outline" id="btn-clear-filter">清除所有篩選</button>
+          <button id="btn-search" type="button" class="btn-primary">
+            <i class="fa-solid fa-magnifying-glass"></i>查詢
+          </button>
         </div>
-        <div class="field">
-          <label class="field-label">狀態</label>
-          <select class="field-select" id="f-status">
-            <option value="all">全部</option>
-            <option value="pending_approval" selected>待核款</option>
-            <option value="rewardable">已核款</option>
-            <option value="rejected">已拒絕</option>
-          </select>
-        </div>
-        <div class="field">
-          <label class="field-label">警示代碼</label>
-          <select class="field-select" id="f-warn-code">
-            <option value="all">全部</option>
-            <option value="has_warn">有警示</option>
-            <option value="no_warn">無警示</option>
-            <option value="E-150">E-150</option>
-            <option value="E-180">E-180</option>
-            <option value="E-OLD">E-OLD</option>
-            <option value="E-BLK">E-BLK</option>
-            <option value="E-PAY">E-PAY</option>
-          </select>
-        </div>
-        <button id="btn-search" type="button" class="btn btn-primary">查詢</button>
       </section>
 
       <!-- 批次操作條 -->
@@ -181,6 +206,9 @@
             <button type="button" class="btn btn-outline" id="btn-code-legend" style="font-size:12px;padding:4px 10px;white-space:nowrap;">
               <i class="fa-solid fa-circle-info"></i> 警示代碼說明
             </button>
+            <button type="button" class="btn btn-outline" id="btn-export-csv" style="font-size:12px;padding:4px 12px;white-space:nowrap;">
+              <i class="fa-solid fa-download"></i>匯出資料
+            </button>
           </div>
         </div>
 
@@ -193,8 +221,10 @@
                 <th>推薦人</th>
                 <th>會員編號</th>
                 <th>身份</th>
+                <th>負責業務</th>
                 <th>類型</th>
                 <th>計算獎金</th>
+                <th>諮詢單號</th>
                 <th>狀態</th>
                 <th>警示代碼</th>
                 <th style="min-width: 140px;">操作</th>
@@ -233,9 +263,10 @@
           <section class="rv-section">
             <h4>推薦關係</h4>
             <div class="rv-grid">
-              <div class="rv-row"><span class="rv-label">推薦人</span><span class="rv-value" id="pm-referrer">—</span></div>
+              <div class="rv-row"><span class="rv-label">推薦人</span><span class="rv-value"><span id="pm-referrer">—</span><a id="pm-referrer-list-link" class="list-id-link" href="#" target="_blank" rel="noopener" hidden></a></span></div>
               <div class="rv-row"><span class="rv-label">會員編號</span><span class="rv-value mono" id="pm-referrer-cid">—</span></div>
               <div class="rv-row"><span class="rv-label">身份</span><span class="rv-value" id="pm-tag">—</span></div>
+              <div class="rv-row"><span class="rv-label">負責業務</span><span class="rv-value" id="pm-agent-name">—</span></div>
               <div class="rv-row"><span class="rv-label">案件類型</span><span class="rv-value" id="pm-case-type">—</span></div>
               <div class="rv-row"><span class="rv-label">被推薦人</span><span class="rv-value" id="pm-referee">—</span></div>
               <div class="rv-row"><span class="rv-label">被推薦人手機</span><span class="rv-value mono" id="pm-referee-phone">—</span></div>
@@ -246,7 +277,7 @@
           <section class="rv-section">
             <h4>獎金資訊</h4>
             <div class="rv-grid">
-              <div class="rv-row"><span class="rv-label">收款單號</span><span class="rv-value mono" id="pm-receipt-no">—</span></div>
+              <div class="rv-row rv-row-full"><span class="rv-label">收款單號</span><div class="rv-value" id="pm-receipt-no-list">—</div></div>
               <div class="rv-row rv-row-full"><span class="rv-label">計算獎金</span><span class="rv-value mono rv-amount-emph" id="pm-amount">—</span></div>
             </div>
           </section>

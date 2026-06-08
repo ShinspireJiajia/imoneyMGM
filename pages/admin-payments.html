@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="../css/common.css" />
     <link rel="stylesheet" href="../css/admin-matrix.css" />
     <link rel="stylesheet" href="../css/admin-referrers.css" />
+    <link rel="stylesheet" href="../css/admin-campaigns.css" />
     <link rel="stylesheet" href="../css/admin-payments.css" />
   </head>
   <body class="admin">
@@ -36,12 +37,7 @@
               權限：編輯匯款資訊
             </span>
           </label>
-          <button id="btn-export-recon" type="button" class="btn btn-outline">
-            <i class="fa-solid fa-download"></i>匯出對帳檔
-          </button>
-          <button id="btn-monthly-report" type="button" class="btn btn-outline">
-            <i class="fa-solid fa-file-invoice-dollar"></i>月結報表
-          </button>
+
         </div>
       </div>
 
@@ -74,49 +70,65 @@
       </section>
 
       <!-- 篩選 -->
-      <section class="filter-bar">
-        <div class="field">
-          <label class="field-label">關鍵字搜尋</label>
-          <input id="filter-keyword" class="field-input" type="text" placeholder="款項編號、案號、推薦人…" />
+      <section class="filter-card">
+        <div class="filter-card-head">
+          <button type="button" class="btn-outline btn-sm" id="btn-toggle-advanced">
+            <i class="fa-solid fa-chevron-up"></i>收合篩選
+          </button>
         </div>
-        <div class="field">
-          <label class="field-label">狀態</label>
-          <select class="field-select" id="filter-status">
-            <option value="all">全部</option>
-            <option value="pending">待撥款</option>
-            <option value="transferred">已匯款</option>
-            <option value="pickup">待現場領取</option>
-            <option value="completed">已領取</option>
-            <option value="failed">銀行退匯</option>
-          </select>
-        </div>
-        <div class="field">
-          <label class="field-label">方式</label>
-          <select class="field-select" id="filter-method">
-            <option value="all">全部</option>
-            <option value="transfer" selected>匯款</option>
-            <option value="cash">現場領取</option>
-          </select>
-        </div>
-        <div class="field">
-          <label class="field-label">申請日期</label>
-          <div class="filter-date-range">
-            <input id="filter-date-from" class="field-input" type="date" />
-            <span style="color: var(--color-text-muted); flex-shrink: 0;">~</span>
-            <input id="filter-date-to" class="field-input" type="date" />
+        <div class="filter-grid" id="filter-grid">
+          <div class="field-row">
+            <label class="field-label">關鍵字搜尋</label>
+            <input id="filter-keyword" class="field-input" type="text" placeholder="款項編號、案號、推薦人…" />
+          </div>
+          <div class="field-row">
+            <label class="field-label">狀態</label>
+            <select class="field-select" id="filter-status">
+              <option value="all">全部</option>
+              <option value="pending">待撥款</option>
+              <option value="transferred">已匯款</option>
+              <option value="pickup">待現場領取</option>
+              <option value="completed">已領取</option>
+              <option value="failed">銀行退匯</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">方式</label>
+            <select class="field-select" id="filter-method">
+              <option value="all">全部</option>
+              <option value="transfer" selected>匯款</option>
+              <option value="cash">現場領取</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">推薦人</label>
+            <input id="filter-referrer" class="field-input" type="text" placeholder="推薦人姓名" />
+          </div>
+          <div class="field-row">
+            <label class="field-label">會員編號</label>
+            <input id="filter-member-id" class="field-input" type="text" placeholder="例如 U250310001" />
           </div>
         </div>
-        <button id="btn-filter-search" type="button" class="btn btn-primary">
-          <i class="fa-solid fa-magnifying-glass"></i>查詢
-        </button>
+        <div class="filter-card-actions">
+          <button type="button" class="btn-outline" id="btn-clear-filter">清除所有篩選</button>
+          <button id="btn-filter-search" type="button" class="btn-primary">
+            <i class="fa-solid fa-magnifying-glass"></i>查詢
+          </button>
+        </div>
       </section>
 
       <!-- 列表 -->
       <section class="list-card">
         <div class="list-head">
           <h3><i class="fa-solid fa-money-check-dollar"></i>提領申請清單</h3>
-          <div style="font-size: var(--font-xs); color: var(--color-text-secondary);">
-            勾選後可使用下方批次操作
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:var(--font-xs);color:var(--color-text-secondary);">勾選後可使用下方批次操作</span>
+            <button id="btn-export-recon" type="button" class="btn btn-outline" style="font-size:12px;padding:4px 12px;white-space:nowrap;">
+              <i class="fa-solid fa-download"></i>匯出查詢結果
+            </button>
+            <button id="btn-export-transfer" type="button" class="btn btn-primary" style="font-size:12px;padding:4px 12px;white-space:nowrap;">
+              <i class="fa-solid fa-file-export"></i>匯出匯款檔
+            </button>
           </div>
         </div>
 
@@ -158,7 +170,6 @@
                 <th>稅務資訊</th>
                 <th>金額</th>
                 <th>方式</th>
-                <th>申請日期</th>
                 <th>狀態</th>
                 <th>操作</th>
               </tr>
@@ -337,6 +348,256 @@
 
 
         </div>
+      </div>
+    </div>
+
+    <div id="mark-status-modal" class="history-modal-bg">
+      <div class="history-modal" style="max-width: 480px;">
+        <div class="history-modal-head">
+          <h3>
+            <i class="fa-solid fa-pen-to-square" style="color: var(--color-primary);"></i>
+            更新匯款狀態
+            <span class="ms-payid-label" id="ms-payid">—</span>
+          </h3>
+          <span id="btn-ms-close" class="history-modal-close" role="button" tabindex="0">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </div>
+        <div class="history-modal-body" style="padding: 18px 22px;">
+
+          <!-- 款項摘要 -->
+          <div class="ms-summary">
+            <div class="ms-summary-item">
+              <span class="ms-summary-label">推薦人</span>
+              <strong id="ms-ref">—</strong>
+            </div>
+            <div class="ms-summary-item">
+              <span class="ms-summary-label">金額</span>
+              <strong id="ms-amount" style="color: var(--color-success-dark);">—</strong>
+            </div>
+            <div class="ms-summary-item">
+              <span class="ms-summary-label">匯款帳戶</span>
+              <strong id="ms-bank">—</strong>
+            </div>
+            <div class="ms-summary-item">
+              <span class="ms-summary-label">目前狀態</span>
+              <span id="ms-current-status">—</span>
+            </div>
+          </div>
+
+          <!-- 狀態選擇卡 -->
+          <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">請選擇新狀態</div>
+          <div class="ms-option-grid">
+            <label class="ms-option" id="ms-opt-transferred">
+              <input type="radio" name="ms-status-pick" value="transferred">
+              <div class="ms-option-body">
+                <i class="fa-solid fa-circle-check ms-icon-success"></i>
+                <div class="ms-option-title">已匯款</div>
+                <div class="ms-option-desc">確認款項已成功匯出入帳</div>
+              </div>
+            </label>
+            <label class="ms-option" id="ms-opt-failed">
+              <input type="radio" name="ms-status-pick" value="failed">
+              <div class="ms-option-body">
+                <i class="fa-solid fa-circle-exclamation ms-icon-danger"></i>
+                <div class="ms-option-title">匯款失敗</div>
+                <div class="ms-option-desc">銀行退匯 / 帳號錯誤</div>
+              </div>
+            </label>
+          </div>
+
+          <!-- 退匯原因（選「匯款失敗」時必填） -->
+          <div id="ms-fail-wrap" class="field" hidden>
+            <label class="field-label">退匯原因 <span style="color: var(--color-danger);">*</span></label>
+            <select id="ms-fail-reason-sel" class="field-select" style="margin-bottom: 6px;">
+              <option value="">— 請選擇退匯原因 —</option>
+              <option value="帳號錯誤">帳號錯誤</option>
+              <option value="帳號不存在">帳號不存在</option>
+              <option value="戶名不符">戶名不符</option>
+              <option value="帳戶已銷戶">帳戶已銷戶</option>
+              <option value="other">其他原因（請填寫）</option>
+            </select>
+            <textarea id="ms-fail-reason-text" class="field-input" rows="2"
+              placeholder="請填寫退匯詳細說明"
+              style="resize: vertical; display: none;"></textarea>
+          </div>
+
+          <!-- 備註（選填） -->
+          <div class="field">
+            <label class="field-label">備註（選填，將寫入異動歷程）</label>
+            <textarea id="ms-note" class="field-input" rows="2"
+              placeholder="例：已通知推薦人補正帳號、下批次重匯…"
+              style="resize: vertical;"></textarea>
+          </div>
+
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end; padding: 14px 22px; border-top: 1px solid var(--color-border-light);">
+          <button id="btn-ms-cancel" type="button" class="btn btn-outline">取消</button>
+          <button id="btn-ms-save" type="button" class="btn btn-primary" disabled>
+            <i class="fa-solid fa-check"></i>確認更新
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== 檢視附件 Modal ============== -->
+    <div id="attach-modal" class="history-modal-bg">
+      <div class="history-modal" style="max-width: 720px;">
+        <div class="history-modal-head">
+          <h3>
+            <i class="fa-solid fa-paperclip" style="color:#6366f1;"></i>檢視提領資料
+            <span id="attach-payid" style="font-size:13px;margin-left:8px;font-family:'Courier New',monospace;color:var(--color-primary-dark);">—</span>
+          </h3>
+          <span id="btn-attach-close" class="history-modal-close" role="button" tabindex="0">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </div>
+        <div class="history-modal-body" style="padding:18px 22px;">
+
+          <!-- 會員已填資訊摘要 -->
+          <div style="display:flex;gap:14px;padding:12px 16px;background:#f8fafc;border-radius:8px;margin-bottom:18px;font-size:13px;flex-wrap:wrap;border:1px solid var(--color-border-light);">
+            <div><span style="color:var(--color-text-muted);">推薦人</span>&ensp;<strong id="attach-referrer">—</strong></div>
+            <div><span style="color:var(--color-text-muted);">真實姓名</span>&ensp;<strong id="attach-real-name">—</strong></div>
+            <div><span style="color:var(--color-text-muted);">身分證號</span>&ensp;<strong id="attach-id-number" class="mono">—</strong></div>
+            <div id="attach-bank-code-row"><span style="color:var(--color-text-muted);">銀行代碼&thinsp;/&thinsp;分行</span>&ensp;<strong id="attach-bank-code" class="mono">—</strong></div>
+            <div><span style="color:var(--color-text-muted);">收款人戶名</span>&ensp;<strong id="attach-bank-holder">—</strong></div>
+            <div><span style="color:var(--color-text-muted);">完整帳號</span>&ensp;<strong id="attach-bank-account" class="mono">—</strong></div>
+          </div>
+
+          <!-- 圖片區 -->
+          <div class="attach-img-grid">
+            <div class="attach-img-item">
+              <div class="attach-img-label"><i class="fa-solid fa-id-card"></i> 身分證正面</div>
+              <canvas id="attach-canvas-id-front" class="attach-canvas"></canvas>
+            </div>
+            <div class="attach-img-item">
+              <div class="attach-img-label"><i class="fa-solid fa-id-card" style="transform:scaleX(-1);display:inline-block;"></i> 身分證反面</div>
+              <canvas id="attach-canvas-id-back" class="attach-canvas"></canvas>
+            </div>
+            <div class="attach-img-item" id="attach-bank-item">
+              <div class="attach-img-label"><i class="fa-solid fa-building-columns"></i> 匯款帳號憑證</div>
+              <canvas id="attach-canvas-bank" class="attach-canvas"></canvas>
+            </div>
+          </div>
+
+          <p style="font-size:11px;color:var(--color-text-muted);margin-top:14px;display:flex;align-items:center;gap:5px;">
+            <i class="fa-solid fa-shield-halved" style="color:#6366f1;"></i>
+            圖片已壓印浮水印「僅限台灣理財通系統使用」，僅供後台審核，嚴禁截圖外傳。
+          </p>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;padding:14px 22px;border-top:1px solid var(--color-border-light);">
+          <button id="btn-attach-close-foot" type="button" class="btn btn-outline">關閉</button>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .attach-img-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+        gap: 14px;
+      }
+      .attach-img-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .attach-img-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .attach-canvas {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 8px;
+        border: 1px solid var(--color-border);
+        cursor: zoom-in;
+        transition: opacity 0.15s, box-shadow 0.15s;
+      }
+      .attach-canvas:hover {
+        opacity: 0.88;
+        box-shadow: 0 0 0 2px var(--color-primary);
+      }
+      /* 燈箱 */
+      .img-lightbox-bg {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 10100;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      .img-lightbox-bg.show { display: flex; }
+      .img-lightbox-topbar {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        flex-shrink: 0;
+      }
+      .img-lightbox-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .img-lightbox-close-btn {
+        background: rgba(255,255,255,0.14);
+        border: none;
+        color: #fff;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        transition: background 0.15s;
+        flex-shrink: 0;
+      }
+      .img-lightbox-close-btn:hover { background: rgba(255,255,255,0.28); }
+      .img-lightbox-body {
+        flex: 1;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 24px 40px;
+        overflow: auto;
+      }
+      .img-lightbox-img {
+        max-width: 92vw;
+        max-height: 82vh;
+        border-radius: 10px;
+        box-shadow: 0 8px 48px rgba(0,0,0,0.7);
+        object-fit: contain;
+        display: block;
+      }
+    </style>
+
+    <!-- ============== 圖片燈箱 ============== -->
+    <div id="img-lightbox" class="img-lightbox-bg" role="dialog" aria-modal="true" aria-label="圖片放大">
+      <div class="img-lightbox-topbar">
+        <span id="lightbox-label" class="img-lightbox-label">
+          <i class="fa-solid fa-expand"></i><span id="lightbox-label-text">—</span>
+        </span>
+        <button id="btn-lightbox-close" class="img-lightbox-close-btn" type="button" aria-label="關閉">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="img-lightbox-body" id="img-lightbox-body">
+        <img id="lightbox-img" class="img-lightbox-img" src="" alt="放大圖片" />
       </div>
     </div>
 

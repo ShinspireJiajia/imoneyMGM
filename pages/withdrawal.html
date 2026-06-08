@@ -75,7 +75,7 @@
             <div class="method-option" data-method="transfer" tabindex="0">
               <i class="fa-solid fa-building-columns"></i>
               <div class="method-option-label">匯款入帳</div>
-              <div class="method-option-hint">7 個工作天</div>
+              <div class="method-option-hint">每月 25 日</div>
             </div>
           </div>
         </div>
@@ -128,11 +128,15 @@
             <select class="field-input" id="inp-cash-date">
               <option value="">請先選擇日期</option>
             </select>
-            <span class="field-hint" id="cash-date-hint">僅可預約下三週的週二或週四營業日</span>
+            <span class="field-hint" id="cash-date-hint">僅可預約下三週的週一或週三</span>
           </div>
-          <div class="cash-business-hours">
-            <i class="fa-regular fa-clock"></i>
-            <span>營業時間固定：10:00-17:00</span>
+          <div class="field">
+            <label class="field-label field-required" for="inp-cash-time">預約時段</label>
+            <select class="field-input" id="inp-cash-time">
+              <option value="">請選擇時段</option>
+              <option value="morning">上午 10:00-12:00</option>
+              <option value="afternoon">下午 14:00-16:00</option>
+            </select>
           </div>
         </div>
 
@@ -214,13 +218,27 @@
               <i class="fa-solid fa-building-columns"></i>匯款資料
             </h3>
 
-            <div class="field">
-              <label class="field-label field-required" for="inp-bank">銀行 / 分行</label>
-              <input class="field-input" id="inp-bank" type="text" placeholder="例：玉山銀行 信義分行" />
+            <div class="bank-code-row">
+              <div class="field">
+                <label class="field-label field-required" for="inp-bank-code">銀行代碼</label>
+                <input class="field-input" id="inp-bank-code" type="text" inputmode="numeric" maxlength="3" placeholder="例如 808" autocomplete="off" />
+                <span class="field-hint">3 碼數字，如 808（玉山）、004（臺銀）、013（國泰世華）</span>
+              </div>
+              <div class="field">
+                <label class="field-label field-required" for="inp-bank-branch">分行代號</label>
+                <input class="field-input" id="inp-bank-branch" type="text" inputmode="numeric" maxlength="4" placeholder="例如 0001" autocomplete="off" />
+                <span class="field-hint">4 碼數字，可查看存摺封面</span>
+              </div>
             </div>
             <div class="field">
-              <label class="field-label field-required" for="inp-bank-account">帳號</label>
-              <input class="field-input" id="inp-bank-account" type="text" placeholder="僅可使用本人名下帳戶" />
+              <label class="field-label field-required" for="inp-bank-account">收款人帳號</label>
+              <input class="field-input" id="inp-bank-account" type="text" inputmode="numeric" placeholder="完整銀行帳號" autocomplete="off" />
+              <span class="field-hint">請輸入完整帳號，請勿包含空格或連字號（-）</span>
+            </div>
+            <div class="field">
+              <label class="field-label field-required" for="inp-bank-holder">收款人戶名</label>
+              <input class="field-input" id="inp-bank-holder" type="text" placeholder="與存摺封面完全一致" />
+              <span class="field-hint">請填寫與存摺封面完全一致的公司名稱或個人姓名</span>
             </div>
 
             <h3 class="form-section-title" style="margin-top: 18px;">
@@ -260,7 +278,7 @@
           <div class="icon"><i class="fa-solid fa-check"></i></div>
           <h2>提領申請已送出</h2>
           <p>
-            財務團隊將於 3 個工作天內完成審核與匯款，<br />
+            財務團隊完成審核後，款項將於下方預計撥款日匯出，<br />
             完成後您將收到 LINE 推播 / 簡訊通知。
           </p>
 
@@ -280,6 +298,10 @@
             <div class="row" id="done-appointment-row" style="display: none;">
               <span class="label">現場預約</span>
               <span class="value" id="done-appointment">—</span>
+            </div>
+            <div class="row" id="done-payout-row" style="display: none;">
+              <span class="label">預計撥款日</span>
+              <span class="value" id="done-payout-date" style="color: var(--color-primary-dark); font-weight: 600;">—</span>
             </div>
             <div class="row">
               <span class="label">送出時間</span>

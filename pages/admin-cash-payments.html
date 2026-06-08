@@ -15,7 +15,24 @@
     <link rel="stylesheet" href="../css/common.css" />
     <link rel="stylesheet" href="../css/admin-matrix.css" />
     <link rel="stylesheet" href="../css/admin-referrers.css" />
+    <link rel="stylesheet" href="../css/admin-campaigns.css" />
     <link rel="stylesheet" href="../css/admin-payments.css" />
+    <style>
+      /* AM/PM badge（清單欄位 & 每日看板共用） */
+      .slot-badge {
+        display: inline-flex; align-items: center;
+        font-size: 10px; font-weight: 700; letter-spacing: 0.02em;
+        padding: 1px 7px; border-radius: 4px; flex-shrink: 0;
+      }
+      .slot-am { background: #dbeafe; color: #1e40af; }
+      .slot-pm { background: #fef9c3; color: #854d0e; }
+      /* 每日看板 AM/PM 金額列 */
+      .daily-slot-stats { display: flex; flex-direction: column; gap: 4px; margin-top: 5px; }
+      .slot-stat-row { display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.4; }
+      .slot-count { color: var(--color-text-secondary); min-width: 24px; }
+      .slot-amt { font-weight: 700; font-size: 12px; margin-left: auto; }
+      .slot-empty { font-size: 12px; color: var(--color-text-muted); display: block; margin-top: 4px; }
+    </style>
   </head>
   <body class="admin">
     <main class="payments-page fade-in page-wrap">
@@ -33,9 +50,6 @@
               權限：編輯現場提領
             </span>
           </label>
-          <button id="btn-export-cash" type="button" class="btn btn-outline">
-            <i class="fa-solid fa-download"></i>匯出對帳檔
-          </button>
         </div>
       </div>
 
@@ -57,39 +71,56 @@
       </section>
 
       <!-- 篩選 -->
-      <section class="filter-bar cash-filter-bar">
-        <div class="field">
-          <label class="field-label">關鍵字搜尋</label>
-          <input id="cash-filter-keyword" class="field-input" type="text" placeholder="款項編號、案號、推薦人…" />
+      <section class="filter-card">
+        <div class="filter-card-head">
+          <button type="button" class="btn-outline btn-sm" id="btn-toggle-advanced">
+            <i class="fa-solid fa-chevron-up"></i>收合篩選
+          </button>
         </div>
-        <div class="field">
-          <label class="field-label">狀態</label>
-          <select class="field-select" id="cash-filter-status">
-            <option value="all">全部</option>
-            <option value="pending">待確認</option>
-            <option value="pickup">待領取</option>
-            <option value="completed">已領取</option>
-          </select>
+        <div class="filter-grid" id="filter-grid">
+          <div class="field-row">
+            <label class="field-label">推薦人姓名</label>
+            <input id="cash-filter-referrer-name" class="field-input" type="text" placeholder="輸入姓名搜尋" />
+          </div>
+          <div class="field-row">
+            <label class="field-label">推薦人編號</label>
+            <input id="cash-filter-referrer-id" class="field-input" type="text" placeholder="如 U240105002" />
+          </div>
+          <div class="field-row">
+            <label class="field-label">狀態</label>
+            <select class="field-select" id="cash-filter-status">
+              <option value="all">全部</option>
+              <option value="pending">待確認</option>
+              <option value="pickup">待領取</option>
+              <option value="completed">已領取</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">門市</label>
+            <select class="field-select" id="cash-filter-branch">
+              <option value="all">全部門市</option>
+              <option value="台北">台北（板橋分公司）</option>
+              <option value="台中">台中（中部總公司）</option>
+            </select>
+          </div>
         </div>
-        <div class="field">
-          <label class="field-label">門市</label>
-          <select class="field-select" id="cash-filter-branch">
-            <option value="all">全部門市</option>
-            <option value="台北">台北（板橋分公司）</option>
-            <option value="台中">台中（中部總公司）</option>
-          </select>
+        <div class="filter-card-actions">
+          <button type="button" class="btn-outline" id="btn-clear-filter">清除所有篩選</button>
+          <button id="btn-cash-search" type="button" class="btn-primary">
+            <i class="fa-solid fa-magnifying-glass"></i>查詢
+          </button>
         </div>
-        <button id="btn-cash-search" type="button" class="btn btn-primary">
-          <i class="fa-solid fa-magnifying-glass"></i>查詢
-        </button>
       </section>
 
       <!-- 清單 -->
       <section class="list-card">
         <div class="list-head">
           <h3><i class="fa-solid fa-store"></i>現場提領清單</h3>
-          <div style="font-size:var(--font-xs);color:var(--color-text-secondary);">
-            勾選後可使用下方批次操作
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:var(--font-xs);color:var(--color-text-secondary);">勾選後可使用下方批次操作</span>
+            <button id="btn-export-cash" type="button" class="btn btn-outline" style="font-size:12px;padding:4px 12px;white-space:nowrap;">
+              <i class="fa-solid fa-download"></i>匯出
+            </button>
           </div>
         </div>
 
@@ -116,12 +147,12 @@
                 <th style="width:36px;"></th>
                 <th>款項編號</th>
                 <th>案號</th>
+                <th>會員編號</th>
                 <th>推薦人</th>
                 <th>標籤</th>
                 <th>金額</th>
                 <th>門市</th>
                 <th>預計領取日</th>
-                <th>申請日</th>
                 <th>狀態</th>
                 <th>操作</th>
               </tr>
@@ -209,6 +240,14 @@
             <input id="edit-pay-expected-pickup" class="field-input" type="date" />
           </div>
           <div class="field">
+            <label class="field-label">預約時段</label>
+            <select id="edit-pay-time-slot" class="field-select">
+              <option value="">— 未設定 —</option>
+              <option value="上午 10:00-12:00">上午 10:00-12:00</option>
+              <option value="下午 14:00-16:00">下午 14:00-16:00</option>
+            </select>
+          </div>
+          <div class="field">
             <label class="field-label">變更原因（將寫入歷程）</label>
             <textarea id="edit-pay-reason" class="field-input" rows="2" placeholder="例：推薦人更改領取門市"></textarea>
           </div>
@@ -246,6 +285,84 @@
         </div>
       </div>
     </div>
+
+    <!-- ============== 檢視附件 Modal ============== -->
+    <div id="attach-modal" class="history-modal-bg">
+      <div class="history-modal" style="max-width:640px;">
+        <div class="history-modal-head">
+          <h3>
+            <i class="fa-solid fa-paperclip" style="color:#6366f1;"></i>檢視提領附件
+            <span id="attach-payid" style="font-size:13px;margin-left:8px;font-family:'Courier New',monospace;color:var(--color-primary-dark);">—</span>
+          </h3>
+          <span id="btn-attach-close" class="history-modal-close" role="button" tabindex="0">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </div>
+        <div class="history-modal-body" style="padding:18px 22px;">
+
+          <!-- 預約資訊摘要 -->
+          <div style="display:flex;gap:14px;padding:12px 16px;background:#f8fafc;border-radius:8px;margin-bottom:18px;font-size:13px;flex-wrap:wrap;border:1px solid var(--color-border-light);">
+            <div><span style="color:var(--color-text-muted);">推薦人</span>&ensp;<strong id="attach-referrer">—</strong></div>
+            <div><span style="color:var(--color-text-muted);">真實姓名</span>&ensp;<strong id="attach-real-name">—</strong></div>
+            <div><span style="color:var(--color-text-muted);">身分證號</span>&ensp;<strong id="attach-id-number" class="mono">—</strong></div>
+            <div><span style="color:var(--color-text-muted);">門市</span>&ensp;<strong id="attach-branch">—</strong></div>
+            <div><span style="color:var(--color-text-muted);">預約時間</span>&ensp;<strong id="attach-appt">—</strong></div>
+          </div>
+
+          <!-- 圖片區（現場領取：僅身分證正反面） -->
+          <div class="attach-img-grid" style="grid-template-columns:repeat(2,1fr);">
+            <div class="attach-img-item">
+              <div class="attach-img-label"><i class="fa-solid fa-id-card"></i> 身分證正面</div>
+              <canvas id="attach-canvas-id-front" class="attach-canvas"></canvas>
+            </div>
+            <div class="attach-img-item">
+              <div class="attach-img-label"><i class="fa-solid fa-id-card" style="transform:scaleX(-1);display:inline-block;"></i> 身分證反面</div>
+              <canvas id="attach-canvas-id-back" class="attach-canvas"></canvas>
+            </div>
+          </div>
+
+          <p style="font-size:11px;color:var(--color-text-muted);margin-top:14px;display:flex;align-items:center;gap:5px;">
+            <i class="fa-solid fa-shield-halved" style="color:#6366f1;"></i>
+            圖片已壓印浮水印「僅限台灣理財通系統使用」，僅供後台審核，嚴禁截圖外傳。
+          </p>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;padding:14px 22px;border-top:1px solid var(--color-border-light);">
+          <button id="btn-attach-close-foot" type="button" class="btn btn-outline">關閉</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== 圖片燈箱 ============== -->
+    <div id="img-lightbox" class="img-lightbox-bg" role="dialog" aria-modal="true" aria-label="圖片放大">
+      <div class="img-lightbox-topbar">
+        <span id="lightbox-label" class="img-lightbox-label">
+          <i class="fa-solid fa-expand"></i><span id="lightbox-label-text">—</span>
+        </span>
+        <button id="btn-lightbox-close" class="img-lightbox-close-btn" type="button" aria-label="關閉">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="img-lightbox-body" id="img-lightbox-body">
+        <img id="lightbox-img" class="img-lightbox-img" src="" alt="放大圖片" />
+      </div>
+    </div>
+
+    <style>
+      .attach-img-grid { display:grid; gap:14px; }
+      .attach-img-item { display:flex; flex-direction:column; gap:6px; }
+      .attach-img-label { font-size:12px; font-weight:600; color:var(--color-text-secondary); display:flex; align-items:center; gap:5px; }
+      .attach-canvas { width:100%; height:auto; display:block; border-radius:8px; border:1px solid var(--color-border); cursor:zoom-in; transition:opacity .15s,box-shadow .15s; }
+      .attach-canvas:hover { opacity:.88; box-shadow:0 0 0 2px var(--color-primary); }
+      /* 燈箱 */
+      .img-lightbox-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.9); z-index:10100; flex-direction:column; align-items:center; justify-content:flex-start; }
+      .img-lightbox-bg.show { display:flex; }
+      .img-lightbox-topbar { width:100%; display:flex; justify-content:space-between; align-items:center; padding:14px 20px; flex-shrink:0; }
+      .img-lightbox-label { font-size:14px; font-weight:600; color:#e2e8f0; display:flex; align-items:center; gap:7px; }
+      .img-lightbox-close-btn { background:rgba(255,255,255,.14); border:none; color:#fff; width:38px; height:38px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; transition:background .15s; flex-shrink:0; }
+      .img-lightbox-close-btn:hover { background:rgba(255,255,255,.28); }
+      .img-lightbox-body { flex:1; width:100%; display:flex; align-items:center; justify-content:center; padding:8px 24px 40px; overflow:auto; }
+      .img-lightbox-img { max-width:92vw; max-height:82vh; border-radius:10px; box-shadow:0 8px 48px rgba(0,0,0,.7); object-fit:contain; display:block; }
+    </style>
 
     <script src="../js/common.js"></script>
     <script src="../js/admin-cash-payments.js"></script>

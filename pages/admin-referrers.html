@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="../css/admin-matrix.css" />
     <link rel="stylesheet" href="../css/admin-referrers.css" />
     <!-- 推薦碼管理已併入本頁，沿用其使用紀錄表格樣式 -->
+    <link rel="stylesheet" href="../css/admin-campaigns.css" />
     <link rel="stylesheet" href="../css/admin-codes.css" />
   </head>
   <body class="admin">
@@ -27,54 +28,63 @@
       <div class="page-toolbar">
         <div>
           <div class="page-title">推薦人管理</div>
-         
         </div>
-        <button type="button" class="btn btn-outline">
-          <i class="fa-solid fa-download"></i>匯出資料
-        </button>
       </div>
 
       <!-- 篩選列 -->
-      <section class="filter-bar">
-        <div class="field">
-          <label class="field-label">會員編號</label>
-          <input class="field-input" id="f-uid" type="text" placeholder="例如 U240105002" />
+      <section class="filter-card">
+        <div class="filter-card-head">
+          <button type="button" class="btn-outline btn-sm" id="btn-toggle-advanced">
+            <i class="fa-solid fa-chevron-up"></i>收合篩選
+          </button>
         </div>
-        <div class="field">
-          <label class="field-label">手機號碼</label>
-          <input class="field-input" id="f-phone" type="text" placeholder="例如 0922" />
+        <div class="filter-grid" id="filter-grid">
+          <div class="field-row">
+            <label class="field-label">會員編號</label>
+            <input class="field-input" id="f-uid" type="text" placeholder="例如 U240105002" />
+          </div>
+          <div class="field-row">
+            <label class="field-label">手機號碼</label>
+            <input class="field-input" id="f-phone" type="text" placeholder="例如 0922" />
+          </div>
+          <div class="field-row">
+            <label class="field-label">姓名</label>
+            <input class="field-input" id="f-name" type="text" placeholder="推薦人姓名" />
+          </div>
+          <div class="field-row">
+            <label class="field-label">身份</label>
+            <select class="field-select" id="f-tag">
+              <option value="all">全部</option>
+              <option value="會員">會員</option>
+              <option value="員工">員工</option>
+              <option value="離職員工">離職員工</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label class="field-label">狀態</label>
+            <select class="field-select" id="f-status">
+              <option value="all">全部</option>
+              <option value="active">正常</option>
+              <option value="warning">系統警示</option>
+              <option value="frozen">已停用</option>
+            </select>
+          </div>
         </div>
-        <div class="field">
-          <label class="field-label">姓名</label>
-          <input class="field-input" id="f-name" type="text" placeholder="推薦人姓名" />
+        <div class="filter-card-actions">
+          <button type="button" class="btn-outline" id="btn-clear-filter">清除所有篩選</button>
+          <button type="button" class="btn-primary" id="btn-search">查詢</button>
         </div>
-        <div class="field">
-          <label class="field-label">身份</label>
-          <select class="field-select" id="f-tag">
-            <option value="all">全部</option>
-            <option value="會員">會員</option>
-            <option value="員工">員工</option>
-            <option value="離職員工">離職員工</option>
-          </select>
-        </div>
-        <div class="field">
-          <label class="field-label">狀態</label>
-          <select class="field-select" id="f-status">
-            <option value="all">全部</option>
-            <option value="active">正常</option>
-            <option value="warning">系統警示</option>
-            <option value="frozen">已停用</option>
-          </select>
-        </div>
-        <button type="button" class="btn btn-primary" id="btn-search">查詢</button>
       </section>
 
       <!-- 列表 -->
       <section class="list-card">
         <div class="list-head">
           <h3>推薦人清單</h3>
-          <div class="list-head-hint">
-            點擊「備註」可加入僅後台可見之客服筆記
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="list-head-hint">點擊「備註」可加入僅後台可見之客服筆記</span>
+            <button type="button" class="btn btn-outline" id="btn-export-csv" style="font-size:12px;padding:4px 12px;white-space:nowrap;">
+              <i class="fa-solid fa-download"></i>匯出資料
+            </button>
           </div>
         </div>
 
