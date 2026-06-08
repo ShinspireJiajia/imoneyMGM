@@ -473,6 +473,29 @@
     content: ''; width: 5px; height: 5px;
     background: var(--gold); border-radius: 50%;
   }
+
+  /* ── IFRAME PREVIEW ──────────────────────────────────── */
+  .iframe-scale-frame {
+    position: relative;
+    width: 100%; height: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(201,168,76,.2);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.04),
+      0 24px 64px rgba(0,0,0,.6),
+      0 4px 16px rgba(0,0,0,.4);
+    background: #fff;
+  }
+  .iframe-scale-frame iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1440px;
+    height: 900px;
+    border: none;
+    pointer-events: none;
+    transform-origin: top left;
+  }
 </style>
 </head>
 <body>
@@ -501,27 +524,13 @@ const slides = [
     title: '後台主畫面',
     img: 'screenshots/admin-main.png',
     points: [
-      'iframe 框架式版面，左側固定側欄導覽、右側動態內容區，頁面切換不重新載入',
-      '8 大功能模組：行銷設定、會員管理、推播管理、案件管理、財務管理、風控管理',
-      '頂部搜尋列提供跨模組快速查詢，含未讀通知角標與管理員身分資訊顯示',
+      'iframe 框架式版面：左側固定側欄導覽（Logo＋各模組連結），右側為動態內容區，切換頁面不重新載入整頁',
+      '側欄依功能分組展開：行銷設定、會員管理、推播管理、案件管理、財務管理、風控管理共 6 大模組',
+      '頂部工具列顯示目前登入的管理員資訊，並提供跨頁面快速導航入口',
     ]
   },
 
-  // 3 — DASHBOARD
-  {
-    type: 'feature',
-    category: '儀表板',
-    tag: 'DASHBOARD',
-    title: '儀表板總覽',
-    img: 'screenshots/admin-dashboard.png',
-    points: [
-      '本月推廣案件統計與獎金發放概況，即時呈現送單數、成功撥款筆數等關鍵指標',
-      '近 7 日送單趨勢長條圖與案件狀態分佈圓餅圖，快速掌握推廣績效動向',
-      '快速連結區，便利後台人員一鍵進入各功能模組',
-    ]
-  },
-
-  // 4 — CAMPAIGNS
+  // 3 — CAMPAIGNS
   {
     type: 'feature',
     category: '行銷設定',
@@ -529,23 +538,23 @@ const slides = [
     title: '活動檔期管理',
     img: 'screenshots/admin-campaigns.png',
     points: [
-      '管理推廣活動檔期，支援新增、編輯、查詢與篩選（按狀態、日期區間等）',
-      '列表顯示活動編號、名稱、日期、狀態、累積案件數與獎金發放情況',
-      '活動空窗期提醒機制：建議在現行檔期結束前 7 天完成下一檔設定',
+      '列表顯示所有活動的「編號、名稱、起訖日期、狀態、累積案件數、已發放獎金」，可依關鍵字、狀態（進行中 / 即將開始 / 已結束）、日期區間篩選',
+      '右上角「新增活動」按鈕進入建立流程；列表每筆提供「編輯」及「查看詳情」快捷操作',
+      '頁面底部提示：當無進行中活動時系統將自動套用「空窗期預設獎金」，提醒及早設定下一檔期',
     ]
   },
 
-  // 5 — MATRIX
+  // 4 — MATRIX
   {
     type: 'feature',
     category: '行銷設定',
     tag: 'MARKETING',
     title: '活動詳情 ／ 獎金矩陣',
-    img: 'screenshots/admin-matrix.png',
+    iframeUrl: 'pages/admin-matrix.html?preview=1#matrix',
     points: [
-      '檢視並編輯特定活動的基本資訊（名稱、日期、狀態），異動即時生效',
-      '設定獎金發放標準矩陣表，涵蓋各專案類型、觸發條件、獎金金額與啟用狀態',
-      '支援疊加制組合條件設定與多專案組合上限規則，並完整記錄每次編輯歷程',
+      '「基本資訊」分頁：編輯活動名稱、起訖日期、狀態，並顯示活動 ID、剩餘天數與完整異動歷程時間軸',
+      '「獎金分級矩陣」分頁：針對機車 / 小額、銀行信貸、不動產、債務協商四大專案，逐筆設定觸發條件、獎金金額（TWD）與啟用狀態',
+      '矩陣下方另有「疊加制組合條件」表：可設定多專案組合上限，所有修改即時寫入異動歷程',
     ]
   },
 
@@ -557,9 +566,9 @@ const slides = [
     title: '分享制度說明維護',
     img: 'screenshots/admin-share-rules.png',
     points: [
-      '維護前台分享制度條款的項次內容、樣式與排序（拖曳調整順序）',
-      '支援四種呈現樣式：一般段落、警示框、引用框、流程步驟',
-      '內建富文字編輯工具列，支援格式設定、圖片上傳與 HTML 原始碼直接編輯',
+      '管理前台「分享制度」頁面的條款項次，支援拖曳排序、新增、編輯與刪除',
+      '每個項次可選擇四種呈現樣式：一般段落、警示框（橙色警告）、引用框（藍色說明）、流程步驟',
+      '編輯彈窗內建富文字工具列（標題、粗體、斜體、清單、超連結、圖片上傳），並支援直接切換 HTML 原始碼模式',
     ]
   },
 
@@ -571,9 +580,9 @@ const slides = [
     title: '員工帳號管理',
     img: 'screenshots/admin-employees.png',
     points: [
-      '管理公司員工帳號狀態（啟用、停用、離職），支援依帳號、姓名、狀態多條件篩選',
-      '顯示員工綁定手機、帳號狀態、離職時間及 MGM 推薦資格',
-      '離職員工完成身分綁定後自動同步至推薦人清單，無需人工介入',
+      '列表顯示員工「帳號、姓名、綁定手機、帳號狀態、離職日期、MGM 推薦資格」，可依帳號、姓名、狀態（全部 / 啟用 / 停用 / 離職）篩選',
+      '點擊操作列可檢視員工詳細資訊，並調整帳號狀態或推薦資格設定',
+      '離職員工完成前台身分綁定（Line 帳號連結）後，系統自動同步至推薦人清單，無需人工干預',
     ]
   },
 
@@ -585,9 +594,9 @@ const slides = [
     title: '推薦人管理',
     img: 'screenshots/admin-referrers.png',
     points: [
-      '統一管理所有推薦人（一般會員、員工、離職員工），支援多條件篩選與 CSV 匯出',
-      '詳情頁含推薦人基本資訊、專屬推薦碼與對應推薦案件清單',
-      '後台客服備註功能，可記錄個案溝通紀錄與特殊處理說明',
+      '統一管理三類推薦人（一般會員 / 員工 / 離職員工），列表顯示「身分、會員編號、姓名、手機、點擊數、成功送單數、待提領、已提領、狀態」，支援多條件篩選與 CSV 匯出',
+      '「查看詳情」彈窗含基本資訊、推薦碼專屬連結及對應案件清單',
+      '「內部備註」功能供後台客服記錄個案溝通紀錄，備註僅後台人員可見',
     ]
   },
 
@@ -599,23 +608,23 @@ const slides = [
     title: '推播通知管理',
     img: 'screenshots/admin-notify.png',
     points: [
-      '選擇推薦人並透過 SMS 與 LINE 雙管道推播發送通知訊息',
-      '可套用現成的通知母版快速填稿，提高行銷作業效率',
-      '完整記錄發送時間、操作人員、收件人與管道，支援歷史發送記錄查詢追蹤',
+      '三個分頁：「發送」（即時發送）、「設定」（管理通知母版）、「發送紀錄」（查詢歷史）',
+      '「發送」頁面左側為收件人選擇器（可依 LINE / SMS 管道篩選、全選或逐筆勾選），右側為撰寫區：選擇管道、套用母版、輸入訊息內容並預覽後送出',
+      '「發送紀錄」列表記錄每次操作的發送時間、操作人員、收件人、管道、訊息摘要與發送狀態',
     ]
   },
 
-  // 10 — RECORDS
+  // 9 — RECORDS
   {
     type: 'feature',
     category: '案件管理',
     tag: 'CASES',
     title: '推薦案件管理',
-    img: 'screenshots/admin-records.png',
+    iframeUrl: 'pages/admin-records.html',
     points: [
-      '檢視與管理所有推薦案件，支援依推薦人、被推薦人、案號、狀態等多條件篩選',
-      '案件詳情頁涵蓋推薦關係、案件基本資訊、獎金計算明細與送單時快照參數',
-      '支援 CSV 匯出功能，方便外部系統整合分析',
+      '列表顯示「案件編號、專案類型、收件類型、標籤、會員編號、客戶姓名、被推薦人、申請日期、狀態、獎金金額」，支援依推薦人、被推薦人、案號、狀態、推薦人標籤、申請日期區間等多條件篩選',
+      '「查看詳情」彈窗涵蓋推薦關係圖、案件基本資料、警示代碼旗標及送單時快照參數（用於獎金計算依據的完整記錄）',
+      '右上角提供「匯出資料」（CSV）按鈕，方便外部系統串接或財務對帳',
     ]
   },
 
@@ -627,9 +636,9 @@ const slides = [
     title: '推薦案件報表',
     img: 'screenshots/admin-reports.png',
     points: [
-      '統計分析推薦案件績效，呈現當月新增、成交、獎金發放等 KPI 指標',
-      '圖表展示獎金發放金額趨勢與案件結果分布，及 Top 推薦人績效排行',
-      '月份明細表格與報表匯出、列印功能，支援月度結算作業',
+      '上方篩選列可選年份、月份與方案類型（員工 / 會員）；四張 KPI 卡片呈現「新增案件數、成交案件數、本月獎金發放、累計獎金發放」',
+      '圖表區包含：獎金發放趨勢折線圖（月度＋累計）、案件結果分布長條圖（符合 / 不符合）、Top 推薦人績效排行（依獎金與案件數，可切換身分篩選）',
+      '下方月份明細表格彙整「新增 / 成交 / 停止 / 已發放獎金 / 已提領 / 待提領」，支援報表匯出與列印',
     ]
   },
 
@@ -641,9 +650,9 @@ const slides = [
     title: '推薦案件獎金核款',
     img: 'screenshots/admin-payout.png',
     points: [
-      '會計人員審核與核准待核款案件，核准後即可進入推薦人提領流程',
-      '警示代碼自動偵測（E-150、E-180、E-OLD 等），提醒人工注意異常條件',
-      '支援批次核准 ／ 拒絕操作、發送核款通知，並可附加備註說明留存紀錄',
+      '頂部五張 KPI 卡片：待核款件數 / 待核款金額 / 本月已核款件數 / 已核款金額 / 已拒絕件數，讓財務人員一眼掌握當日工作量',
+      '列表顯示「案件編號、推薦人、會員編號、身分、專案類型、計算獎金、狀態、警示代碼」，可依推薦人、案號、類型、狀態、警示代碼（E-150、E-180、E-OLD 等）篩選',
+      '支援單筆或批次核准 / 拒絕，核款後可觸發 SMS / LINE 通知推薦人，並可附加拒絕原因備註',
     ]
   },
 
@@ -655,9 +664,9 @@ const slides = [
     title: '提領功能管理',
     img: 'screenshots/admin-payments.png',
     points: [
-      '管理推薦人獎金提領申請，支援匯款與現場領取兩種方式',
-      '標記撥款狀態、編輯匯款資訊與批次操作，並完整記錄每筆異動歷程',
-      '月結報表與對帳檔匯出功能，配合財務核帳作業',
+      '三張 KPI 卡片顯示「待轉帳件數、待現場領取件數、本月已轉帳金額」；列表欄位包含「提領編號、案件編號、會員編號、推薦人、標籤、稅務資訊、金額、提領方式、申請日期、狀態」',
+      '支援批次標記「已轉帳 / 已完成」，並可開啟編輯模式修改提領方式、狀態與銀行帳號資訊；每筆完整記錄異動時間軸',
+      '右上角提供「匯出對帳檔」與「產生月結報表」（含各提領方式 / 專案的金額彙總），配合財務核帳作業',
     ]
   },
 
@@ -669,9 +678,9 @@ const slides = [
     title: '超量待審佇列',
     img: 'screenshots/admin-pending-review.png',
     points: [
-      '管理超過月度上限的待審案件，支援依來源、標籤、狀態篩選與 EXCEL 匯出',
-      '提供批次放行、拒絕、轉黑名單等操作，操作時可附加備註',
-      '統計儀表板即時呈現本月待審、已放行、已拒絕筆數',
+      '頁面頂部即時統計「本月待審、已放行、已拒絕」件數；列表欄位含「來源（超量 / 黑名單）、案件編號、推薦人、會員編號、標籤、獎金金額、狀態」',
+      '可依關鍵字、來源、推薦人標籤、狀態篩選；勾選後出現批次操作列：批次放行、批次拒絕、批次轉黑名單',
+      '「轉黑名單」操作需填寫原因後確認，確保每筆處置均有留存說明；整頁支援 EXCEL 匯出',
     ]
   },
 
@@ -683,9 +692,9 @@ const slides = [
     title: '全站方案開關',
     img: 'screenshots/admin-plan-switch.png',
     points: [
-      '獨立控制員工方案與會員方案的啟用 ／ 暫停狀態，即時生效',
-      '暫停後使用者僅可進入「我的獎金」頁，其他頁面一律顯示「敬請期待」',
-      '所有方案切換操作均即時寫入稽核軌跡，確保操作可追溯',
+      '獨立控制「員工方案」與「會員方案」的啟用 / 暫停狀態，操作後即時生效；每個方案顯示目前狀態標籤（進行中 / 已暫停）',
+      '方案暫停後，前台使用者僅能進入「我的獎金」查詢頁，其餘頁面一律顯示「活動敬請期待」提示',
+      '右側稽核軌跡卡片呈現最近 10 筆操作紀錄（時間、操作人員、異動內容），所有切換操作可追溯',
     ]
   },
 
@@ -697,9 +706,9 @@ const slides = [
     title: '提領限制與時效管理',
     img: 'screenshots/admin-limits.png',
     points: [
-      '設定後續案件紅利效期與獎金失效期限（天數），到期自動作廢',
-      '配置每月最高提領總額與成功推薦件數上限，精細管控獎勵規模',
-      '超量處理方式採「暫存待人工放行」，所有設定異動寫入稽核軌跡',
+      '「獎金時效設定」區塊：分別設定「後續案件紅利效期天數」與「未提領獎金失效天數」，到期自動作廢',
+      '「月度提領上限設定」區塊：可設定每月最高提領總金額（支援勾選「不限制」）與每月最高成功推薦件數；超量案件一律進入「待審佇列」等待人工放行',
+      '所有儲存操作需輸入後台密碼二次確認；底部稽核軌跡表格記錄每次異動的時間、操作人員與變更明細',
     ]
   },
 
@@ -711,9 +720,9 @@ const slides = [
     title: '活動空窗期獎金設定',
     img: 'screenshots/admin-default.png',
     points: [
-      '設定活動檔期間無進行中活動時（空窗期）自動套用的獎金發放標準',
-      '包含四大專案類型的獎金金額與觸發條件，員工方案與會員方案獨立設定',
-      '修改需通過後台密碼二次確認，所有異動記錄於稽核軌跡防止誤操作',
+      '當無進行中活動檔期時，系統自動套用此頁設定的預設獎金標準；四大專案（機車 / 小額、銀行信貸、不動產、債務協商）各自設定觸發條件與獎金金額',
+      '每列可獨立編輯：選擇觸發條件、輸入金額、切換啟用狀態，儲存後立即生效（快照機制確保歷史案件不受影響）',
+      '儲存需通過後台密碼二次確認；頁面底部顯示最近 10 筆稽核紀錄，完整追蹤每次修改記錄',
     ]
   },
 
@@ -725,9 +734,9 @@ const slides = [
     title: '黑名單管理',
     img: 'screenshots/admin-blacklist.png',
     points: [
-      '管理被凍結帳號清單，記錄事件編號、推薦人、身份類型、狀態與觸發原因',
-      '凍結後該帳號所有推薦連結即刻失效，未撥款案件自動改判為「未符合資格」',
-      '支援搜尋篩選、查看詳情與解除凍結操作，凍結期間異動完整留存',
+      '列表顯示「事件編號、推薦人姓名、身分類型、狀態、觸發原因 / 最新備註」，支援依關鍵字、凍結狀態篩選；可調整每頁筆數',
+      '帳號凍結後：所有推薦連結即刻失效，尚未核款的案件自動標記為「未符合資格」',
+      '「查看詳情」彈窗顯示完整事件資訊（警示次數、黑名單次數、操作人員、原因）；支援解除凍結操作，所有異動均完整留存',
     ]
   },
 ];
@@ -789,7 +798,7 @@ function renderCover() {
         <div class="cover-eyebrow">需求訪談簡報</div>
         <h1 class="cover-title">理財通 <em>MGM</em><br>行銷後台系統</h1>
         <div class="cover-divider"></div>
-        <p class="cover-sub">系統功能需求訪談簡報<br>涵蓋 17 個功能模組 · 8 大管理分類</p>
+        <p class="cover-sub">系統功能需求訪談簡報<br>涵蓋 16 個功能模組 · 7 大管理分類</p>
         <div class="cover-meta">
           <div class="cover-meta-item">
             <div class="cover-meta-label">版本</div>
@@ -801,7 +810,7 @@ function renderCover() {
           </div>
           <div class="cover-meta-item">
             <div class="cover-meta-label">狀態</div>
-            <div class="cover-meta-value">草稿</div>
+            <div class="cover-meta-value">v1.0</div>
           </div>
         </div>
       </div>
@@ -816,14 +825,13 @@ function renderCover() {
 
 function renderToc() {
   const chapters = [
-    { n:'01', icon:'📊', title:'儀表板總覽', sub:'KPI 統計 · 趨勢圖表 · 快速連結' },
-    { n:'02', icon:'🎯', title:'行銷設定', sub:'活動管理 · 獎金矩陣 · 分享制度' },
-    { n:'03', icon:'👥', title:'會員管理', sub:'員工帳號 · 推薦人' },
-    { n:'04', icon:'📣', title:'推播管理', sub:'SMS · LINE · 發送紀錄' },
-    { n:'05', icon:'📋', title:'案件管理', sub:'案件查詢 · 績效報表' },
-    { n:'06', icon:'💰', title:'財務管理', sub:'獎金核款 · 提領 · 待審佇列' },
-    { n:'07', icon:'🛡️', title:'風控管理', sub:'方案開關 · 限制設定 · 黑名單' },
-    { n:'08', icon:'🖥️', title:'系統導覽', sub:'後台主畫面 · 架構說明' },
+    { n:'01', icon:'🎯', title:'行銷設定', sub:'活動管理 · 獎金矩陣 · 分享制度' },
+    { n:'02', icon:'👥', title:'會員管理', sub:'員工帳號 · 推薦人' },
+    { n:'03', icon:'📣', title:'推播管理', sub:'SMS · LINE · 發送紀錄' },
+    { n:'04', icon:'📋', title:'案件管理', sub:'案件查詢 · 績效報表' },
+    { n:'05', icon:'💰', title:'財務管理', sub:'獎金核款 · 提領 · 待審佇列' },
+    { n:'06', icon:'🛡️', title:'風控管理', sub:'方案開關 · 限制設定 · 黑名單' },
+    { n:'07', icon:'🖥️', title:'系統導覽', sub:'後台主畫面 · 架構說明' },
   ];
   const s = document.createElement('div');
   s.className = 'slide';
@@ -852,6 +860,16 @@ function renderToc() {
 }
 
 function renderFeature(data, idx) {
+  const screenInner = data.iframeUrl
+    ? `<div class="iframe-scale-frame" data-iframe-frame>
+         <iframe src="${data.iframeUrl}" title="${data.title}"></iframe>
+         <div class="screenshot-label">${data.tag}</div>
+       </div>`
+    : `<div class="screenshot-frame">
+         <img src="${data.img}" alt="${data.title}" loading="lazy">
+         <div class="screenshot-label">${data.tag}</div>
+       </div>`;
+
   const s = document.createElement('div');
   s.className = 'slide';
   s.innerHTML = `
@@ -861,10 +879,7 @@ function renderFeature(data, idx) {
       ${makeHeader(data.tag, idx).outerHTML}
       <div class="feature-body">
         <div class="feature-screenshot">
-          <div class="screenshot-frame">
-            <img src="${data.img}" alt="${data.title}" loading="lazy">
-            <div class="screenshot-label">${data.tag}</div>
-          </div>
+          ${screenInner}
         </div>
         <div class="feature-content">
           <div class="section-pill">${data.category}</div>
@@ -914,6 +929,7 @@ function goTo(idx) {
   updateDots(idx);
   document.getElementById('btnPrev').disabled = idx === 0;
   document.getElementById('btnNext').disabled = idx === totalSlides - 1;
+  requestAnimationFrame(scaleIframeFrames);
 }
 
 function navigate(dir) { goTo(current + dir); }
@@ -927,8 +943,20 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'End')  { e.preventDefault(); goTo(totalSlides-1); }
 });
 
+// ── IFRAME SCALE ──────────────────────────────────────────────────────────
+function scaleIframeFrames() {
+  document.querySelectorAll('[data-iframe-frame]').forEach(frame => {
+    const iframe = frame.querySelector('iframe');
+    if (!iframe) return;
+    const scale = frame.offsetWidth / 1440;
+    iframe.style.transform = `scale(${scale})`;
+  });
+}
+window.addEventListener('resize', scaleIframeFrames);
+
 // Init
 goTo(0);
+requestAnimationFrame(scaleIframeFrames);
 </script>
 </body>
 </html>
