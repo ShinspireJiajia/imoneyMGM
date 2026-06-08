@@ -663,3 +663,11 @@
   padding: 5px 12px;
   white-space: nowrap;
 }
+
+/* 銀行代碼 + 分行代號 並排 */
+.bank-code-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+

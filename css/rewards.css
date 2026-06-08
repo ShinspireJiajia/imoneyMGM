@@ -681,6 +681,12 @@
 }
 .reward-status-hint.tone-green i { color: #10B981; }
 
+.reward-status-hint.tone-red {
+  background: #FFF5F5;
+  color: #991B1B;
+}
+.reward-status-hint.tone-red i { color: #DC2626; }
+
 /* ===================== 底部 Sticky 提領條 ===================== */
 .withdraw-bar {
   position: fixed;
@@ -919,12 +925,30 @@
   border: 1px solid #FCD34D;
 }
 
+/* 提領失敗區段標題 */
+.reward-section-failed {
+  color: #991B1B;
+}
+
+.reward-section-failed i {
+  margin-right: 4px;
+}
+
 /* 待人工放行區段標題 */
 .reward-section-frozen {
   color: #92400E;
 }
 
 .reward-section-frozen i {
+  margin-right: 4px;
+}
+
+/* 處理中區段標題 */
+.reward-section-processing {
+  color: #1D4ED8;
+}
+
+.reward-section-processing i {
   margin-right: 4px;
 }
 
@@ -975,14 +999,14 @@
   display: inline-flex; align-items: center; gap: 6px;
 }
 .month-progress-card .mpc-period {
-  font-size: 11px; color: var(--color-text-muted, #6b7280);
+  font-size: 11px; color: var(--color-text-muted, #252629);
   font-family: 'Courier New', monospace;
 }
 .month-progress-card .mpc-row {
   display: flex; justify-content: space-between; margin-bottom: 8px;
 }
 .month-progress-card .mpc-stat .mpc-label {
-  display: block; font-size: 11px; color: var(--color-text-secondary, #6b7280);
+  display: block; font-size: 11px; color: var(--color-text-secondary, #252629);
   margin-bottom: 2px;
 }
 .month-progress-card .mpc-stat strong {
@@ -1005,7 +1029,7 @@
   background: linear-gradient(90deg, #ef4444, #dc2626);
 }
 .month-progress-card .mpc-hint {
-  font-size: 11px; color: var(--color-text-secondary, #6b7280); line-height: 1.6;
+  font-size: 11px; color: var(--color-text-secondary, #252629); line-height: 1.6;
   margin-top: 8px; padding: 8px 10px; background: #f9fafb;
   border-radius: 8px; border-left: 3px solid var(--color-primary-light, #c4b5fd);
 }
@@ -1033,6 +1057,13 @@
   transition: background 0.15s;
 }
 .reward-edit-btn:hover { background: #e0f2fe; }
+
+.reward-edit-btn-urgent {
+  background: #FFF5F5;
+  color: #DC2626;
+  border: 1.5px solid rgba(220,38,38,0.35);
+}
+.reward-edit-btn-urgent:hover { background: #FEE2E2; }
 
 /* 預約近三天：請聯繫專員 */
 .reward-contact-hint {

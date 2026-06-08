@@ -35,8 +35,8 @@
 
   /* 文字 */
   --color-text: #1f2937;
-  --color-text-secondary: #6b7280;
-  --color-text-muted: #9ca3af;
+  --color-text-secondary: #252629;
+  --color-text-muted: #252629;
 
   /* 背景與邊框 */
   --color-bg: #fafafa;
@@ -131,7 +131,7 @@ body.admin {
   --color-primary-200:   #ABDDD7;
 
   --color-text:          #2C3E50;
-  --color-text-secondary:#6B7280;
+  --color-text-secondary:#252629;
 
   --color-bg:            #F4F6F7;
   --color-bg-alt:        #F0F8F7;
@@ -286,7 +286,7 @@ ol {
 
 .badge-gray {
   background: #f3f4f6;
-  color: #6b7280;
+  color: #252629;
 }
 
 .badge-blue {

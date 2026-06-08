@@ -69,7 +69,7 @@
   border-left-color: var(--color-success);
 }
 .stat-item.withdrawn {
-  border-left-color: #9ca3af;
+  border-left-color: #252629;
 }
 .stat-item.invalid {
   border-left-color: var(--color-danger);

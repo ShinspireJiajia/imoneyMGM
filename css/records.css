@@ -297,7 +297,7 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* 詳細資訊行：客戶編號 / 諮詢單號 / 案號 */
+/* 詳細資訊行：會員編號 / 諮詢單號 / 案號 */
 .rc-detail-meta {
   display: flex;
   flex-direction: column;
@@ -401,7 +401,7 @@
 
 .rc-callout.tone-gray {
   background: #F9FAFB;
-  border-left-color: #9CA3AF;
+  border-left-color: #252629;
   color: var(--color-text-secondary);
 }
 .rc-callout.tone-gray > i { color: var(--color-text-muted); }
@@ -415,7 +415,7 @@
   border-left-color: var(--color-success);
 }
 .record-card.status-withdrawn {
-  border-left-color: #9ca3af;
+  border-left-color: #252629;
 }
 .record-card.status-transferring {
   border-left-color: #3b82f6;
@@ -425,7 +425,7 @@
 }
 /* 柔性化：將「未符合」由紅色錯誤感改為中性灰，定位為「已歸檔之歷史紀錄」 */
 .record-card.status-invalid {
-  border-left-color: #9ca3af;
+  border-left-color: #252629;
   background: #fafafa;
   opacity: 0.92;
 }
@@ -590,7 +590,7 @@
 }
 
 .invalid-tip i {
-  color: #9ca3af;
+  color: #252629;
   margin-top: 2px;
   font-size: 14px;
 }

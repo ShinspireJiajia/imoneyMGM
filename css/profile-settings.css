@@ -19,7 +19,7 @@
 .ps-section-title {
   font-size: 11px;
   font-weight: 700;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, #252629);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 4px;
@@ -30,7 +30,7 @@
 
 .ps-section-hint {
   font-size: 13px;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, #252629);
   margin: 4px 0 14px;
   line-height: 1.5;
 }
@@ -52,7 +52,7 @@
 
 .ps-row-label {
   font-size: 12px;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, #252629);
   margin-bottom: 3px;
 }
 
@@ -141,7 +141,7 @@
   flex-shrink: 0;
   width: 70px;
   font-size: 12px;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, #252629);
 }
 
 .ps-info-value {
@@ -154,7 +154,7 @@
 
 .ps-info-value.ps-empty {
   font-family: inherit;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, #252629);
   font-style: italic;
   font-size: 13px;
 }
@@ -176,7 +176,7 @@
 /* ── 提示文字 ── */
 .ps-hint {
   font-size: 13px;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, #252629);
   line-height: 1.5;
   margin-bottom: 10px;
 }
@@ -184,7 +184,7 @@
 /* ── OTP 計時器 + 重送 ── */
 .ps-otp-timer {
   font-size: 13px;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, #252629);
   margin-top: 10px;
   display: flex;
   align-items: center;
@@ -204,7 +204,7 @@
 }
 
 .ps-resend-btn:disabled {
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--color-text-muted, #252629);
   cursor: not-allowed;
   text-decoration: none;
 }

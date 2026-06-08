@@ -107,6 +107,24 @@
   cursor: pointer;
 }
 
+.action-btn.mark-status { color: var(--color-primary-dark); border-color: rgba(99,102,241,0.35); background: var(--color-primary-50); }
+.action-btn.mark-status:hover { background: var(--color-primary-100); border-color: var(--color-primary); }
+.ms-summary { display: flex; flex-wrap: wrap; gap: 16px; padding: 10px 14px; background: #f8fafc; border-radius: 8px; margin-bottom: 16px; font-size: 13px; }
+.ms-summary-label { color: var(--color-text-muted); margin-right: 4px; }
+.ms-option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.ms-option { display: block; cursor: pointer; border: 2px solid var(--color-border); border-radius: 10px; padding: 14px 12px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+.ms-option input[type="radio"] { display: none; }
+.ms-option-body { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
+.ms-option-title { font-size: 14px; font-weight: 700; }
+.ms-option-desc { font-size: 11px; color: var(--color-text-muted); line-height: 1.4; }
+.ms-icon-success { font-size: 24px; color: var(--color-success); }
+.ms-icon-danger { font-size: 24px; color: var(--color-danger); }
+.ms-option.selected-transferred { border-color: var(--color-success); background: #F0FDF4; }
+.ms-option.selected-transferred .ms-option-title { color: var(--color-success-dark); }
+.ms-option.selected-failed { border-color: var(--color-danger); background: #FFF5F5; }
+.ms-option.selected-failed .ms-option-title { color: var(--color-danger); }
+.ms-payid-label { font-size: 13px; margin-left: 8px; font-family: 'Courier New', monospace; color: var(--color-primary-dark); }
+
 /* 異常款項列 */
 .data-table tr.row-failed {
   background: #fff5f5;
@@ -382,7 +400,7 @@
 .tag-pill.badge-green   { background:#dcfce7; color:#15803d; border-color:#bbf7d0; }
 .tag-pill.badge-purple  { background:var(--color-primary-50); color:var(--color-primary-dark); border-color:var(--color-primary-100); }
 .tag-pill.badge-yellow  { background:var(--color-warning-light); color:#92400e; border-color:#fde68a; }
-.tag-pill.badge-gray    { background:#f3f4f6; color:#6b7280; border-color:#e5e7eb; }
+.tag-pill.badge-gray    { background:#f3f4f6; color:#252629; border-color:#e5e7eb; }
 
 /* ===================== 月結報表 modal ===================== */
 .monthly-summary {
@@ -762,7 +780,7 @@
 /* B4：所屬活動 ID（顯示於款項編號下方） */
 .cell-campaign-id {
   font-size: 10px;
-  color: var(--color-text-muted, #6b7280);
+  color: var(--color-text-muted, #252629);
   font-family: 'Courier New', monospace;
   margin-top: 2px;
   letter-spacing: 0.3px;

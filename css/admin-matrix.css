@@ -186,7 +186,7 @@
 }
 .product-icon.default {
   background: #f3f4f6;
-  color: #6b7280;
+  color: #252629;
 }
 
 /* 內嵌編輯欄位 */
@@ -521,7 +521,7 @@ tr[data-row-mode="edit"] td {
 .cd-meta .badge#cd-plan { background: var(--color-primary-50); color: var(--color-primary-dark); border-color: var(--color-primary-100); }
 .cd-meta .badge#cd-status.s-active { background: rgba(16, 185, 129, 0.12); color: var(--color-success-dark); border-color: rgba(16, 185, 129, 0.30); }
 .cd-meta .badge#cd-status.s-upcoming { background: var(--color-primary-50); color: var(--color-primary-dark); border-color: var(--color-primary-100); }
-.cd-meta .badge#cd-status.s-ended { background: #F3F4F6; color: #6B7280; border-color: #E5E7EB; }
+.cd-meta .badge#cd-status.s-ended { background: #F3F4F6; color: #252629; border-color: #E5E7EB; }
 
 .cd-period {
   display: inline-flex;
@@ -768,7 +768,7 @@ tr[data-row-mode="edit"] td {
 .cd-h-entry.type-info::before    { background: #3B82F6; box-shadow: 0 0 0 1px #3B82F6; }
 .cd-h-entry.type-matrix::before  { background: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
 .cd-h-entry.type-content::before { background: var(--color-warning-dark); box-shadow: 0 0 0 1px var(--color-warning-dark); }
-.cd-h-entry.type-snapshot::before { background: #9CA3AF; box-shadow: 0 0 0 1px #9CA3AF; }
+.cd-h-entry.type-snapshot::before { background: #252629; box-shadow: 0 0 0 1px #252629; }
 
 .cd-h-time {
   font-family: 'Courier New', monospace;

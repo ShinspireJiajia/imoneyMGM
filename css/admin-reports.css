@@ -335,7 +335,7 @@
   padding-top: 22px;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: #9CA3AF #E5E7EB;
+  scrollbar-color: #252629 #E5E7EB;
 }
 
 .bcs-scroll-area::-webkit-scrollbar {
@@ -348,12 +348,12 @@
 }
 
 .bcs-scroll-area::-webkit-scrollbar-thumb {
-  background: #9CA3AF;
+  background: #252629;
   border-radius: 999px;
 }
 
 .bcs-scroll-area::-webkit-scrollbar-thumb:hover {
-  background: #6B7280;
+  background: #252629;
 }
 
 .bcs-grid {
@@ -478,7 +478,7 @@
 }
 
 .cb-bucket-invalid {
-  border-left: 4px solid #9CA3AF;
+  border-left: 4px solid #252629;
   background: #F9FAFB;
 }
 
@@ -503,7 +503,7 @@
 }
 
 .cb-bucket-icon.invalid {
-  background: #9CA3AF;
+  background: #252629;
 }
 
 .cb-bucket-title {
@@ -800,7 +800,7 @@
 }
 
 .top-rank.rank-1 { background: linear-gradient(135deg, #FCD34D, #F59E0B); color:#fff; }
-.top-rank.rank-2 { background: linear-gradient(135deg, #E5E7EB, #9CA3AF); color:#fff; }
+.top-rank.rank-2 { background: linear-gradient(135deg, #E5E7EB, #252629); color:#fff; }
 .top-rank.rank-3 { background: linear-gradient(135deg, #FCA5A5, #B45309); color:#fff; }
 
 .top-info { min-width: 0; }
