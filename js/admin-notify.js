@@ -143,7 +143,7 @@
     const filtered = getFiltered();
 
     if (!filtered.length) {
-      list.innerHTML = `<div style="padding:28px;text-align:center;color:#9ca3af;font-size:13px;">
+      list.innerHTML = `<div style="padding:28px;text-align:center;color:#252629;font-size:13px;">
         無符合條件的推薦人
       </div>`;
       return;
@@ -450,7 +450,7 @@
     const rows = (real.length ? real : DEMO_LOG).slice(0, 100);
 
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:#9ca3af;">尚無發送紀錄</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:#252629;">尚無發送紀錄</td></tr>`;
       return;
     }
 
@@ -464,7 +464,7 @@
       const count = e.recipientCount || details.length;
 
       const fmtName = (r) => r.id
-        ? `${escHtml(r.name)}<span style="color:#9ca3af;font-weight:400;">(${r.id})</span>`
+        ? `${escHtml(r.name)}<span style="color:#252629;font-weight:400;">(${r.id})</span>`
         : escHtml(r.name);
 
       const rcptStr = details.length <= 2
@@ -481,7 +481,7 @@
           <td style="white-space:nowrap;">${chBadges}</td>
           <td style="font-size:12px;color:#374151;">
             <span style="color:#6366f1;font-weight:600;">【${e.tplName || '自訂'}】</span>
-            <span style="color:#9ca3af;">${escHtml(msgPreview.substring(0, 20))}${msgPreview.length > 20 ? '…' : ''}</span>
+            <span style="color:#252629;">${escHtml(msgPreview.substring(0, 20))}${msgPreview.length > 20 ? '…' : ''}</span>
           </td>
           <td style="white-space:nowrap;">
             <span class="log-sent"><i class="fa-solid fa-check"></i> 已發送</span>
@@ -565,7 +565,7 @@
         <i class="fa-regular fa-clock" style="color:#6366f1;"></i>
         <strong>${escHtml(e.time || '—')}</strong>
         <span class="nm-meta-sep">|</span>
-        <i class="fa-solid fa-user" style="color:#9ca3af;font-size:11px;"></i>${escHtml(e.actor || '—')}
+        <i class="fa-solid fa-user" style="color:#252629;font-size:11px;"></i>${escHtml(e.actor || '—')}
         <span class="nm-meta-sep">|</span>
         ${chBadges}
         <span class="nm-meta-sep">|</span>

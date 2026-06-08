@@ -9,6 +9,7 @@
   const CASES = [
     {
       caseId: 'M2026051504',
+      agentName: '陳志明',
       referrerName: '李大華', referrerTag: '員工', referrerCid: 'U240105002',
       refereeName: '張家豪', refereePhone: '0933678111',
       caseType: 'general',
@@ -27,9 +28,12 @@
       status: 'pending_approval',
       warningCodes: ['E-OLD', 'E-150'],
       customerId: '2605160003',
+      referrerListId: '2401050002',
+      receipts: [{ suffix: 1, amount: 6000 }, { suffix: 2, amount: 2000 }, { suffix: 3, amount: 10000 }],
     },
     {
       caseId: 'M2026052901',
+      agentName: '林美玲',
       referrerName: '王小毅', referrerTag: '會員', referrerCid: 'U250310001',
       refereeName: '方家豪', refereePhone: '0912345789',
       caseType: 'negotiation',
@@ -41,9 +45,12 @@
       status: 'pending_approval',
       warningCodes: ['E-PAY'],
       customerId: '2605290001',
+      referrerListId: '2503100001',
+      receipts: [{ suffix: 1, amount: 3000 }, { suffix: 2, amount: 2500 }],
     },
     {
       caseId: 'M2026053002',
+      agentName: '張偉傑',
       referrerName: '葉文群', referrerTag: '會員', referrerCid: 'U230408009',
       refereeName: '陳怡君', refereePhone: '0966123456',
       caseType: 'general',
@@ -54,9 +61,12 @@
       payoutAmount: 300000,
       status: 'pending_approval',
       customerId: '2605300002',
+      referrerListId: '2304080009',
+      receipts: [{ suffix: 1, amount: 2500 }],
     },
     {
       caseId: 'M2026051205',
+      agentName: '林美玲',
       referrerName: '王小毅', referrerTag: '會員', referrerCid: 'U250310001',
       refereeName: '吳雅芳', refereePhone: '0955333222',
       caseType: 'negotiation',
@@ -70,9 +80,12 @@
       approvedBy: '財務 - Mary',
       approveNote: '已核對撥款單據，金額無誤',
       customerId: '2605130004',
+      referrerListId: '2503100001',
+      receipts: [{ suffix: 1, amount: 2500 }],
     },
     {
       caseId: 'M2026042016',
+      agentName: '陳志明',
       referrerName: '林副總', referrerTag: '員工', referrerCid: 'U240214003',
       refereeName: '蘇建仁', refereePhone: '0977001122',
       caseType: 'general',
@@ -86,6 +99,8 @@
       approvedBy: '財務 - John',
       approveNote: '',
       customerId: '2604200016',
+      referrerListId: '2402140003',
+      receipts: [{ suffix: 1, amount: 500 }],
     },
   ];
 
@@ -140,6 +155,9 @@
   };
 
   const CLAIM_URL = 'https://mgm.shinda.com.tw/';
+  // 外部系統連結（上線前請替換為實際網址，末尾需可直接附加 ID / 單號）
+  const EXT_RECEIPT_BASE_URL = '#receipt?no=';   // 收款單系統：EXT_RECEIPT_BASE_URL + 單號
+  const EXT_MEMBER_BASE_URL  = '#member?id=';    // 名單系統：EXT_MEMBER_BASE_URL + yymmddXXXX
 
   const filters = { referrer: '', caseId: '', type: 'all', status: 'pending_approval', warningCode: 'all' };
   let selected = new Set();
@@ -161,6 +179,21 @@
     if (!/^\d{8}$/.test(datePart)) return '—';
     const seq4 = String(r.customerId || '').replace(/\D/g, '').slice(-4).padStart(4, '0');
     return `I${datePart.slice(2)}${seq4}`;
+  }
+
+  function buildReceiptListHtml(r) {
+    const base = receiptNoOf(r);
+    if (base === '—') return '—';
+    const items = Array.isArray(r.receipts) && r.receipts.length ? r.receipts : [{ suffix: 1, amount: r.amount }];
+    return '<div class="receipt-link-list">' + items.map((item) => {
+      const no = base + '-' + item.suffix;
+      return '<div class="receipt-link-item">' +
+        '<a class="receipt-link" href="' + EXT_RECEIPT_BASE_URL + no + '" target="_blank" rel="noopener">' +
+        '<i class="fa-solid fa-arrow-up-right-from-square" style="font-size:9px;"></i>' + no +
+        '</a>' +
+        '<span class="receipt-amount">($' + Number(item.amount).toLocaleString() + ')</span>' +
+        '</div>';
+    }).join('') + '</div>';
   }
 
   function renderWarnChips(codes) {
@@ -208,9 +241,11 @@
         <td class="mono">${r.caseId}</td>
         <td><strong>${r.referrerName}</strong></td>
         <td class="mono" style="font-size:12px;">${r.referrerCid}</td>
-        <td><span class="tag-pill ${tagCls}">${r.referrerTag}</span></td>
+        <td>${r.referrerTag}</td>
+        <td>${r.agentName || '—'}</td>
         <td><span class="tag-pill ${(TYPE_META[r.caseType] || {}).cls || 'badge-gray'}">${(TYPE_META[r.caseType] || {}).label || '—'}</span></td>
         <td class="num money">${fmt(r.amount)}</td>
+        <td>${buildReceiptListHtml(r)}</td>
         <td><span class="status-text ${s.cls}">${s.label}</span></td>
         <td>${warnHtml ? `<div class="warn-chips-row">${warnHtml}</div>` : '<span style="color:var(--color-text-muted);font-size:12px;">—</span>'}</td>
         <td>
@@ -233,7 +268,7 @@
     const tbody = document.getElementById('payout-tbody');
     tbody.innerHTML = items.length
       ? items.map(renderRow).join('')
-      : '<tr><td colspan="10" style="padding:32px;text-align:center;color:var(--color-text-muted);">沒有符合條件的案件</td></tr>';
+      : '<tr><td colspan="12" style="padding:32px;text-align:center;color:var(--color-text-muted);">沒有符合條件的案件</td></tr>';
 
     const tc = document.getElementById('total-count');
     if (tc) tc.textContent = items.length;
@@ -353,13 +388,25 @@
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     set('pm-caseid',       r.caseId);
     set('pm-referrer',     r.referrerName);
+    const refListLink = document.getElementById('pm-referrer-list-link');
+    if (refListLink) {
+      if (r.referrerListId) {
+        refListLink.innerHTML = '<i class="fa-solid fa-arrow-up-right-from-square" style="font-size:9px;"></i> ' + r.referrerListId;
+        refListLink.href = EXT_MEMBER_BASE_URL + r.referrerListId;
+        refListLink.hidden = false;
+      } else {
+        refListLink.hidden = true;
+      }
+    }
     set('pm-referrer-cid', r.referrerCid);
     set('pm-tag',          r.referrerTag);
+    set('pm-agent-name',   r.agentName || '—');
     set('pm-case-type',    (TYPE_META[r.caseType] || {}).label || '—');
     set('pm-referee',       r.refereeName);
     set('pm-referee-phone', r.refereePhone || '—');
     set('pm-campaign',      r.campaignId || '—');
-    set('pm-receipt-no',   receiptNoOf(r));
+    const receiptListEl = document.getElementById('pm-receipt-no-list');
+    if (receiptListEl) receiptListEl.innerHTML = buildReceiptListHtml(r);
     set('pm-amount',       fmt(r.amount));
 
     // 系統警示
@@ -664,12 +711,12 @@
     btn.addEventListener('click', () => {
       const items = getFiltered();
       if (items.length === 0) { alert('目前無資料可匯出'); return; }
-      const header = ['案號','推薦人','會員編號','身份','被推薦人','案件類型','計算獎金','狀態','系統警示代碼','核款時間','核款人員','核款備註','拒絕時間','拒絕人員','拒絕原因'];
+      const header = ['案號','推薦人','會員編號','身份','負責業務','被推薦人','案件類型','計算獎金','狀態','系統警示代碼','核款時間','核款人員','核款備註','拒絕時間','拒絕人員','拒絕原因'];
       const rows = items.map((r) => {
         const s  = STATUS_META[r.status]?.label || r.status;
         const ct = TYPE_META[r.caseType]?.label || r.caseType || '';
-        return [r.caseId, r.referrerName, r.referrerCid, r.referrerTag, r.refereeName, ct,
-          r.amount ?? '', s,
+        return [r.caseId, r.referrerName, r.referrerCid, r.referrerTag, r.agentName || '',
+          r.refereeName, ct, r.amount ?? '', s,
           (r.warningCodes || []).join(';'),
           r.approvedAt || '', r.approvedBy || '', r.approveNote || '',
           r.rejectedAt || '', r.rejectedBy || '', r.rejectNote || ''];
@@ -709,6 +756,28 @@
   document.addEventListener('DOMContentLoaded', () => {
     initExpiryDependencies();
     bindFilters();
+    // 篩選收合 / 清除
+    (function () {
+      const btnToggle = document.getElementById('btn-toggle-advanced');
+      const filterGrid = document.getElementById('filter-grid');
+      if (btnToggle && filterGrid) {
+        btnToggle.addEventListener('click', () => {
+          const collapsed = filterGrid.classList.toggle('collapsed');
+          btnToggle.innerHTML = collapsed
+            ? '<i class="fa-solid fa-chevron-down"></i>展開篩選'
+            : '<i class="fa-solid fa-chevron-up"></i>收合篩選';
+        });
+      }
+      const btnClear = document.getElementById('btn-clear-filter');
+      if (btnClear && filterGrid) {
+        btnClear.addEventListener('click', () => {
+          filterGrid.querySelectorAll('input').forEach((el) => (el.value = ''));
+          filterGrid.querySelectorAll('select').forEach((el) => (el.selectedIndex = 0));
+          const s = document.getElementById('btn-search');
+          if (s) s.click();
+        });
+      }
+    })();
     bindBatchActions();
     bindModal();
     bindRejectModal();

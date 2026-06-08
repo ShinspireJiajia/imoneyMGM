@@ -15,13 +15,31 @@
   // 偽資料：本系統中該帳號是否已建立過稅務資料（首次提領為 false）
   const HAS_TAX_PROFILE = false;
 
+  // 銀行代碼對照表（常用台灣金融機構）
+  const BANK_LOOKUP = {
+    '004': '臺灣銀行', '005': '土地銀行', '006': '合庫銀行', '007': '第一銀行',
+    '008': '華南銀行', '009': '彰化銀行', '011': '上海商銀', '012': '台北富邦',
+    '013': '國泰世華', '017': '兆豐銀行', '021': '花旗銀行', '050': '台灣企銀',
+    '053': '台中銀行', '081': '匯豐銀行', '083': '渣打銀行',
+    '808': '玉山銀行', '812': '台新銀行', '822': '中信銀行', '824': '永豐銀行',
+    '826': '遠東銀行', '837': '台灣中小企銀',
+  };
+
+  function composeBankName(code, branch) {
+    const name = BANK_LOOKUP[String(code || '')] || ('代碼 ' + (code || ''));
+    return branch ? `${name}（分行 ${branch}）` : name;
+  }
+
   // 偽資料：歷史稅務資料（二次以上沿用）
   const HISTORY_TAX = {
     realName: '王小毅',
     idNumber: 'A1234****89',
     address: '台北市信義區松仁路 100 號 5 樓',
+    bankCode: '808',
+    bankBranch: '0001',
+    bankAccount: '011897912345678',
+    bankHolder: '王小毅',
     bankName: '玉山銀行',
-    bankAccount: '0118-979-12345678',
   };
 
   // 從 localStorage 取得最近一次提領的填寫資料（用於「帶入上次資料」功能）
@@ -30,7 +48,7 @@
       const list = JSON.parse(localStorage.getItem('mgm_pending_withdraw_apply') || '[]');
       for (let i = list.length - 1; i >= 0; i--) {
         const entry = list[i];
-        if (entry.realName || entry.bankName) return entry;
+        if (entry.realName || entry.bankCode || entry.bankName) return entry;
       }
     } catch {}
     return null;
@@ -120,10 +138,29 @@
     useHistory: HAS_TAX_PROFILE,
     cashDate: '',
     cashDateLabel: '',
+    cashTime: '',         // 'morning' | 'afternoon'
     cashBranch: '',       // 'taipei' | 'taichung'
     editMode: false,      // 從獎金頁「修改提領資料」進入
     editTargetId: null,   // 對應 mgm_pending_withdraw_apply 中的 id
   };
+
+  // 依申請日計算預計撥款日
+  // 規則：15 日（含）前申請 → 當月 25 日；超過 15 日 → 次月 25 日；遇週六延至週一（+2），遇週日延至週一（+1）
+  function calcExpectedPayoutDate() {
+    const today = new Date();
+    const day = today.getDate();
+    let year = today.getFullYear();
+    let month = today.getMonth(); // 0-based
+    if (day > 15) {
+      month += 1;
+      if (month > 11) { month = 0; year += 1; }
+    }
+    const payout = new Date(year, month, 25);
+    const dow = payout.getDay();
+    if (dow === 6) payout.setDate(27);       // 週六 → 下週一
+    else if (dow === 0) payout.setDate(26);  // 週日 → 隔天週一
+    return fmtDateYmd(payout);
+  }
 
   function toDateOnly(d) {
     return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -143,9 +180,10 @@
     ).padStart(2, '0')}（週${weekdayMap[date.getDay()]}）`;
   }
 
-  function getNextThreeWeeksTueThu() {
+  function getNextThreeWeeksMonWed() {
     const today = toDateOnly(new Date());
     const day = today.getDay();
+    // 下一個週一（若今天是週一則跳到下週一）
     const daysUntilNextMonday = ((8 - day) % 7) || 7;
     const nextMonday = new Date(today);
     nextMonday.setDate(today.getDate() + daysUntilNextMonday);
@@ -155,22 +193,27 @@
       const baseMonday = new Date(nextMonday);
       baseMonday.setDate(nextMonday.getDate() + week * 7);
 
-      const tuesday = new Date(baseMonday);
-      tuesday.setDate(baseMonday.getDate() + 1);
-      const thursday = new Date(baseMonday);
-      thursday.setDate(baseMonday.getDate() + 3);
+      const monday = new Date(baseMonday);
+      const wednesday = new Date(baseMonday);
+      wednesday.setDate(baseMonday.getDate() + 2);
 
-      dates.push(tuesday, thursday);
+      dates.push(monday, wednesday);
     }
 
     return dates.filter((d) => d >= today);
+  }
+
+  function getCashTimeLabel(timeVal) {
+    if (timeVal === 'morning')   return '上午 10:00-12:00';
+    if (timeVal === 'afternoon') return '下午 14:00-16:00';
+    return '';
   }
 
   function renderCashDateOptions() {
     const select = document.getElementById('inp-cash-date');
     if (!select) return;
 
-    const options = getNextThreeWeeksTueThu();
+    const options = getNextThreeWeeksMonWed();
     select.innerHTML = '<option value="">請先選擇日期</option>';
     options.forEach((d) => {
       const value = fmtDateYmd(d);
@@ -189,9 +232,13 @@
 
     if (state.method === 'cash') {
       row.style.display = 'flex';
-      value.textContent = state.cashDateLabel
-        ? `${state.cashDateLabel} 9:00-18:00`
-        : '尚未選擇';
+      if (state.cashDateLabel && state.cashTime) {
+        value.textContent = `${state.cashDateLabel} ${getCashTimeLabel(state.cashTime)}`;
+      } else if (state.cashDateLabel) {
+        value.textContent = `${state.cashDateLabel} 尚未選擇時段`;
+      } else {
+        value.textContent = '尚未選擇';
+      }
       return;
     }
 
@@ -212,6 +259,16 @@
 
       const chosen = new Date(state.cashDate);
       state.cashDateLabel = isNaN(chosen.getTime()) ? '' : fmtDateLabelZh(chosen);
+      updateCashSummaryCard();
+    });
+  }
+
+  function bindCashTimePicker() {
+    const select = document.getElementById('inp-cash-time');
+    if (!select) return;
+
+    select.addEventListener('change', () => {
+      state.cashTime = select.value || '';
       updateCashSummaryCard();
     });
   }
@@ -309,9 +366,12 @@
     if (method !== 'cash') {
       state.cashDate = '';
       state.cashDateLabel = '';
+      state.cashTime = '';
       state.cashBranch = '';
-      const select = document.getElementById('inp-cash-date');
-      if (select) select.value = '';
+      const dateSelect = document.getElementById('inp-cash-date');
+      if (dateSelect) dateSelect.value = '';
+      const timeSelect = document.getElementById('inp-cash-time');
+      if (timeSelect) timeSelect.value = '';
       document.querySelectorAll('.branch-btn').forEach((b) => b.classList.remove('selected'));
       const addrEl = document.getElementById('branch-address');
       if (addrEl) addrEl.hidden = true;
@@ -353,8 +413,10 @@
       setVal('inp-real-name',    lastData.realName);
       setVal('inp-id-number',    lastData.idNumber);
       setVal('inp-address',      lastData.address);
-      setVal('inp-bank',         lastData.bankName);
-      setVal('inp-bank-account', lastData.bankAccount);
+      setVal('inp-bank-code',    lastData.bankCode    || '');
+      setVal('inp-bank-branch',  lastData.bankBranch  || '');
+      setVal('inp-bank-account', (lastData.bankAccount || '').replace(/[-\s]/g, ''));
+      setVal('inp-bank-holder',  lastData.bankHolder  || lastData.bankHolder || '');
       banner.innerHTML = `<div class="prefill-banner-info prefill-banner-done"><i class="fa-solid fa-circle-check"></i><span>已帶入上次填寫資料，請確認或修改後送出</span></div>`;
       banner.classList.add('prefill-banner--done');
     });
@@ -378,7 +440,8 @@
       document.getElementById('history-name').textContent = HISTORY_TAX.realName;
       document.getElementById('history-id').textContent = HISTORY_TAX.idNumber;
       document.getElementById('history-bank').textContent =
-        HISTORY_TAX.bankName + ' / ' + HISTORY_TAX.bankAccount;
+        composeBankName(HISTORY_TAX.bankCode, HISTORY_TAX.bankBranch) +
+        ' ／ 末四碼 ' + String(HISTORY_TAX.bankAccount || '').slice(-4);
     } else if (!state.editMode) {
       // 非編輯模式下，若有過去填寫過的資料，顯示「帶入上次資料」banner
       renderPrefillBanner(getLastSubmissionData());
@@ -444,8 +507,10 @@
     setVal('inp-real-name',    target.realName);
     setVal('inp-id-number',    target.idNumber);
     setVal('inp-address',      target.address);
-    setVal('inp-bank',         target.bankName);
-    setVal('inp-bank-account', target.bankAccount);
+    setVal('inp-bank-code',    target.bankCode    || '');
+    setVal('inp-bank-branch',  target.bankBranch  || '');
+    setVal('inp-bank-account', (target.bankAccount || '').replace(/[-\s]/g, ''));
+    setVal('inp-bank-holder',  target.bankHolder  || '');
 
     // 現場領取：預選門市與預約日期
     if (target.method === 'cash') {
@@ -487,21 +552,30 @@
           return;
         }
         if (!state.cashDate) {
-          alert('請先選擇現場預約日期（僅可選下三週的週二或週四）');
+          alert('請先選擇現場預約日期（僅可選下三週的週一或週三）');
           return;
         }
-        const allowedDates = getNextThreeWeeksTueThu().map(fmtDateYmd);
+        if (!state.cashTime) {
+          alert('請選擇預約時段（上午 10:00-12:00 或 下午 14:00-16:00）');
+          return;
+        }
+        const allowedDates = getNextThreeWeeksMonWed().map(fmtDateYmd);
         const today = toDateOnly(new Date());
         const chosen = toDateOnly(new Date(state.cashDate));
         if (!allowedDates.includes(state.cashDate) || chosen < today) {
-          alert('預約日期無效，僅可選擇下三週的週二或週四營業日');
+          alert('預約日期無效，僅可選擇下三週的週一或週三');
           return;
         }
       } else {
-        const bankName = document.getElementById('inp-bank')?.value.trim();
-        if (!bankName) { alert('請填寫銀行 / 分行'); return; }
+        const bankCode = document.getElementById('inp-bank-code')?.value.trim();
+        if (!bankCode || bankCode.length !== 3) { alert('請填寫 3 碼銀行代號（如 808）'); return; }
+        const bankBranch = document.getElementById('inp-bank-branch')?.value.trim();
+        if (!bankBranch || bankBranch.length !== 4) { alert('請填寫 4 碼分行代號'); return; }
         const bankAccount = document.getElementById('inp-bank-account')?.value.trim();
-        if (!bankAccount) { alert('請填寫帳號'); return; }
+        if (!bankAccount) { alert('請填寫收款人帳號'); return; }
+        if (/[\s\-]/.test(bankAccount)) { alert('帳號請勿包含空格或連字號（-）'); return; }
+        const bankHolder = document.getElementById('inp-bank-holder')?.value.trim();
+        if (!bankHolder) { alert('請填寫收款人戶名'); return; }
       }
 
       // 更新 localStorage 既有記錄
@@ -520,14 +594,19 @@
           if (state.method === 'cash') {
             entry.status = 'pending_pickup';
             entry.appointmentDate = state.cashDate;
-            entry.appointmentHours = '9:00-18:00';
-            delete entry.bankName; delete entry.bankAccount; delete entry.bankLast4;
+            entry.appointmentHours = getCashTimeLabel(state.cashTime);
+            delete entry.bankCode; delete entry.bankBranch; delete entry.bankAccount;
+            delete entry.bankLast4; delete entry.bankHolder; delete entry.bankName;
           } else {
             entry.status = 'transferring';
-            const eBankName    = document.getElementById('inp-bank')?.value.trim();
+            const eBankCode    = document.getElementById('inp-bank-code')?.value.trim();
+            const eBankBranch  = document.getElementById('inp-bank-branch')?.value.trim();
             const eBankAccount = document.getElementById('inp-bank-account')?.value.trim();
-            if (eBankName)    { entry.bankName    = eBankName; }
+            const eBankHolder  = document.getElementById('inp-bank-holder')?.value.trim();
+            if (eBankCode)    { entry.bankCode   = eBankCode;   entry.bankName = composeBankName(eBankCode, eBankBranch); }
+            if (eBankBranch)  { entry.bankBranch = eBankBranch; }
             if (eBankAccount) { entry.bankAccount = eBankAccount; entry.bankLast4 = eBankAccount.slice(-4); }
+            if (eBankHolder)  { entry.bankHolder  = eBankHolder; }
             delete entry.branch; delete entry.appointmentDate; delete entry.appointmentHours;
           }
           localStorage.setItem(key, JSON.stringify(list));
@@ -546,9 +625,20 @@
       if (doneApptRow && doneAppt) {
         if (state.method === 'cash') {
           doneApptRow.style.display = 'flex';
-          doneAppt.textContent = `${state.cashDateLabel || state.cashDate} 9:00-18:00`;
+          doneAppt.textContent = `${state.cashDateLabel || state.cashDate} ${getCashTimeLabel(state.cashTime)}`;
         } else {
           doneApptRow.style.display = 'none';
+        }
+      }
+      const editPayoutRow = document.getElementById('done-payout-row');
+      const editPayoutEl  = document.getElementById('done-payout-date');
+      const editExpectedPayout = state.method === 'transfer' ? calcExpectedPayoutDate() : null;
+      if (editPayoutRow && editPayoutEl) {
+        if (editExpectedPayout) {
+          editPayoutEl.textContent = editExpectedPayout.replace(/-/g, '/');
+          editPayoutRow.style.display = 'flex';
+        } else {
+          editPayoutRow.style.display = 'none';
         }
       }
       document.getElementById('done-date').textContent = new Date().toLocaleDateString('zh-TW');
@@ -567,10 +657,12 @@
       const name = document.getElementById('inp-real-name')?.value.trim();
       const id = document.getElementById('inp-id-number')?.value.trim();
       const address = document.getElementById('inp-address')?.value.trim();
-      const bankAccount = document.getElementById('inp-bank-account')?.value.trim();
+      const bankCode    = state.method !== 'cash' ? document.getElementById('inp-bank-code')?.value.trim()    : 'ok';
+      const bankAccount = state.method !== 'cash' ? document.getElementById('inp-bank-account')?.value.trim() : 'ok';
+      const bankHolder  = state.method !== 'cash' ? document.getElementById('inp-bank-holder')?.value.trim()  : 'ok';
       const consent = document.getElementById('inp-consent').checked;
 
-      if (!name || !id || !address || !bankAccount) {
+      if (!name || !id || !address || !bankCode || !bankAccount || !bankHolder) {
         alert('請完成所有稅務與匯款資料的填寫');
         return;
       }
@@ -586,14 +678,18 @@
         return;
       }
       if (!state.cashDate) {
-        alert('請先選擇現場預約日期（僅可選下三週的週二或週四）');
+        alert('請先選擇現場預約日期（僅可選下三週的週一或週三）');
         return;
       }
-      const allowedDates = getNextThreeWeeksTueThu().map(fmtDateYmd);
+      if (!state.cashTime) {
+        alert('請選擇預約時段（上午 10:00-12:00 或 下午 14:00-16:00）');
+        return;
+      }
+      const allowedDates = getNextThreeWeeksMonWed().map(fmtDateYmd);
       const today = toDateOnly(new Date());
       const chosen = toDateOnly(new Date(state.cashDate));
       if (!allowedDates.includes(state.cashDate) || chosen < today) {
-        alert('預約日期無效，僅可選擇下三週的週二或週四營業日');
+        alert('預約日期無效，僅可選擇下三週的週一或週三');
         return;
       }
     }
@@ -610,10 +706,21 @@
     if (doneAppointmentRow && doneAppointment) {
       if (state.method === 'cash') {
         doneAppointmentRow.style.display = 'flex';
-        doneAppointment.textContent = `${state.cashDateLabel || state.cashDate} 9:00-18:00`;
+        doneAppointment.textContent = `${state.cashDateLabel || state.cashDate} ${getCashTimeLabel(state.cashTime)}`;
       } else {
         doneAppointmentRow.style.display = 'none';
         doneAppointment.textContent = '—';
+      }
+    }
+    const donePayoutRow = document.getElementById('done-payout-row');
+    const donePayoutDateEl = document.getElementById('done-payout-date');
+    const expectedPayoutAt = state.method === 'transfer' ? calcExpectedPayoutDate() : null;
+    if (donePayoutRow && donePayoutDateEl) {
+      if (expectedPayoutAt) {
+        donePayoutDateEl.textContent = expectedPayoutAt.replace(/-/g, '/');
+        donePayoutRow.style.display = 'flex';
+      } else {
+        donePayoutRow.style.display = 'none';
       }
     }
     const todayStr = new Date().toLocaleDateString('zh-TW');
@@ -629,12 +736,17 @@
       const _realName    = HAS_TAX_PROFILE ? HISTORY_TAX.realName    : (document.getElementById('inp-real-name')?.value.trim()    || '');
       const _idNumber    = HAS_TAX_PROFILE ? HISTORY_TAX.idNumber    : (document.getElementById('inp-id-number')?.value.trim()    || '');
       const _address     = HAS_TAX_PROFILE ? HISTORY_TAX.address     : (document.getElementById('inp-address')?.value.trim()      || '');
-      const _bankName    = HAS_TAX_PROFILE ? HISTORY_TAX.bankName    : (document.getElementById('inp-bank')?.value.trim()         || '');
+      const _bankCode    = HAS_TAX_PROFILE ? HISTORY_TAX.bankCode    : (document.getElementById('inp-bank-code')?.value.trim()    || '');
+      const _bankBranch  = HAS_TAX_PROFILE ? HISTORY_TAX.bankBranch  : (document.getElementById('inp-bank-branch')?.value.trim()  || '');
       const _bankAccount = HAS_TAX_PROFILE ? HISTORY_TAX.bankAccount : (document.getElementById('inp-bank-account')?.value.trim() || '');
+      const _bankHolder  = HAS_TAX_PROFILE ? HISTORY_TAX.bankHolder  : (document.getElementById('inp-bank-holder')?.value.trim()  || '');
+      const _bankName    = composeBankName(_bankCode, _bankBranch);
       const meta = state.method === 'cash'
-        ? { branch: (BRANCH_INFO[state.cashBranch]?.name || state.cashBranch), appointmentDate: state.cashDate, appointmentHours: '9:00-18:00',
+        ? { branch: (BRANCH_INFO[state.cashBranch]?.name || state.cashBranch), appointmentDate: state.cashDate, appointmentHours: getCashTimeLabel(state.cashTime),
             realName: _realName, idNumber: _idNumber, address: _address }
-        : { bankName: _bankName, bankAccount: _bankAccount, bankLast4: _bankAccount.slice(-4),
+        : { bankCode: _bankCode, bankBranch: _bankBranch, bankAccount: _bankAccount, bankHolder: _bankHolder,
+            bankName: _bankName, bankLast4: _bankAccount.slice(-4),
+            expectedPayoutAt,
             realName: _realName, idNumber: _idNumber, address: _address };
       items.forEach((it) => {
         // 同一筆不重覆寫入
@@ -706,7 +818,7 @@
     function hasAnyData(settings) {
       var bank = settings.withdrawal && settings.withdrawal.bank;
       var identity = settings.identity;
-      return (bank && bank.bankName) || (identity && identity.realName);
+      return (bank && (bank.bankCode || bank.bankName)) || (identity && identity.realName);
     }
 
     function applyImport() {
@@ -732,20 +844,24 @@
       }
 
       // 填入欄位
-      var inpName    = document.getElementById('inp-real-name');
-      var inpId      = document.getElementById('inp-id-number');
-      var inpAddress = document.getElementById('inp-address');
-      var inpBank    = document.getElementById('inp-bank');
-      var inpAccount = document.getElementById('inp-bank-account');
+      var inpName       = document.getElementById('inp-real-name');
+      var inpId         = document.getElementById('inp-id-number');
+      var inpAddress    = document.getElementById('inp-address');
+      var inpBankCode   = document.getElementById('inp-bank-code');
+      var inpBankBranch = document.getElementById('inp-bank-branch');
+      var inpAccount    = document.getElementById('inp-bank-account');
+      var inpBankHolder = document.getElementById('inp-bank-holder');
 
       if (identity && identity.realName) {
         if (inpName)    inpName.value    = identity.realName;
         if (inpId)      inpId.value      = identity.idNumber || '';
         if (inpAddress) inpAddress.value = identity.address  || '';
       }
-      if (bank && bank.bankName) {
-        if (inpBank)    inpBank.value    = bank.bankName;
-        if (inpAccount) inpAccount.value = bank.accountNo || '';
+      if (bank && (bank.bankCode || bank.bankName)) {
+        if (inpBankCode)   inpBankCode.value   = bank.bankCode   || '';
+        if (inpBankBranch) inpBankBranch.value = bank.bankBranch || '';
+        if (inpAccount)    inpAccount.value    = bank.accountNo  || '';
+        if (inpBankHolder) inpBankHolder.value = bank.accountName || '';
         if (inpName && !inpName.value && bank.accountName) inpName.value = bank.accountName;
       }
 
@@ -803,6 +919,7 @@
     renderSummary();
     renderCashDateOptions();
     bindCashDatePicker();
+    bindCashTimePicker();
     updateCashSummaryCard();
     bindUpload();
 

@@ -523,6 +523,21 @@
       pickedUpAt: '2026/03/28',
       status: 'picked_up',
     },
+    {
+      id: 'M2026042920',
+      name: '林Ｏ妤',
+      product: '信用貸款',
+      payoutAmount: 100000,
+      snapshot: { base: 500, ratio: 0, cap: 500 },
+      payoutAt: '2026/04/30',
+      appliedAt: '2026/05/03',
+      method: 'transfer',
+      bankName: '玉山銀行',
+      bankLast4: '9999',
+      failReason: '帳號錯誤，銀行退匯',
+      failedAt: '2026/05/05 13:00',
+      status: 'transfer_failed',
+    },
   ];
 
   // ---------- 可提領清單（會計已確認獲獎資格） ----------
@@ -638,6 +653,20 @@
       r.amount = Math.round(calc.amount);
       r.calc = calc;
     });
+
+    // 套用「提領失敗」記錄（由後台 admin-payments.js 寫入 localStorage）
+    try {
+      const failedList = JSON.parse(localStorage.getItem('mgm_failed_withdrawals') || '[]');
+      failedList.forEach((f) => {
+        const r = list.find((x) => x.id === f.caseId);
+        if (!r) return;
+        if (r.status === 'transferring' || r.status === 'pending_pickup') {
+          r.status = 'transfer_failed';
+          if (f.failReason) r.failReason = f.failReason;
+          if (f.failedAt) r.failedAt = f.failedAt;
+        }
+      });
+    } catch {}
 
     // 套用「已申請提領」之狀態升級（由 withdrawal.js 寫入 localStorage）
     try {
@@ -899,6 +928,8 @@
     withdrawn:      { bucket: 'archived',   label: '已歸檔',     badge: 'badge-gray' },
     // 未符合資格
     invalid:        { bucket: 'archived',   label: '已歸檔',     badge: 'badge-gray' },
+    // 提領失敗（銀行退匯）
+    transfer_failed: { bucket: 'rewardable', label: '提領失敗',   badge: 'badge-red' },
   };
 
   // ---------- 跨 iframe 導航（支援 http:// 與 file:// 雙環境） ----------

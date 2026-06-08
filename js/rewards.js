@@ -23,8 +23,9 @@
     pending_review: { icon: 'fa-lock',            cls: 'badge-yellow', tone: 'yellow' },
     transferring:   { icon: 'fa-hourglass-half',  cls: 'badge-blue',   tone: 'blue' },
     transferred:    { icon: 'fa-circle-check',    cls: 'badge-purple', tone: 'purple' },
-    pending_pickup: { icon: 'fa-store',           cls: 'badge-yellow', tone: 'yellow' },
-    picked_up:      { icon: 'fa-handshake',       cls: 'badge-purple', tone: 'purple' },
+    pending_pickup:  { icon: 'fa-store',             cls: 'badge-yellow', tone: 'yellow' },
+    picked_up:       { icon: 'fa-handshake',         cls: 'badge-purple', tone: 'purple' },
+    transfer_failed: { icon: 'fa-circle-exclamation', cls: 'badge-red',    tone: 'red' },
   };
   function statusMeta(status) {
     const base = (window.MGMCommon && window.MGMCommon.STATUS_MAP && window.MGMCommon.STATUS_MAP[status]) || {};
@@ -45,19 +46,26 @@
       }
       case 'pending_review':
         return '此筆獎金因帳號被列入控管，需經人工放行後方可提領，請耐心等候。';
-      case 'transferring':
-        return `已收到您的申請，預計將匯入您的指定帳戶：${r.bankName}（末四碼 ${r.bankLast4}）。`;
+      case 'transferring': {
+        const payoutPart = r.expectedPayoutAt
+          ? `預計撥款日 ${formatDateYmdSlash(r.expectedPayoutAt)}，` : '';
+        return `已收到您的申請，${payoutPart}款項將匯入您的指定帳戶：${r.bankName}（末四碼 ${r.bankLast4}）。`;
+      }
       case 'transferred':
         return '';
       case 'pending_pickup':
         if (r.appointmentDate) {
           const d = formatDateYmdSlash(r.appointmentDate);
-          const hours = r.appointmentHours || '9:00-18:00';
+          const hours = r.appointmentHours || '依預約時段';
           return `已預約 ${d}（${hours}）至【${r.branch}】現場簽收，請攜帶身分證件。`;
         }
-        return `請於營業時間 9:00-18:00 內，攜帶身分證件至【${r.branch}】簽收領取。`;
+        return `請攜帶身分證件至【${r.branch}】依預約時段簽收領取。`;
       case 'picked_up':
         return '';
+      case 'transfer_failed': {
+        const reason = r.failReason ? `（原因：${r.failReason}）` : '';
+        return `您的提領帳戶資料有誤${reason}，款項已退回。請點擊下方「重新填寫提領資料」按鈕，更正帳戶資訊後重新送出申請。`;
+      }
       default:
         return '';
     }
@@ -133,7 +141,11 @@
   }
 
   function isApplying(r) {
-    return r.status === 'transferring' || r.status === 'pending_pickup';
+    return r.status === 'transferring' || r.status === 'pending_pickup' || r.status === 'transfer_failed';
+  }
+
+  function isTransferFailed(r) {
+    return r.status === 'transfer_failed';
   }
 
   // 取得撥款日期（已撥款的紀錄）
@@ -306,8 +318,9 @@
           <i class="fa-solid fa-headset"></i>預約日期即將到來，如需變更請聯繫專員協助
         </div>`;
       } else {
-        editBtnHtml = `<button type="button" class="reward-edit-btn" data-edit-id="${r.id}">
-          <i class="fa-solid fa-pen-to-square"></i>修改提領資料
+        const editBtnLabel = isTransferFailed(r) ? '重新填寫提領資料' : '修改提領資料';
+        editBtnHtml = `<button type="button" class="reward-edit-btn${isTransferFailed(r) ? ' reward-edit-btn-urgent' : ''}" data-edit-id="${r.id}">
+          <i class="fa-solid fa-pen-to-square"></i>${editBtnLabel}
         </button>`;
       }
     }
@@ -335,10 +348,15 @@
 
     const rewardable = filtered.filter(isSelectable);
     const frozen = filtered.filter(isFrozen);
-    const processing = filtered.filter(isApplying);
+    const failed = filtered.filter(isTransferFailed);
+    const processing = filtered.filter((r) => isApplying(r) && !isTransferFailed(r));
     const completed = filtered.filter(isCompleted);
 
     let html = '';
+    if (failed.length) {
+      html += '<h4 class="reward-section-heading reward-section-failed"><i class="fa-solid fa-circle-exclamation"></i>提領失敗 — 需要處理</h4>';
+      html += failed.map(renderItem).join('');
+    }
     if (frozen.length) {
       html += '<h4 class="reward-section-heading reward-section-frozen"><i class="fa-solid fa-lock"></i>待人工放行</h4>';
       html += frozen.map(renderItem).join('');
@@ -348,8 +366,22 @@
       html += rewardable.map(renderItem).join('');
     }
     if (processing.length) {
-      html += '<h4 class="reward-section-heading">處理中</h4>';
-      html += processing.map(renderItem).join('');
+      const pickupUpcoming  = processing.filter((r) => r.status === 'pending_pickup' && !canModifyPickup(r));
+      const pickupModifiable = processing.filter((r) => r.status === 'pending_pickup' && canModifyPickup(r));
+      const transferring    = processing.filter((r) => r.status === 'transferring');
+
+      if (pickupUpcoming.length) {
+        html += '<h4 class="reward-section-heading reward-section-processing"><i class="fa-solid fa-calendar-check"></i>處理中 — 即將到來的現場預約</h4>';
+        html += pickupUpcoming.map(renderItem).join('');
+      }
+      if (pickupModifiable.length) {
+        html += '<h4 class="reward-section-heading reward-section-processing"><i class="fa-solid fa-calendar-pen"></i>處理中 — 可以變更的現場預約</h4>';
+        html += pickupModifiable.map(renderItem).join('');
+      }
+      if (transferring.length) {
+        html += '<h4 class="reward-section-heading reward-section-processing"><i class="fa-solid fa-paper-plane"></i>處理中 — 待匯款</h4>';
+        html += transferring.map(renderItem).join('');
+      }
     }
     if (completed.length) {
       html += '<h4 class="reward-section-heading">已完成</h4>';

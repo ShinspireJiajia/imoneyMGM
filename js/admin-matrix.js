@@ -37,7 +37,7 @@
     }
     // demo 防呆：若獨立開啟，直接顯示提示
     document.addEventListener('DOMContentLoaded', () => {
-      document.body.innerHTML = '<div style="padding:60px;text-align:center;color:#6b7280;">請從「活動檔期管理」清單選擇一檔活動進入。</div>';
+      document.body.innerHTML = '<div style="padding:60px;text-align:center;color:#252629;">請從「活動檔期管理」清單選擇一檔活動進入。</div>';
     });
     return;
   }
@@ -74,7 +74,7 @@
   // type: info | matrix | content | snapshot
   const DEMO_HISTORY = {
     'CAMP-C-2026Q2': [
-      { time: '2026/05/25 09:42', type: 'matrix', actor: 'Admin User', title: '修改獎金金額', desc: '債務協商觸發條件更新為「需繳滿第三期服務費（每期 ≥ $6,000 起算）」' },
+      { time: '2026/05/25 09:42', type: 'matrix', actor: 'Admin User', title: '修改獎金金額', desc: '債務協商觸發條件更新為「需繳滿第三期服務費（第一期 ≥ $6,000 起算）」' },
       { time: '2026/05/20 14:15', type: 'content', actor: '行銷 - Mary', title: '更新活動文案', desc: '加入推薦獎金範圍（$1,500 ～ $5,000）醒目標語，並補上免責聲明連結' },
       { time: '2026/05/15 11:05', type: 'snapshot', actor: '系統', title: '案件快照寫入', desc: '案 M2026051504（張Ｏ豪）送單時擷取本檔不動產貸款參數：獎金 $5,000 / 觸發：付訖服務費' },
       { time: '2026/05/12 16:30', type: 'snapshot', actor: '系統', title: '案件快照寫入', desc: '案 M2026051205（吳Ｏ芳）送單時擷取本檔汽機車小額融資參數：獎金 $1,500 / 觸發：付訖服務費' },
@@ -227,22 +227,31 @@
   // ---------- PANE 2: 獎金級距 ----------
   const TRIGGER_OPTIONS = [
     '付訖服務費',
-    '需繳滿第三期服務費（每期 ≥ $6,000 起算）',
+    '需繳滿第三期服務費（第一期 ≥ $6,000 起算）',
   ];
 
   const PROJECT_OPTIONS = [
-    { key: 'motor',      label: '汽機車小額融資／代書信貸', defaultTrigger: '付訖服務費',                                  defaultBonus: 1500 },
-    { key: 'bank',       label: '銀行信貸／企貸',          defaultTrigger: '付訖服務費',                                  defaultBonus: 3600 },
-    { key: 'realestate', label: '不動產貸款',               defaultTrigger: '付訖服務費',                                  defaultBonus: 5000 },
-    { key: 'debt',       label: '債務協商',                 defaultTrigger: '需繳滿第三期服務費（每期 ≥ $6,000 起算）', defaultBonus: 2000 },
+    // 審核單請項目類型
+    { key: 'century_mobile',  label: '21世紀手機貸', category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 1500 },
+    { key: 'asia_micro',      label: '亞太小額融資', category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 1500 },
+    { key: 'credit_loan',     label: '信用貸款',     category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 3600 },
+    { key: 'motor_loan',      label: '機車貸款',     category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 1500 },
+    { key: 'car_loan',        label: '汽車貸款',     category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 1500 },
+    { key: 'house_loan',      label: '房屋貸款',     category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 5000 },
+    { key: 'house_2nd',       label: '房屋二胎',     category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 5000 },
+    { key: 'taili_real',      label: '台理不動產',   category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 5000 },
+    { key: 'taili_add',       label: '台理增貸',     category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 3600 },
+    { key: 'biz_loan',        label: '企業貸款',     category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 3600 },
+    { key: 'land_loan',       label: '土地貸款',     category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 5000 },
+    { key: 'anything_loan',   label: '萬物貸',       category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 1500 },
+    { key: 'notary_loan',     label: '代書信貸',     category: 'general',     defaultTrigger: '付訖服務費',                                  defaultBonus: 1500 },
+    // 協商單請項目類型
+    { key: 'pre_negotiation', label: '前置協商',     category: 'negotiation', defaultTrigger: '需繳滿第三期服務費（第一期 ≥ $6,000 起算）', defaultBonus: 2000 },
+    { key: 'individual_nego', label: '個別協商',     category: 'negotiation', defaultTrigger: '需繳滿第三期服務費（第一期 ≥ $6,000 起算）', defaultBonus: 0 },
+    { key: 'rehabilitation',  label: '更生方案',     category: 'negotiation', defaultTrigger: '需繳滿第三期服務費（第一期 ≥ $6,000 起算）', defaultBonus: 2000 },
   ];
 
-  const PROJECT_KEY_BY_LABEL = {
-    '汽機車小額融資／代書信貸': 'motor',
-    '銀行信貸／企貸':           'bank',
-    '不動產貸款':               'realestate',
-    '債務協商':                 'debt',
-  };
+  const PROJECT_KEY_BY_LABEL = Object.fromEntries(PROJECT_OPTIONS.map((p) => [p.label, p.key]));
 
   function matrixStorageKey() {
     return `mgm_campaign_matrix_rules_${CURRENT.id || 'default'}`;
@@ -296,7 +305,15 @@
   }
 
   function buildProjectOptionsHtml(selectedKey) {
-    return PROJECT_OPTIONS.map((p) => `<option value="${p.key}" ${p.key === selectedKey ? 'selected' : ''}>${p.label}</option>`).join('');
+    const groups = [
+      { cat: 'general',     label: '審核單請項目類型' },
+      { cat: 'negotiation', label: '協商單請項目類型' },
+    ];
+    return groups.map(({ cat, label }) => {
+      const items = PROJECT_OPTIONS.filter((p) => p.category === cat);
+      const opts = items.map((p) => `<option value="${p.key}"${p.key === selectedKey ? ' selected' : ''}>${p.label}</option>`).join('');
+      return `<optgroup label="${label}">${opts}</optgroup>`;
+    }).join('');
   }
 
   function createProjectRow(rule = {}) {
@@ -329,16 +346,96 @@
     return tr;
   }
 
+  function getAlreadyUsedKeys(excludeRow) {
+    const tbody = document.getElementById('matrix-tbody');
+    if (!tbody) return new Set();
+    return new Set(
+      Array.from(tbody.querySelectorAll('tr[data-project-key]'))
+        .filter((r) => r !== excludeRow)
+        .map((r) => r.dataset.projectKey)
+        .filter(Boolean)
+    );
+  }
+
+  function createNewProjectRow(usedKeys) {
+    const tr = document.createElement('tr');
+    tr.dataset.rowMode = 'view';
+    tr.dataset.isNew = '1';
+
+    tr.innerHTML = `
+      <td>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <select class="field-select category-select" style="font-size:12px;padding:5px 8px;">
+            <option value="">請選擇類型</option>
+            <option value="general">一般（審核單請）</option>
+            <option value="negotiation">協商（協商單請）</option>
+          </select>
+          <select class="field-select project-select" disabled style="font-size:12px;padding:5px 8px;">
+            <option value="">請先選擇類型</option>
+          </select>
+        </div>
+      </td>
+      <td><select class="inline-input trigger-input" disabled>${TRIGGER_OPTIONS.map((t) => `<option value="${t}">${t}</option>`).join('')}</select></td>
+      <td><span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input bonus-input" type="number" value="0" disabled /></span></td>
+      <td class="status-label"><label class="switch"><input type="checkbox" checked disabled /><span class="switch-slider"></span></label></td>
+      <td class="row-actions">
+        <button type="button" class="row-action-btn primary" data-row-action="save" hidden><i class="fa-solid fa-check"></i>儲存</button>
+        <button type="button" class="row-action-btn" data-row-action="cancel" hidden>取消</button>
+        <button type="button" class="row-action-btn" data-row-action="edit"><i class="fa-solid fa-pen"></i>編輯</button>
+        <button type="button" class="row-action-btn danger" data-row-action="remove">移除</button>
+      </td>
+    `;
+
+    const catSel  = tr.querySelector('.category-select');
+    const projSel = tr.querySelector('.project-select');
+    catSel.addEventListener('change', () => {
+      const cat = catSel.value;
+      projSel.innerHTML = '';
+      if (!cat) {
+        projSel.disabled = true;
+        projSel.innerHTML = '<option value="">請先選擇類型</option>';
+        return;
+      }
+      const currentUsed = getAlreadyUsedKeys(tr);
+      const available = PROJECT_OPTIONS.filter((p) => p.category === cat && !currentUsed.has(p.key));
+      if (available.length === 0) {
+        projSel.innerHTML = '<option value="">此類型所有方案均已設定</option>';
+        projSel.disabled = true;
+        return;
+      }
+      projSel.disabled = false;
+      projSel.innerHTML = '<option value="">請選擇方案</option>' + available.map((p) => `<option value="${p.key}">${p.label}</option>`).join('');
+    });
+
+    projSel.addEventListener('change', () => {
+      const key = projSel.value;
+      const opt = PROJECT_OPTIONS.find((p) => p.key === key);
+      if (!opt) return;
+      const triggerEl = tr.querySelector('.trigger-input');
+      const bonusEl   = tr.querySelector('.bonus-input');
+      if (triggerEl) triggerEl.value = opt.defaultTrigger;
+      if (bonusEl)   bonusEl.value   = opt.defaultBonus;
+    });
+
+    return tr;
+  }
+
   function bindAddProject() {
     const btn = document.getElementById('btn-add-project');
     const tbody = document.getElementById('matrix-tbody');
     if (!btn || !tbody) return;
     btn.addEventListener('click', () => {
-      const row = createProjectRow();
+      const usedKeys = getAlreadyUsedKeys();
+      const available = PROJECT_OPTIONS.filter((p) => !usedKeys.has(p.key));
+      if (available.length === 0) {
+        alert('所有可用專案均已設定完畢，如需調整請直接點擊「編輯」修改現有項目。');
+        return;
+      }
+      const row = createNewProjectRow(usedKeys);
       tbody.appendChild(row);
       setRowMode(row, 'edit');
-      const select = row.querySelector('.project-select');
-      if (select) select.focus();
+      const catSel = row.querySelector('.category-select');
+      if (catSel) { catSel.disabled = false; catSel.focus(); }
     });
   }
 
@@ -371,6 +468,13 @@
           return;
         }
         row.dataset.projectKey = projectKey;
+        // 若為新增行，將 category+project selects 替換為純文字顯示
+        if (row.dataset.isNew === '1') {
+          const label = getProjectLabel(projectKey);
+          const firstTd = row.querySelector('td:first-child');
+          if (firstTd) firstTd.innerHTML = `<strong>${label}</strong>`;
+          delete row.dataset.isNew;
+        }
         setRowMode(row, 'view');
         snapshots.delete(row);
         const name = getRowProjectLabel(row) || '此筆級距';

@@ -427,7 +427,7 @@
   function exportCsv() {
     const list = getFiltered();
     if (list.length === 0) { alert('目前無資料可匯出'); return; }
-    const headers = ['來源','案號','推薦人','客戶編號','標籤','金額(NT$)','狀態','處理人','處理時間','備註/原因'];
+    const headers = ['來源','案號','推薦人','會員編號','標籤','金額(NT$)','狀態','處理人','處理時間','備註/原因'];
     const STATUS_TXT = { pending: '待審', approved: '已放行', rejected: '已拒絕', blacklisted: '已轉黑名單' };
     const rows = list.map(q => [
       SOURCE_LABEL[q.source || 'overrun'] || q.source || '',
@@ -517,6 +517,28 @@
   // ==================== 初始化 ====================
   document.addEventListener('DOMContentLoaded', () => {
     bindFilters();
+    // 篩選收合 / 清除
+    (function () {
+      const btnToggle = document.getElementById('btn-toggle-advanced');
+      const filterGrid = document.getElementById('filter-grid');
+      if (btnToggle && filterGrid) {
+        btnToggle.addEventListener('click', () => {
+          const collapsed = filterGrid.classList.toggle('collapsed');
+          btnToggle.innerHTML = collapsed
+            ? '<i class="fa-solid fa-chevron-down"></i>展開篩選'
+            : '<i class="fa-solid fa-chevron-up"></i>收合篩選';
+        });
+      }
+      const btnClear = document.getElementById('btn-clear-filter');
+      if (btnClear && filterGrid) {
+        btnClear.addEventListener('click', () => {
+          filterGrid.querySelectorAll('input').forEach((el) => (el.value = ''));
+          filterGrid.querySelectorAll('select').forEach((el) => (el.selectedIndex = 0));
+          const s = document.getElementById('btn-search');
+          if (s) s.click();
+        });
+      }
+    })();
     bindBatch();
     bindBlacklistModal();
     document.getElementById('btn-export-csv').addEventListener('click', exportCsv);

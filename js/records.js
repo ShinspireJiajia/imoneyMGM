@@ -6,69 +6,54 @@
 (function () {
   'use strict';
 
-  // 推廣紀錄 demo 資料
-  // 說明：reviewing / confirmed / pending_review 代表尚未人工放行，不會顯示在畫面上
-  const RECORDS = [
-    {
-      id: 'M2026052601',
-      name: '陳Ｏ明',
-      joinedAt: '2026/05/26',
-      status: 'rewardable',
-      rewardableAt: '2026/05/26',
-    },
-    {
-      id: 'M2026051802',
-      name: '林Ｏ華',
-      joinedAt: '2026/05/18',
-      status: 'transferring',
-      rewardableAt: '2026/05/19',
-      expectedPayoutAt: '2026/05/29',
-    },
-    {
-      id: 'M2026020503',
-      name: '黃Ｏ偉',
-      joinedAt: '2026/02/05',
-      status: 'rewardable',
-      rewardableAt: '2026/02/20',
-    },
-    {
-      id: 'M2026031004',
-      name: '吳Ｏ芳',
-      joinedAt: '2026/03/10',
-      status: 'withdrawn',
-      rewardableAt: '2026/03/22',
-    },
-    {
-      id: 'M2025111105',
-      name: '李Ｏ仁',
-      joinedAt: '2025/11/11',
-      status: 'expired',
-      rewardableAt: '2025/11/28',
-      expiredSource: 'auto',
-    },
-    {
-      id: 'M2026041506',
-      name: '蔡Ｏ婷',
-      joinedAt: '2026/04/15',
-      status: 'invalid',
-      rewardableAt: '2026/04/30',
-      expiredSource: 'manual',
-    },
-    {
-      id: 'M2026052707',
-      name: '葉Ｏ群',
-      joinedAt: '2026/05/27',
-      status: 'reviewing',
-      rewardableAt: null,
-    },
-    {
-      id: 'M2026052108',
-      name: '彭Ｏ豪',
-      joinedAt: '2026/05/21',
-      status: 'pending_review',
-      rewardableAt: null,
-    },
-  ];
+  // 推廣紀錄：從獎金共用資料源（MGMCommon.getRewardsDemo）派生，確保兩頁案例一致
+  // 另附靜態補充條目：尚未進入獎金流程的審核中 / 失效 / 無效案件
+
+  function _rewardStatusToRecordStatus(rewardStatus) {
+    switch (rewardStatus) {
+      case 'rewardable':     return 'rewardable';
+      case 'transfer_failed':
+      case 'transferring':
+      case 'pending_pickup': return 'transferring';
+      case 'transferred':
+      case 'picked_up':      return 'withdrawn';
+      case 'pending_review': return 'pending_review';
+      default:               return 'reviewing';
+    }
+  }
+
+  function _joinedAtFromId(id) {
+    const m = String(id || '').match(/^M(\d{4})(\d{2})(\d{2})/);
+    return m ? `${m[1]}/${m[2]}/${m[3]}` : '';
+  }
+
+  function buildRecords() {
+    const rewards = (window.MGMCommon && window.MGMCommon.getRewardsDemo)
+      ? window.MGMCommon.getRewardsDemo()
+      : [];
+
+    const fromRewards = rewards.map((r) => ({
+      id: r.id,
+      name: r.name,
+      joinedAt: _joinedAtFromId(r.id),
+      status: _rewardStatusToRecordStatus(r.status),
+      rewardableAt: r.payoutAt || '',
+      expectedPayoutAt: r.expectedPayoutAt || r.estimatedPayoutAt || '',
+    }));
+
+    // 尚未進入獎金流程（審核中）或已失效的補充案件
+    const rewardIds = new Set(fromRewards.map((r) => r.id));
+    const staticExtra = [
+      { id: 'M2026060801', name: '林Ｏ安',  joinedAt: '2026/06/08', status: 'reviewing',     rewardableAt: null },
+      { id: 'M2026060202', name: '彭Ｏ豪',  joinedAt: '2026/06/02', status: 'pending_review', rewardableAt: null },
+      { id: 'M2025111105', name: '吳Ｏ盛',  joinedAt: '2025/11/11', status: 'expired',        rewardableAt: '2025/11/28', expiredSource: 'auto' },
+      { id: 'M2026041506', name: '蔡Ｏ婷',  joinedAt: '2026/04/15', status: 'invalid',        rewardableAt: '2026/04/30', expiredSource: 'manual' },
+    ].filter((r) => !rewardIds.has(r.id));
+
+    return [...fromRewards, ...staticExtra];
+  }
+
+  const RECORDS = buildRecords();
 
   const STATUS_META = {
     reviewing: { bucket: 'hidden', label: '審核中', badge: 'badge-yellow' },

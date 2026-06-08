@@ -19,6 +19,7 @@
       method: 'cash',
       branch: '板橋分公司',
       expectedPickupDate: '2026/06/05',
+      appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/05/22 16:00',
       status: 'pickup',
     },
@@ -33,6 +34,7 @@
       method: 'cash',
       branch: '中部總公司',
       expectedPickupDate: '2026/06/05',
+      appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/05/20 11:20',
       status: 'pickup',
     },
@@ -47,6 +49,7 @@
       method: 'cash',
       branch: '板橋分公司',
       expectedPickupDate: '2026/03/28',
+      appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/03/25 14:00',
       pickedUpAt: '2026/03/28 11:30',
       status: 'completed',
@@ -62,6 +65,7 @@
       method: 'cash',
       branch: '板橋分公司',
       expectedPickupDate: '2026/06/04',
+      appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/01 09:30',
       status: 'pickup',
     },
@@ -76,6 +80,7 @@
       method: 'cash',
       branch: '中部總公司',
       expectedPickupDate: '2026/06/05',
+      appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/01 14:00',
       status: 'pending',
     },
@@ -90,6 +95,7 @@
       method: 'cash',
       branch: '板橋分公司',
       expectedPickupDate: '2026/06/06',
+      appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/02 10:15',
       status: 'pending',
     },
@@ -104,6 +110,7 @@
       method: 'cash',
       branch: '中部總公司',
       expectedPickupDate: '2026/06/07',
+      appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/02 15:30',
       status: 'pending',
     },
@@ -118,20 +125,374 @@
       method: 'cash',
       branch: '板橋分公司',
       expectedPickupDate: '2026/06/07',
+      appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/02 16:45',
+      status: 'pending',
+    },
+    // ── 近兩週 demo 資料（2026/06/08 ~ 2026/06/21）────────────
+    {
+      id: 'PAY-26060801',
+      caseId: 'M2026060801',
+      memberId: 'U250604001',
+      referrer: '劉建宏',
+      tag: '會員',
+      product: '房屋貸款',
+      amount: 2500,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/08',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/06/03 09:00',
+      status: 'pickup',
+    },
+    {
+      id: 'PAY-26060802',
+      caseId: 'M2026060802',
+      memberId: 'U250604002',
+      referrer: '許雅婷',
+      tag: '員工',
+      product: '汽車貸款',
+      amount: 1800,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/08',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/03 10:00',
+      status: 'pickup',
+    },
+    {
+      id: 'PAY-26060901',
+      caseId: 'M2026060901',
+      memberId: 'U250604003',
+      referrer: '張偉中',
+      tag: '會員',
+      product: '房屋貸款',
+      amount: 5200,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/09',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/06/04 09:30',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26060902',
+      caseId: 'M2026060902',
+      memberId: 'U250604004',
+      referrer: '林宜靜',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 2800,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/09',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/04 10:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061101',
+      caseId: 'M2026061101',
+      memberId: 'U250604005',
+      referrer: '陳志豪',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 1800,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/11',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/06/05 09:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061102',
+      caseId: 'M2026061102',
+      memberId: 'U250604006',
+      referrer: '蔡明哲',
+      tag: '離職員工',
+      product: '房屋貸款',
+      amount: 6000,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/11',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/05 10:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061103',
+      caseId: 'M2026061103',
+      memberId: 'U250604007',
+      referrer: '黃淑芬',
+      tag: '員工',
+      product: '汽車貸款',
+      amount: 3500,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/11',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/06/05 11:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061201',
+      caseId: 'M2026061201',
+      memberId: 'U250604008',
+      referrer: '王建忠',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 2100,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/12',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/05 14:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061501',
+      caseId: 'M2026061501',
+      memberId: 'U250605001',
+      referrer: '吳靜宜',
+      tag: '員工',
+      product: '房屋貸款',
+      amount: 7500,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/15',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/06/06 09:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061502',
+      caseId: 'M2026061502',
+      memberId: 'U250605002',
+      referrer: '李俊賢',
+      tag: '會員',
+      product: '汽車貸款',
+      amount: 2300,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/15',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/06/06 10:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061503',
+      caseId: 'M2026061503',
+      memberId: 'U250605003',
+      referrer: '鄭雅涵',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 1600,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/15',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/06 11:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061601',
+      caseId: 'M2026061601',
+      memberId: 'U250605004',
+      referrer: '徐志明',
+      tag: '會員',
+      product: '房屋貸款',
+      amount: 4800,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/16',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/07 09:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061701',
+      caseId: 'M2026061701',
+      memberId: 'U250606001',
+      referrer: '洪明芬',
+      tag: '員工',
+      product: '房屋貸款',
+      amount: 3200,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/17',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/06/07 09:30',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061702',
+      caseId: 'M2026061702',
+      memberId: 'U250606002',
+      referrer: '吳俊宏',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 1900,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/17',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/06/07 10:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061703',
+      caseId: 'M2026061703',
+      memberId: 'U250606003',
+      referrer: '林佳蓉',
+      tag: '離職員工',
+      product: '汽車貸款',
+      amount: 5600,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/17',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/07 11:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061801',
+      caseId: 'M2026061801',
+      memberId: 'U250606004',
+      referrer: '楊文豪',
+      tag: '會員',
+      product: '房屋貸款',
+      amount: 8200,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/18',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/08 09:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061802',
+      caseId: 'M2026061802',
+      memberId: 'U250606005',
+      referrer: '謝佩君',
+      tag: '會員',
+      product: '汽車貸款',
+      amount: 2700,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/18',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/08 10:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061901',
+      caseId: 'M2026061901',
+      memberId: 'U250606006',
+      referrer: '蔡宗翰',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 2000,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/19',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/06/08 10:30',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26061902',
+      caseId: 'M2026061902',
+      memberId: 'U250606007',
+      referrer: '陳宜玲',
+      tag: '員工',
+      product: '汽車貸款',
+      amount: 3900,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/19',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/08 11:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26062101',
+      caseId: 'M2026062101',
+      memberId: 'U250607001',
+      referrer: '柯建志',
+      tag: '會員',
+      product: '房屋貸款',
+      amount: 4500,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/21',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/06/08 14:00',
+      status: 'pending',
+    },
+    {
+      id: 'PAY-26062102',
+      caseId: 'M2026062102',
+      memberId: 'U250607002',
+      referrer: '羅雅文',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 3100,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/21',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/08 15:00',
       status: 'pending',
     },
   ];
 
   const HISTORY = {
     'PAY-26052203': [
-      { time: '2026/05/22 16:00', actor: '推薦人 - 王小毅', action: '建立提領申請', desc: '現場領取 - 板橋分公司，預計 2026/06/05', cls: 'done' },
+      { time: '2026/05/22 16:00', actor: '推薦人 - 王小毅', action: '建立提領申請', desc: '現場領取 - 板橋分公司，預計 2026/06/05 上午 10:00-12:00', cls: 'done' },
     ],
     'PAY-26032808': [
-      { time: '2026/03/25 14:00', actor: '推薦人 - 高志仁', action: '建立提領申請', desc: '現場領取 - 板橋分公司，預計 2026/03/28', cls: 'done' },
+      { time: '2026/03/25 14:00', actor: '推薦人 - 高志仁', action: '建立提領申請', desc: '現場領取 - 板橋分公司，預計 2026/03/28 上午 10:00-12:00', cls: 'done' },
       { time: '2026/03/28 11:30', actor: '財務 - Mary', action: '完成現場領取', desc: '推薦人已攜帶身分證至現場簽收', cls: 'done' },
     ],
   };
+
+  // ── 現場提領會員 demo 資料（僅需身分證，無銀行帳號）────────
+  const DEMO_MEMBER_DATA = {
+    'PAY-26052203': { realName: '王志誠',  idNumber: 'B23****90' },
+    'PAY-26052006': { realName: '黃俊偉',  idNumber: 'D45****12' },
+    'PAY-26032808': { realName: '高志仁',  idNumber: 'G67****34' },
+    'PAY-26060301': { realName: '陳小玲',  idNumber: 'H78****45' },
+    'PAY-26060302': { realName: '蔡明芳',  idNumber: 'I89****56' },
+    'PAY-26060303': { realName: '林正豪',  idNumber: 'J90****67' },
+    'PAY-26060304': { realName: '謝佳慧',  idNumber: 'K01****78' },
+    'PAY-26060305': { realName: '吳志遠',  idNumber: 'L12****89' },
+    'PAY-26060801': { realName: '劉建宏',  idNumber: 'M24****01' },
+    'PAY-26060802': { realName: '許雅婷',  idNumber: 'N35****12' },
+    'PAY-26060901': { realName: '張偉中',  idNumber: 'O46****23' },
+    'PAY-26060902': { realName: '林宜靜',  idNumber: 'P57****34' },
+    'PAY-26061101': { realName: '陳志豪',  idNumber: 'Q68****45' },
+    'PAY-26061102': { realName: '蔡明哲',  idNumber: 'R79****56' },
+    'PAY-26061103': { realName: '黃淑芬',  idNumber: 'S80****67' },
+    'PAY-26061201': { realName: '王建忠',  idNumber: 'T91****78' },
+    'PAY-26061501': { realName: '吳靜宜',  idNumber: 'U02****89' },
+    'PAY-26061502': { realName: '李俊賢',  idNumber: 'V13****90' },
+    'PAY-26061503': { realName: '鄭雅涵',  idNumber: 'W24****01' },
+    'PAY-26061601': { realName: '徐志明',  idNumber: 'X35****12' },
+    'PAY-26061701': { realName: '洪明芬',  idNumber: 'Y46****23' },
+    'PAY-26061702': { realName: '吳俊宏',  idNumber: 'Z57****34' },
+    'PAY-26061703': { realName: '林佳蓉',  idNumber: 'A68****45' },
+    'PAY-26061801': { realName: '楊文豪',  idNumber: 'B79****56' },
+    'PAY-26061802': { realName: '謝佩君',  idNumber: 'C80****67' },
+    'PAY-26061901': { realName: '蔡宗翰',  idNumber: 'D91****78' },
+    'PAY-26061902': { realName: '陳宜玲',  idNumber: 'E02****89' },
+    'PAY-26062101': { realName: '柯建志',  idNumber: 'F13****90' },
+    'PAY-26062102': { realName: '羅雅文',  idNumber: 'G24****01' },
+  };
+
+  function getDemoMemberData(payId) {
+    return DEMO_MEMBER_DATA[payId] || { realName: '—', idNumber: '—' };
+  }
 
   const STATUS_META = {
     pending:   { label: '待確認',   cls: 'pending',   icon: 'fa-hourglass-half' },
@@ -194,12 +555,23 @@
 
       const branchBlock = (cls, label, items) => {
         const isEmpty = items.length === 0;
-        const stats = isEmpty
-          ? '無預約'
-          : `${items.length}筆 / $${fmt(items.reduce((s, p) => s + p.amount, 0))}`;
+        let innerHtml;
+        if (isEmpty) {
+          innerHtml = '<span class="slot-empty">無預約</span>';
+        } else {
+          const am = items.filter((p) => (p.appointmentHours || '').startsWith('上午'));
+          const pm = items.filter((p) => (p.appointmentHours || '').startsWith('下午'));
+          const amAmt = am.reduce((s, p) => s + p.amount, 0);
+          const pmAmt = pm.reduce((s, p) => s + p.amount, 0);
+          const rows = [];
+          if (am.length) rows.push(`<div class="slot-stat-row"><span class="slot-badge slot-am">上午</span><span class="slot-count">${am.length}筆</span><strong class="slot-amt">$${fmt(amAmt)}</strong></div>`);
+          if (pm.length) rows.push(`<div class="slot-stat-row"><span class="slot-badge slot-pm">下午</span><span class="slot-count">${pm.length}筆</span><strong class="slot-amt">$${fmt(pmAmt)}</strong></div>`);
+          if (!rows.length) rows.push(`<div class="slot-stat-row">${items.length}筆 &nbsp;$${fmt(items.reduce((s, p) => s + p.amount, 0))}</div>`);
+          innerHtml = rows.join('');
+        }
         return `<div class="daily-branch ${cls}${isEmpty ? ' empty' : ''}">
           <span class="daily-branch-name">${label}</span>
-          <span class="daily-branch-stats">${stats}</span>
+          <div class="daily-slot-stats">${innerHtml}</div>
         </div>`;
       };
 
@@ -237,7 +609,7 @@
   }
 
   // ==================== 清單 ====================
-  const cashFilters = { keyword: '', status: 'all', branch: 'all' };
+  const cashFilters = { keyword: '', referrerName: '', referrerId: '', status: 'all', branch: 'all' };
   let cashPgPage = 1, cashPgSize = 20;
   let cashSelected = new Set();
 
@@ -259,10 +631,14 @@
   }
 
   function getCashFiltered() {
-    const kw = cashFilters.keyword.trim().toLowerCase();
+    const kw      = cashFilters.keyword.trim().toLowerCase();
+    const rnKw    = cashFilters.referrerName.trim().toLowerCase();
+    const ridKw   = cashFilters.referrerId.trim().toLowerCase();
     const result = PAYMENTS.filter((p) => {
       if (cashFilters.status !== 'all' && p.status !== cashFilters.status) return false;
       if (cashFilters.branch !== 'all' && branchCity(p.branch) !== cashFilters.branch) return false;
+      if (rnKw  && !(p.referrer  || '').toLowerCase().includes(rnKw))  return false;
+      if (ridKw && !(p.memberId  || '').toLowerCase().includes(ridKw)) return false;
       if (kw) {
         const hay = [p.id, p.caseId, p.memberId, p.referrer, p.tag, p.product, p.branch]
           .filter(Boolean).join(' ').toLowerCase();
@@ -289,8 +665,13 @@
       : city === '台中'
       ? `<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#f0fdf4;color:#15803d;">台中</span>`
       : '';
+    const slotLabel = (p.appointmentHours || '').startsWith('上午') ? '上午'
+      : (p.appointmentHours || '').startsWith('下午') ? '下午' : '';
+    const slotBadge = slotLabel
+      ? `<br><span class="slot-badge slot-${slotLabel === '上午' ? 'am' : 'pm'}">${slotLabel}</span>`
+      : '';
     const pickupDate = p.expectedPickupDate
-      ? `<span style="font-weight:600;">${p.expectedPickupDate}</span>`
+      ? `<span style="font-weight:600;">${p.expectedPickupDate}</span>${slotBadge}`
       : `<span style="color:var(--color-text-muted);">未設定</span>`;
     const canCheck = isBatchSelectable(p);
     const checked  = cashSelected.has(p.id);
@@ -300,14 +681,17 @@
         <td>${canCheck ? `<input type="checkbox" class="row-check" data-id="${p.id}" ${checked ? 'checked' : ''}>` : ''}</td>
         <td class="cell-mono"><span class="mono-strong">${p.id}</span></td>
         <td class="cell-mono">${p.caseId}</td>
+        <td class="cell-mono" style="font-size:12px;">${p.memberId || '—'}</td>
         <td><strong>${p.referrer}</strong></td>
-        <td><span class="tag-pill ${tagCls}">${p.tag}</span></td>
+        <td>${p.tag}</td>
         <td class="cell-amount">$${fmt(p.amount)}</td>
         <td>${cityBadge} <span style="font-size:11px;color:var(--color-text-secondary);">${p.branch || '—'}</span></td>
         <td class="cell-applied">${pickupDate}</td>
-        <td class="cell-applied">${p.appliedAt || '—'}</td>
         <td><span class="pay-status ${s.cls}"><i class="fa-solid ${s.icon}"></i>${s.label}</span></td>
         <td>
+          <button type="button" class="action-btn" data-action="attach" data-id="${p.id}">
+            <i class="fa-solid fa-paperclip"></i>提領資料
+          </button>
           <button type="button" class="action-btn" data-action="history" data-id="${p.id}">
             <i class="fa-solid fa-clock-rotate-left"></i>歷程
           </button>
@@ -387,6 +771,9 @@
         updateBatchBar();
       });
     });
+    document.querySelectorAll('[data-action="attach"]').forEach((b) =>
+      b.addEventListener('click', () => openAttachments(b.dataset.id))
+    );
     document.querySelectorAll('[data-action="history"]').forEach((b) =>
       b.addEventListener('click', () => openHistory(b.dataset.id))
     );
@@ -417,7 +804,10 @@
     document.getElementById('history-ref').textContent = `${p.referrer} / ${p.tag}`;
     document.getElementById('history-amount').textContent = '$' + fmt(p.amount);
     document.getElementById('history-branch').textContent = p.branch || '—';
-    document.getElementById('history-pickup').textContent = p.expectedPickupDate || '—';
+    document.getElementById('history-pickup').textContent =
+      p.expectedPickupDate
+        ? (p.appointmentHours ? `${p.expectedPickupDate}　${p.appointmentHours}` : p.expectedPickupDate)
+        : '—';
     const s = STATUS_META[p.status] || { label: p.status, cls: 'pending' };
     document.getElementById('history-status').innerHTML =
       `<span class="pay-status ${s.cls}">${s.label}</span>`;
@@ -482,6 +872,7 @@
     document.getElementById('edit-pay-branch-select').value = p.branch || '板橋分公司';
     const pickup = (p.expectedPickupDate || '').replace(/\//g, '-');
     document.getElementById('edit-pay-expected-pickup').value = pickup;
+    document.getElementById('edit-pay-time-slot').value = p.appointmentHours || '';
     document.getElementById('edit-pay-reason').value = '';
     document.getElementById('edit-pay-modal').classList.add('show');
   }
@@ -497,23 +888,126 @@
     if (!reason) { alert('請填寫變更原因（必填，將寫入異動歷程）'); return; }
     const oldBranch = p.branch;
     const oldStatus = p.status;
+    const oldTimeSlot = p.appointmentHours || '未設定';
     p.branch = document.getElementById('edit-pay-branch-select').value;
     p.status = document.getElementById('edit-pay-status').value;
     const pickup = document.getElementById('edit-pay-expected-pickup').value;
     p.expectedPickupDate = pickup ? pickup.replace(/-/g, '/') : p.expectedPickupDate;
+    p.appointmentHours = document.getElementById('edit-pay-time-slot').value || p.appointmentHours;
     if (p.status === 'completed') p.pickedUpAt = new Date().toLocaleString('zh-TW');
     if (!HISTORY[p.id]) HISTORY[p.id] = [];
+    const newTimeSlot = p.appointmentHours || '未設定';
     HISTORY[p.id].push({
       time: new Date().toLocaleString('zh-TW'),
       actor: '財務後台 - 編輯權限使用',
       action: '修改現場提領資訊',
-      desc: `門市：${oldBranch} → ${p.branch}；狀態：${STATUS_META[oldStatus]?.label || oldStatus} → ${STATUS_META[p.status]?.label || p.status}；原因：${reason}`,
+      desc: `門市：${oldBranch} → ${p.branch}；時段：${oldTimeSlot} → ${newTimeSlot}；狀態：${STATUS_META[oldStatus]?.label || oldStatus} → ${STATUS_META[p.status]?.label || p.status}；原因：${reason}`,
       cls: '',
     });
     closeEdit();
     render();
     renderDailyBoard();
     toast('已更新現場提領資訊');
+  }
+
+  // ==================== 檢視附件 Modal ====================
+  function drawAttachCanvas(canvasId, typeLabel, subLabel) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const W = 300, H = 190;
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, '#edf2f7'); grad.addColorStop(1, '#e2e8f0');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = '#c7d2e0'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(0.75, 0.75, W - 1.5, H - 1.5);
+    ctx.fillStyle = '#475569'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(typeLabel, W / 2, H / 2 - 12);
+    if (subLabel) {
+      ctx.fillStyle = '#7c8fa8'; ctx.font = '12px sans-serif';
+      ctx.fillText(subLabel, W / 2, H / 2 + 10);
+    }
+    ctx.fillStyle = '#94a3b8'; ctx.font = '10px sans-serif';
+    ctx.fillText('（上傳後顯示於此）', W / 2, H / 2 + 28);
+    ctx.save();
+    ctx.globalAlpha = 0.2; ctx.fillStyle = '#1e3a5f';
+    ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'left';
+    ctx.rotate(-Math.PI / 6);
+    const wm = '僅限台灣理財通系統使用';
+    for (let y = -H * 2; y < H * 2; y += 30) {
+      for (let x = -W * 2; x < W * 2.5; x += 170) { ctx.fillText(wm, x, y); }
+    }
+    ctx.restore();
+  }
+
+  function openAttachments(payId) {
+    const p = PAYMENTS.find((x) => x.id === payId);
+    if (!p) return;
+    const m = getDemoMemberData(payId);
+    document.getElementById('attach-payid').textContent    = p.id;
+    document.getElementById('attach-referrer').textContent = p.referrer;
+    document.getElementById('attach-real-name').textContent = m.realName || '—';
+    document.getElementById('attach-id-number').textContent = m.idNumber || '—';
+    document.getElementById('attach-branch').textContent    = p.branch || '—';
+    const apptText = p.expectedPickupDate
+      ? (p.appointmentHours ? `${p.expectedPickupDate}　${p.appointmentHours}` : p.expectedPickupDate)
+      : '—';
+    document.getElementById('attach-appt').textContent = apptText;
+    requestAnimationFrame(() => {
+      drawAttachCanvas('attach-canvas-id-front', '身分證正面', p.referrer);
+      drawAttachCanvas('attach-canvas-id-back',  '身分證反面', '');
+      bindCanvasZoom('attach-canvas-id-front', '身分證正面');
+      bindCanvasZoom('attach-canvas-id-back',  '身分證反面');
+    });
+    document.getElementById('attach-modal').classList.add('show');
+  }
+
+  function closeAttachModal() {
+    document.getElementById('attach-modal').classList.remove('show');
+  }
+
+  function bindAttachModal() {
+    document.getElementById('btn-attach-close').addEventListener('click', closeAttachModal);
+    document.getElementById('btn-attach-close-foot').addEventListener('click', closeAttachModal);
+    document.getElementById('attach-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeAttachModal();
+    });
+  }
+
+  // ==================== 圖片燈箱 ====================
+  function bindCanvasZoom(canvasId, label) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    canvas.onclick = () => openLightbox(canvasId, label);
+  }
+
+  function openLightbox(canvasId, label) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const dataUrl = canvas.toDataURL('image/png');
+    const img = document.getElementById('lightbox-img');
+    const lbl = document.getElementById('lightbox-label-text');
+    if (img) { img.src = dataUrl; img.alt = label; }
+    if (lbl) lbl.textContent = label;
+    document.getElementById('img-lightbox').classList.add('show');
+  }
+
+  function closeLightbox() {
+    const lb = document.getElementById('img-lightbox');
+    if (lb) lb.classList.remove('show');
+  }
+
+  function bindLightbox() {
+    document.getElementById('btn-lightbox-close').addEventListener('click', closeLightbox);
+    document.getElementById('img-lightbox').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget || e.target.id === 'img-lightbox-body') closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      const lb = document.getElementById('img-lightbox');
+      if (lb && lb.classList.contains('show')) { closeLightbox(); e.stopPropagation(); }
+    }, true);
   }
 
   // ==================== Toast ====================
@@ -549,11 +1043,11 @@
     btn.addEventListener('click', () => {
       const rows = getCashFiltered();
       if (!rows.length) { alert('目前無資料可匯出'); return; }
-      const header = ['款項編號','案號','推薦人','標籤','金額(NT$)','門市','城市','預計領取日','申請日','狀態','備註'];
+      const header = ['款項編號','案號','推薦人編號','推薦人','標籤','金額(NT$)','門市','城市','預計領取日','預約時段','狀態','備註'];
       const data = rows.map((p) => [
-        p.id, p.caseId, p.referrer, p.tag, p.amount,
+        p.id, p.caseId, p.memberId || '', p.referrer, p.tag, p.amount,
         p.branch || '', branchCity(p.branch),
-        p.expectedPickupDate || '', p.appliedAt || '',
+        p.expectedPickupDate || '', p.appointmentHours || '',
         STATUS_META[p.status]?.label || p.status, p.note || '',
       ]);
       downloadCsv(`cash_payments_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.csv`, [header, ...data]);
@@ -566,17 +1060,39 @@
     // 篩選
     const btnSearch = document.getElementById('btn-cash-search');
     if (btnSearch) btnSearch.addEventListener('click', applyFilters);
-    const kw = document.getElementById('cash-filter-keyword');
-    if (kw) kw.addEventListener('keydown', (e) => { if (e.key === 'Enter') applyFilters(); });
+    const rnInp  = document.getElementById('cash-filter-referrer-name');
+    const ridInp = document.getElementById('cash-filter-referrer-id');
+    if (rnInp)  rnInp.addEventListener('keydown',  (e) => { if (e.key === 'Enter') applyFilters(); });
+    if (ridInp) ridInp.addEventListener('keydown', (e) => { if (e.key === 'Enter') applyFilters(); });
     const st = document.getElementById('cash-filter-status');
     if (st) st.addEventListener('change', applyFilters);
     const br = document.getElementById('cash-filter-branch');
     if (br) br.addEventListener('change', applyFilters);
+    // 篩選收合 / 清除
+    const btnToggle = document.getElementById('btn-toggle-advanced');
+    const filterGrid = document.getElementById('filter-grid');
+    if (btnToggle && filterGrid) {
+      btnToggle.addEventListener('click', () => {
+        const collapsed = filterGrid.classList.toggle('collapsed');
+        btnToggle.innerHTML = collapsed
+          ? '<i class="fa-solid fa-chevron-down"></i>展開篩選'
+          : '<i class="fa-solid fa-chevron-up"></i>收合篩選';
+      });
+    }
+    const btnClearFilter = document.getElementById('btn-clear-filter');
+    if (btnClearFilter && filterGrid) {
+      btnClearFilter.addEventListener('click', () => {
+        filterGrid.querySelectorAll('input').forEach((el) => (el.value = ''));
+        filterGrid.querySelectorAll('select').forEach((el) => (el.selectedIndex = 0));
+        applyFilters();
+      });
+    }
 
     function applyFilters() {
-      cashFilters.keyword = kw ? kw.value : '';
-      cashFilters.status  = st ? st.value : 'all';
-      cashFilters.branch  = br ? br.value : 'all';
+      cashFilters.referrerName = rnInp  ? rnInp.value  : '';
+      cashFilters.referrerId   = ridInp ? ridInp.value : '';
+      cashFilters.status       = st ? st.value : 'all';
+      cashFilters.branch       = br ? br.value : 'all';
       cashPgPage = 1;
       cashSelected.clear();
       render();
@@ -644,6 +1160,10 @@
     document.getElementById('btn-history-close').addEventListener('click', () =>
       document.getElementById('history-modal').classList.remove('show')
     );
+
+    // 附件 Modal & 燈箱
+    bindAttachModal();
+    bindLightbox();
 
     // CSV 匯出
     bindExportCash();

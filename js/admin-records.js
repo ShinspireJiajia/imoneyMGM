@@ -790,6 +790,28 @@
     const calcWrap = document.getElementById('rv-calc');
     if (calcWrap) DEFAULT_CALC_HTML = calcWrap.innerHTML;
     bindFilters();
+    // 篩選收合 / 清除
+    (function () {
+      const btnToggle = document.getElementById('btn-toggle-advanced');
+      const filterGrid = document.getElementById('filter-grid');
+      if (btnToggle && filterGrid) {
+        btnToggle.addEventListener('click', () => {
+          const collapsed = filterGrid.classList.toggle('collapsed');
+          btnToggle.innerHTML = collapsed
+            ? '<i class="fa-solid fa-chevron-down"></i>展開篩選'
+            : '<i class="fa-solid fa-chevron-up"></i>收合篩選';
+        });
+      }
+      const btnClear = document.getElementById('btn-clear-filter');
+      if (btnClear && filterGrid) {
+        btnClear.addEventListener('click', () => {
+          filterGrid.querySelectorAll('input').forEach((el) => (el.value = ''));
+          filterGrid.querySelectorAll('select').forEach((el) => (el.selectedIndex = 0));
+          const s = document.getElementById('btn-search');
+          if (s) s.click();
+        });
+      }
+    })();
     bindViewModal();
     bindExport();
     applyDefaultDateRangeFilter();

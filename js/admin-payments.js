@@ -270,6 +270,46 @@
     ],
   };
 
+  // Demo 推薦人已填資訊（實際應由後端提供，此處為前台展示用靜態資料）
+  const DEMO_MEMBER_DATA = {
+    'PAY-26052201': { realName: '李大華',  idNumber: 'A12****89', bankCode: '808', bankBranch: '0010', bankHolder: '李大華',  bankAccount: '80800100001234' },
+    'PAY-26052202': { realName: '王志誠',  idNumber: 'B23****90', bankCode: '822', bankBranch: '0021', bankHolder: '王志誠',  bankAccount: '82200200005678' },
+    'PAY-26052203': { realName: '王志誠',  idNumber: 'B23****90', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'PAY-26052105': { realName: '陳文全',  idNumber: 'C34****01', bankCode: '808', bankBranch: '0033', bankHolder: '陳文全',  bankAccount: '80800100004567' },
+    'PAY-26052006': { realName: '黃俊偉',  idNumber: 'D45****12', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'PAY-26043007': { realName: '何若蓁',  idNumber: 'F56****23', bankCode: '808', bankBranch: '0044', bankHolder: '何若蓁',  bankAccount: '80800100001234' },
+    'PAY-26032808': { realName: '高志仁',  idNumber: 'G67****34', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'PAY-26060301': { realName: '陳小玲',  idNumber: 'H78****45', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'PAY-26060302': { realName: '蔡明芳',  idNumber: 'I89****56', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'PAY-26060303': { realName: '林正豪',  idNumber: 'J90****67', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'PAY-26060304': { realName: '謝佳慧',  idNumber: 'K01****78', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'PAY-26060305': { realName: '吳志遠',  idNumber: 'L12****89', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'PAY-26050309': { realName: '林雅妤',  idNumber: 'M23****90', bankCode: '808', bankBranch: '0055', bankHolder: '林雅妤',  bankAccount: '80800100009999' },
+  };
+
+  // 同步讀取用戶在 withdrawal 填寫的提款資料（localStorage.mgm_pending_withdraw_apply）
+  function getDemoMemberData(payId) {
+    const demo = DEMO_MEMBER_DATA[payId] || { realName: '—', idNumber: '—', bankCode: null, bankBranch: null, bankHolder: null, bankAccount: null };
+    const p = PAYMENTS.find((x) => x.id === payId);
+    if (p) {
+      try {
+        const apply = JSON.parse(localStorage.getItem('mgm_pending_withdraw_apply') || '[]');
+        const entry = apply.find((a) => a.id === p.caseId);
+        if (entry) {
+          return Object.assign({}, demo, {
+            realName:    entry.realName    || demo.realName,
+            idNumber:    entry.idNumber    || demo.idNumber,
+            bankCode:    entry.bankCode    || demo.bankCode,
+            bankBranch:  entry.bankBranch  || demo.bankBranch,
+            bankHolder:  entry.bankHolder  || demo.bankHolder,
+            bankAccount: entry.bankAccount || demo.bankAccount,
+          });
+        }
+      } catch {}
+    }
+    return demo;
+  }
+
   const STATUS_META = {
     pending: { label: '待撥款', cls: 'pending', icon: 'fa-hourglass-half' },
     transferred: { label: '已匯款', cls: 'transferred', icon: 'fa-circle-check' },
@@ -293,10 +333,10 @@
   let selected = new Set();
   const filters = {
     keyword: '',
+    referrer: '',
+    memberId: '',
     status: 'all',
     method: 'all',
-    dateFrom: '',
-    dateTo: '',
   };
   // 分頁狀態
   let pgPage = 1;
@@ -339,6 +379,10 @@
     );
   }
 
+  function canMarkStatus(p) {
+    return p.method === 'transfer' && (p.status === 'pending' || p.status === 'transferred' || p.status === 'failed');
+  }
+
   function renderRow(p) {
     const s = STATUS_META[p.status];
     const tagCls = TAG_META[p.tag] || 'badge-gray';
@@ -363,23 +407,28 @@
         <td class="cell-mono">${p.caseId}</td>
         <td class="cell-mono">${p.memberId || '—'}</td>
         <td><strong>${p.referrer}</strong></td>
-        <td><span class="tag-pill ${tagCls}">${p.tag}</span></td>
+        <td>${p.tag}</td>
         <td class="cell-tax">${getTaxInfoByTag(p.tag)}</td>
         <td class="cell-amount">$${fmt(p.amount)}</td>
         <td class="cell-method">${methodCell}</td>
-        <td class="cell-applied">${p.appliedAt}</td>
         <td>
           <span class="pay-status ${s.cls}">
             <i class="fa-solid ${s.icon}"></i>${s.label}
           </span>
         </td>
         <td>
+          <button type="button" class="action-btn" data-action="attach" data-id="${p.id}">
+            <i class="fa-solid fa-paperclip"></i>提領資料
+          </button>
           <button type="button" class="action-btn" data-action="history" data-id="${p.id}">
             <i class="fa-solid fa-clock-rotate-left"></i>歷程
           </button>
           <button type="button" class="action-btn note" data-action="note-pay" data-id="${p.id}" title="${p.note ? '已有備註：' + p.note : '新增備註'}">
             <i class="fa-regular fa-note-sticky"></i>${p.note ? '備註•' : '備註'}
           </button>
+          ${canMarkStatus(p) ? `<button type="button" class="action-btn mark-status" data-action="mark-status" data-id="${p.id}">
+            <i class="fa-solid fa-pen-to-square"></i>更新狀態
+          </button>` : ''}
           ${canEditPayment() ? `<button type="button" class="action-btn" data-action="edit-pay" data-id="${p.id}">
             <i class="fa-solid fa-pen-to-square"></i>編輯
           </button>` : ''}
@@ -415,11 +464,14 @@
   }
 
   function getFiltered() {
-    const kw = filters.keyword.trim().toLowerCase();
+    const kw     = filters.keyword.trim().toLowerCase();
+    const rnKw   = filters.referrer.trim().toLowerCase();
+    const midKw  = filters.memberId.trim().toLowerCase();
     const result = PAYMENTS.filter((p) => {
       if (filters.status !== 'all' && p.status !== filters.status) return false;
       if (filters.method !== 'all' && p.method !== filters.method) return false;
-      if (!isInDateRange(p, filters.dateFrom, filters.dateTo)) return false;
+      if (rnKw  && !(p.referrer  || '').toLowerCase().includes(rnKw))  return false;
+      if (midKw && !(p.memberId  || '').toLowerCase().includes(midKw)) return false;
       if (!kw) return true;
 
       const haystack = [p.id, p.caseId, p.memberId, p.referrer, p.tag, p.product]
@@ -533,6 +585,12 @@
     document.querySelectorAll('[data-action="note-pay"]').forEach((b) =>
       b.addEventListener('click', () => openNotePay(b.dataset.id))
     );
+    document.querySelectorAll('[data-action="mark-status"]').forEach((b) =>
+      b.addEventListener('click', () => openMarkStatus(b.dataset.id))
+    );
+    document.querySelectorAll('[data-action="attach"]').forEach((b) =>
+      b.addEventListener('click', () => openAttachments(b.dataset.id))
+    );
   }
 
   function updateBatchBar() {
@@ -602,17 +660,17 @@
   }
 
   function applyFiltersFromUI() {
-    const keywordEl = document.getElementById('filter-keyword');
-    const statusEl = document.getElementById('filter-status');
-    const methodEl = document.getElementById('filter-method');
-    const dateFromEl = document.getElementById('filter-date-from');
-    const dateToEl = document.getElementById('filter-date-to');
+    const keywordEl  = document.getElementById('filter-keyword');
+    const statusEl   = document.getElementById('filter-status');
+    const methodEl   = document.getElementById('filter-method');
+    const referrerEl = document.getElementById('filter-referrer');
+    const memberIdEl = document.getElementById('filter-member-id');
 
-    filters.keyword = keywordEl ? keywordEl.value : '';
-    filters.status = statusEl ? statusEl.value : 'all';
-    filters.method = methodEl ? methodEl.value : 'all';
-    filters.dateFrom = dateFromEl ? dateFromEl.value : '';
-    filters.dateTo = dateToEl ? dateToEl.value : '';
+    filters.keyword  = keywordEl  ? keywordEl.value  : '';
+    filters.status   = statusEl   ? statusEl.value   : 'all';
+    filters.method   = methodEl   ? methodEl.value   : 'all';
+    filters.referrer = referrerEl ? referrerEl.value : '';
+    filters.memberId = memberIdEl ? memberIdEl.value : '';
 
     pgPage = 1;
     selected.clear();
@@ -620,40 +678,19 @@
   }
 
   function bindFilters() {
-    const keywordEl = document.getElementById('filter-keyword');
-    const statusEl = document.getElementById('filter-status');
-    const methodEl = document.getElementById('filter-method');
-    const dateFromEl = document.getElementById('filter-date-from');
-    const dateToEl = document.getElementById('filter-date-to');
-    const btnSearch = document.getElementById('btn-filter-search');
+    const keywordEl  = document.getElementById('filter-keyword');
+    const statusEl   = document.getElementById('filter-status');
+    const methodEl   = document.getElementById('filter-method');
+    const referrerEl = document.getElementById('filter-referrer');
+    const memberIdEl = document.getElementById('filter-member-id');
+    const btnSearch  = document.getElementById('btn-filter-search');
 
-    if (btnSearch) btnSearch.addEventListener('click', applyFiltersFromUI);
-    if (keywordEl) {
-      keywordEl.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') applyFiltersFromUI();
-      });
-    }
-
-    // 狀態改變常用於快速查看，保留即時篩選
-    if (statusEl) statusEl.addEventListener('change', applyFiltersFromUI);
-    if (methodEl) methodEl.addEventListener('change', applyFiltersFromUI);
-    if (dateFromEl) dateFromEl.addEventListener('change', applyFiltersFromUI);
-    if (dateToEl) dateToEl.addEventListener('change', applyFiltersFromUI);
-  }
-
-  function setDefaultDateRangeLast30Days() {
-    const dateFromEl = document.getElementById('filter-date-from');
-    const dateToEl = document.getElementById('filter-date-to');
-    if (!dateFromEl || !dateToEl) return;
-
-    const now = new Date();
-    const from = new Date(now);
-    from.setDate(now.getDate() - 29);
-
-    const toYmd = now.toISOString().slice(0, 10);
-    const fromYmd = from.toISOString().slice(0, 10);
-    dateFromEl.value = fromYmd;
-    dateToEl.value = toYmd;
+    if (btnSearch)   btnSearch.addEventListener('click', applyFiltersFromUI);
+    if (keywordEl)   keywordEl.addEventListener('keydown',  (e) => { if (e.key === 'Enter') applyFiltersFromUI(); });
+    if (referrerEl)  referrerEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') applyFiltersFromUI(); });
+    if (memberIdEl)  memberIdEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') applyFiltersFromUI(); });
+    if (statusEl)    statusEl.addEventListener('change', applyFiltersFromUI);
+    if (methodEl)    methodEl.addEventListener('change', applyFiltersFromUI);
   }
 
   function bindPageSize() {
@@ -692,13 +729,22 @@
     btn.addEventListener('click', () => {
       const rows = getFiltered();
       if (rows.length === 0) { alert('目前無資料可匯出，請調整篩選條件。'); return; }
-      const header = ['款項編號','案號','會員編號','推薦人','標籤','稅務資訊','產品','金額(NT$)','撥款方式','銀行/門市','申請日期','撥款時間','領取時間','狀態','備註'];
+      const header = [
+        '款項編號','案號','會員編號','推薦人','真實姓名','身分證號碼',
+        '標籤','稅務資訊','產品','金額(NT$)',
+        '撥款方式','帳號戶名','完整帳號','銀行/門市',
+        '撥款時間','領取時間','狀態','備註',
+      ];
       const data = rows.map((p) => {
+        const m = getDemoMemberData(p.id);
         const methodDetail = p.method === 'transfer' ? `${p.bank || ''} *${p.bankLast4 || ''}` : (p.branch || '');
         return [
-          p.id, p.caseId, p.memberId || '', p.referrer, p.tag, getTaxInfoByTag(p.tag), p.product,
-          p.amount, (p.method === 'transfer' ? '匯款' : '現場領取'),
-          methodDetail, p.appliedAt,
+          p.id, p.caseId, p.memberId || '', p.referrer,
+          m.realName || '', m.idNumber || '',
+          p.tag, getTaxInfoByTag(p.tag), p.product, p.amount,
+          (p.method === 'transfer' ? '匯款' : '現場領取'),
+          m.bankHolder || '', m.bankAccount || '',
+          methodDetail,
           p.transferredAt || '', p.pickedUpAt || '',
           STATUS_META[p.status]?.label || p.status,
           p.note || (p.failReason || ''),
@@ -707,6 +753,85 @@
       const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
       downloadCsv(`reconciliation_${stamp}.csv`, [header, ...data]);
       toast(`已匯出 ${rows.length} 筆對帳資料`);
+    });
+  }
+
+  // ==================== 匯出匯款檔（銀行批次轉帳格式） ====================
+  function bindExportTransfer() {
+    const btn = document.getElementById('btn-export-transfer');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const rows = getFiltered().filter((p) => p.method === 'transfer' && (p.status === 'pending' || p.status === 'approved'));
+      if (rows.length === 0) { alert('目前無「待匯款」或「已核准」的匯款項目可匯出。'); return; }
+
+      const escHtml = (s) => String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const txtCell = (v) => `<td style="mso-number-format:\\@">${escHtml(v)}</td>`;
+      const numCell = (v) => `<td>${escHtml(v)}</td>`;
+
+      const headerRows = [
+        [['9','t'],['解款行代號','t'],['解款分行代號','t'],['匯款金額','t'],['收款人帳號','t'],['收款人戶名','t'],['匯款人\n區碼及電話','t'],['附言','t'],['受款人E-Mail','t'],['預留','t']],
+        [['8','t'],['3','t'],['4','t'],['12','t'],['16','t'],['60','t'],['13','t'],['60','t'],['60','t'],['272','t']],
+        [['7','t'],['02','t'],['02','t'],['01','t'],['02','t'],['0','t'],['0','t'],['0','t'],['0','t'],['0','t']],
+        [['','t'],['說明：','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t']],
+        [['','t'],['1.請於紅框範圍內輸入資料，每批限制 800 筆以內','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t']],
+        [['','t'],['2.粉紅底欄位為必須輸入欄位','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t']],
+        [['','t'],['3.查詢解款行及分行代號：http://www.fisc.com.tw','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t']],
+        [['','t'],['4.本轉檔程式適用Microsoft Excel 97 - Excel 2003規格，若非此規格請先於Excel轉檔為Microsoft Excel 97 - Excel 2003格式','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t']],
+      ];
+
+      const dataRows = rows.map((p) => {
+        const m = getDemoMemberData(p.id);
+        const acct = String(m.bankAccount || '').replace(/[-\s]/g, '');
+        return [
+          ['0','t'],
+          [m.bankCode || '', 't'],
+          [m.bankBranch || '', 't'],
+          [p.amount, 'n'],
+          [acct, 't'],
+          [m.bankHolder || '', 't'],
+          ['', 't'],
+          [p.id, 't'],
+          ['', 't'],
+          ['', 't'],
+        ];
+      });
+
+      const allRows = [...headerRows, ...dataRows];
+      let tableHtml = '';
+      for (const row of allRows) {
+        tableHtml += '<tr>';
+        for (const [val, type] of row) {
+          tableHtml += type === 'n' ? numCell(val) : txtCell(val);
+        }
+        tableHtml += '</tr>';
+      }
+
+      const html = [
+        '<html xmlns:o="urn:schemas-microsoft-com:office:office"',
+        ' xmlns:x="urn:schemas-microsoft-com:office:excel"',
+        ' xmlns="http://www.w3.org/TR/REC-html40">',
+        '<head><meta charset="UTF-8">',
+        '<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>',
+        '<x:ExcelWorksheet><x:Name>Sheet1</x:Name>',
+        '<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>',
+        '</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->',
+        '</head><body>',
+        '<table border="1">', tableHtml, '</table>',
+        '</body></html>',
+      ].join('');
+
+      const bom = '﻿';
+      const blob = new Blob([bom + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      a.href = url;
+      a.download = `transfer_${stamp}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+      toast(`已匯出 ${rows.length} 筆匯款檔`);
     });
   }
 
@@ -834,6 +959,45 @@
   }
 
   // 異動歷程
+  // 從付款欄位自動生成基本事件，與手動 HISTORY 合併後依時間排序
+  function buildHistoryTimeline(p) {
+    const manual = HISTORY[p.id] || [];
+
+    // 基本事件：從付款資料欄位衍生
+    const baseline = [];
+
+    if (p.appliedAt) {
+      const desc = p.method === 'transfer'
+        ? `銀行匯款（${p.bank || '—'} 末四碼 *${p.bankLast4 || '—'}）`
+        : `現場領取${p.branch ? '（' + p.branch + '）' : ''}${p.expectedPickupDate ? '，預計 ' + p.expectedPickupDate : ''}`;
+      baseline.push({ time: p.appliedAt, actor: `推薦人 - ${p.referrer}`, action: '建立提領申請', desc, cls: 'done' });
+    }
+
+    if (p.pickedUpAt) {
+      baseline.push({ time: p.pickedUpAt, actor: '門市作業', action: '現場領取完成', desc: `已於【${p.branch || '—'}】完成簽收領取`, cls: 'done' });
+    }
+
+    if (manual.length === 0) {
+      // 無手動歷程時，追加其他里程碑事件
+      if (p.transferredAt && p.status === 'transferred') {
+        baseline.push({ time: p.transferredAt, actor: '財務後台', action: '完成匯款', desc: `已匯款至 ${p.bank || '—'} *${p.bankLast4 || '—'}`, cls: 'done' });
+      }
+      if (p.status === 'failed' && p.failReason) {
+        baseline.push({ time: p.transferredAt || p.appliedAt, actor: '系統', action: '銀行退匯', desc: `退匯原因：${p.failReason}`, cls: 'failed' });
+      }
+      return baseline.sort((a, b) =>
+        String(a.time || '').replace(/\//g, '-').localeCompare(String(b.time || '').replace(/\//g, '-'))
+      );
+    }
+
+    // 手動歷程已存在：只補入 baseline 中尚未被手動條目覆蓋的事件（依 action 比對）
+    const coveredActions = new Set(manual.map((m) => m.action));
+    const extra = baseline.filter((b) => !coveredActions.has(b.action));
+    return [...manual, ...extra].sort((a, b) =>
+      String(a.time || '').replace(/\//g, '-').localeCompare(String(b.time || '').replace(/\//g, '-'))
+    );
+  }
+
   function openHistory(payId) {
     const p = PAYMENTS.find((x) => x.id === payId);
     if (!p) return;
@@ -845,23 +1009,19 @@
     document.getElementById('history-status').innerHTML =
       `<span class="pay-status ${STATUS_META[p.status].cls}">${STATUS_META[p.status].label}</span>`;
 
-    const list = HISTORY[payId] || [];
+    const list = buildHistoryTimeline(p);
     const wrap = document.getElementById('history-timeline');
-    if (list.length === 0) {
-      wrap.innerHTML = `<div style="text-align:center;padding:30px;color:var(--color-text-muted);">尚無歷程紀錄</div>`;
-    } else {
-      wrap.innerHTML = list
-        .map(
-          (h) => `
-        <div class="timeline-entry ${h.cls}">
-          <div class="timeline-time">${h.time}</div>
-          <div class="timeline-title">${h.action}</div>
-          <div class="timeline-desc">${h.desc}</div>
-          <div class="timeline-actor"><i class="fa-regular fa-user"></i> ${h.actor}</div>
-        </div>`
-        )
-        .join('');
-    }
+    wrap.innerHTML = list
+      .map(
+        (h) => `
+      <div class="timeline-entry ${h.cls || ''}">
+        <div class="timeline-time">${h.time}</div>
+        <div class="timeline-title">${h.action}</div>
+        <div class="timeline-desc">${h.desc}</div>
+        <div class="timeline-actor"><i class="fa-regular fa-user"></i> ${h.actor}</div>
+      </div>`
+      )
+      .join('');
 
     document.getElementById('history-modal').classList.add('show');
   }
@@ -955,8 +1115,20 @@
     }
     if (nextStatus === 'failed') {
       p.failReason = reason;
+      try {
+        const failedList = JSON.parse(localStorage.getItem('mgm_failed_withdrawals') || '[]');
+        const idx = failedList.findIndex((f) => f.caseId === p.caseId);
+        const entry = { caseId: p.caseId, failReason: reason, failedAt: nowText };
+        if (idx >= 0) failedList[idx] = entry; else failedList.push(entry);
+        localStorage.setItem('mgm_failed_withdrawals', JSON.stringify(failedList));
+      } catch {}
     } else if (p.failReason) {
       delete p.failReason;
+      try {
+        const failedList = JSON.parse(localStorage.getItem('mgm_failed_withdrawals') || '[]');
+        localStorage.setItem('mgm_failed_withdrawals',
+          JSON.stringify(failedList.filter((f) => f.caseId !== p.caseId)));
+      } catch {}
     }
 
     // Append-only：寫入歷程
@@ -1031,6 +1203,318 @@
     document.getElementById('btn-note-pay-save').addEventListener('click', saveNotePay);
   }
 
+  // ==================== 單筆更新匯款狀態 ====================
+  let markStatusId = null;
+
+  function openMarkStatus(payId) {
+    const p = PAYMENTS.find((x) => x.id === payId);
+    if (!p) return;
+    markStatusId = payId;
+
+    document.getElementById('ms-payid').textContent = payId;
+    document.getElementById('ms-ref').textContent = p.referrer + '（' + p.tag + '）';
+    document.getElementById('ms-amount').textContent = '$' + fmt(p.amount);
+    document.getElementById('ms-bank').textContent =
+      p.bank ? `${p.bank} 末四碼 *${p.bankLast4 || '—'}` : '—';
+
+    const curMeta = STATUS_META[p.status] || {};
+    const curEl = document.getElementById('ms-current-status');
+    if (curEl) {
+      curEl.innerHTML = `<span class="pay-status ${curMeta.cls || ''}">
+        <i class="fa-solid ${curMeta.icon || 'fa-circle'}"></i>${curMeta.label || p.status}
+      </span>`;
+    }
+
+    document.querySelectorAll('input[name="ms-status-pick"]').forEach((r) => { r.checked = false; });
+    document.getElementById('ms-opt-transferred').className = 'ms-option';
+    document.getElementById('ms-opt-failed').className = 'ms-option';
+    document.getElementById('ms-fail-wrap').hidden = true;
+    document.getElementById('ms-fail-reason-sel').value = '';
+    document.getElementById('ms-fail-reason-text').style.display = 'none';
+    document.getElementById('ms-fail-reason-text').value = '';
+    document.getElementById('ms-note').value = '';
+
+    let preSelect = null;
+    if (p.status === 'transferred') preSelect = 'failed';
+    else if (p.status === 'failed') preSelect = 'transferred';
+
+    if (preSelect) {
+      const radio = document.querySelector(`input[name="ms-status-pick"][value="${preSelect}"]`);
+      if (radio) {
+        radio.checked = true;
+        document.getElementById(`ms-opt-${preSelect}`).className = `ms-option selected-${preSelect}`;
+        document.getElementById('ms-fail-wrap').hidden = preSelect !== 'failed';
+      }
+    }
+
+    document.getElementById('btn-ms-save').disabled = preSelect !== 'transferred';
+    document.getElementById('mark-status-modal').classList.add('show');
+  }
+
+  function closeMarkStatus() {
+    document.getElementById('mark-status-modal').classList.remove('show');
+    markStatusId = null;
+  }
+
+  function getMarkStatusFailReason() {
+    const sel = document.getElementById('ms-fail-reason-sel').value;
+    if (!sel) return '';
+    if (sel === 'other') {
+      return document.getElementById('ms-fail-reason-text').value.trim();
+    }
+    return sel;
+  }
+
+  function validateMarkStatus() {
+    const picked = document.querySelector('input[name="ms-status-pick"]:checked');
+    if (!picked) { document.getElementById('btn-ms-save').disabled = true; return; }
+    if (picked.value === 'failed') {
+      const reason = getMarkStatusFailReason();
+      document.getElementById('btn-ms-save').disabled = !reason;
+    } else {
+      document.getElementById('btn-ms-save').disabled = false;
+    }
+  }
+
+  function saveMarkStatus() {
+    if (!markStatusId) return;
+    const p = PAYMENTS.find((x) => x.id === markStatusId);
+    if (!p) return;
+
+    const picked = document.querySelector('input[name="ms-status-pick"]:checked');
+    if (!picked) { alert('請選擇新狀態'); return; }
+    const nextStatus = picked.value;
+
+    const nowText = new Date().toLocaleString('zh-TW');
+    const note = document.getElementById('ms-note').value.trim();
+
+    if (nextStatus === 'transferred') {
+      p.status = 'transferred';
+      p.transferredAt = nowText;
+      if (p.failReason) delete p.failReason;
+      try {
+        const fl = JSON.parse(localStorage.getItem('mgm_failed_withdrawals') || '[]');
+        localStorage.setItem('mgm_failed_withdrawals',
+          JSON.stringify(fl.filter((f) => f.caseId !== p.caseId)));
+      } catch {}
+    } else if (nextStatus === 'failed') {
+      const reason = getMarkStatusFailReason();
+      if (!reason) { alert('請填寫退匯原因（必填）'); return; }
+      p.status = 'failed';
+      p.failReason = reason;
+      try {
+        const fl = JSON.parse(localStorage.getItem('mgm_failed_withdrawals') || '[]');
+        const idx = fl.findIndex((f) => f.caseId === p.caseId);
+        const entry = { caseId: p.caseId, failReason: reason, failedAt: nowText };
+        if (idx >= 0) fl[idx] = entry; else fl.push(entry);
+        localStorage.setItem('mgm_failed_withdrawals', JSON.stringify(fl));
+      } catch {}
+    }
+
+    if (!HISTORY[p.id]) HISTORY[p.id] = [];
+    const statusLabel = STATUS_META[nextStatus]?.label || nextStatus;
+    HISTORY[p.id].push({
+      time: nowText,
+      actor: '財務後台',
+      action: `標記為「${statusLabel}」`,
+      desc: nextStatus === 'failed'
+        ? `退匯原因：${p.failReason}${note ? '；備註：' + note : ''}`
+        : `已確認匯款完成${note ? '；備註：' + note : ''}`,
+      cls: nextStatus === 'transferred' ? 'done' : 'failed',
+    });
+    if (note && nextStatus !== 'failed') p.note = (p.note ? p.note + '；' : '') + note;
+
+    publishCampaignAgg();
+    closeMarkStatus();
+    render();
+    toast(
+      nextStatus === 'transferred' ? '已標記為「已匯款」' : '已標記為「匯款失敗（銀行退匯）」',
+      nextStatus === 'transferred' ? '#10b981' : '#ef4444'
+    );
+  }
+
+  function bindMarkStatus() {
+    document.getElementById('btn-ms-close').addEventListener('click', closeMarkStatus);
+    document.getElementById('btn-ms-cancel').addEventListener('click', closeMarkStatus);
+    document.getElementById('btn-ms-save').addEventListener('click', saveMarkStatus);
+
+    document.querySelectorAll('input[name="ms-status-pick"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        const val = radio.value;
+        document.getElementById('ms-opt-transferred').className =
+          'ms-option' + (val === 'transferred' ? ' selected-transferred' : '');
+        document.getElementById('ms-opt-failed').className =
+          'ms-option' + (val === 'failed' ? ' selected-failed' : '');
+        document.getElementById('ms-fail-wrap').hidden = val !== 'failed';
+        validateMarkStatus();
+      });
+    });
+
+    document.getElementById('ms-fail-reason-sel').addEventListener('change', function () {
+      const txt = document.getElementById('ms-fail-reason-text');
+      if (this.value === 'other') {
+        txt.style.display = '';
+        txt.required = true;
+      } else {
+        txt.style.display = 'none';
+        txt.required = false;
+        txt.value = '';
+      }
+      validateMarkStatus();
+    });
+
+    document.getElementById('ms-fail-reason-text').addEventListener('input', validateMarkStatus);
+  }
+
+  // ==================== 檢視附件 Modal ====================
+  function drawAttachCanvas(canvasId, typeLabel, subLabel) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const W = 300, H = 190;
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // 背景漸層
+    const grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, '#edf2f7');
+    grad.addColorStop(1, '#e2e8f0');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // 外框
+    ctx.strokeStyle = '#c7d2e0';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(0.75, 0.75, W - 1.5, H - 1.5);
+
+    // 主標題
+    ctx.fillStyle = '#475569';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(typeLabel, W / 2, H / 2 - 12);
+
+    // 副標題
+    if (subLabel) {
+      ctx.fillStyle = '#7c8fa8';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(subLabel, W / 2, H / 2 + 10);
+    }
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('（上傳後顯示於此）', W / 2, H / 2 + 28);
+
+    // 浮水印：斜向平鋪
+    ctx.save();
+    ctx.globalAlpha = 0.2;
+    ctx.fillStyle = '#1e3a5f';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.rotate(-Math.PI / 6);
+    const wm = '僅限台灣理財通系統使用';
+    for (let y = -H * 2; y < H * 2; y += 30) {
+      for (let x = -W * 2; x < W * 2.5; x += 170) {
+        ctx.fillText(wm, x, y);
+      }
+    }
+    ctx.restore();
+  }
+
+  function openAttachments(payId) {
+    const p = PAYMENTS.find((x) => x.id === payId);
+    if (!p) return;
+    const m = getDemoMemberData(payId);
+
+    document.getElementById('attach-payid').textContent = p.id;
+    document.getElementById('attach-referrer').textContent = p.referrer;
+    document.getElementById('attach-real-name').textContent = m.realName || '—';
+    document.getElementById('attach-id-number').textContent = m.idNumber || '—';
+    document.getElementById('attach-bank-holder').textContent = m.bankHolder || '（現場領取）';
+    document.getElementById('attach-bank-account').textContent = m.bankAccount || '—';
+
+    const bankCodeEl = document.getElementById('attach-bank-code');
+    if (bankCodeEl) {
+      bankCodeEl.textContent = (m.bankCode && m.bankBranch)
+        ? `${m.bankCode} / ${m.bankBranch}`
+        : (m.bankCode || '—');
+    }
+
+    const bankItem = document.getElementById('attach-bank-item');
+    if (bankItem) bankItem.hidden = p.method !== 'transfer';
+
+    const bankCodeRow = document.getElementById('attach-bank-code-row');
+    if (bankCodeRow) bankCodeRow.style.display = p.method !== 'transfer' ? 'none' : '';
+
+    requestAnimationFrame(() => {
+      drawAttachCanvas('attach-canvas-id-front', '身分證正面', p.referrer);
+      drawAttachCanvas('attach-canvas-id-back', '身分證反面', '');
+      if (p.method === 'transfer') {
+        const bankLabel = m.bankCode ? `代碼 ${m.bankCode} / 分行 ${m.bankBranch || '—'} ＊末四碼 ${(m.bankAccount || p.bankLast4 || '—').slice(-4)}` : `${p.bank || ''} *${p.bankLast4 || '—'}`;
+        drawAttachCanvas('attach-canvas-bank', '匯款帳號憑證', bankLabel);
+      }
+      // 綁定點擊放大
+      bindCanvasZoom('attach-canvas-id-front', '身分證正面');
+      bindCanvasZoom('attach-canvas-id-back',  '身分證反面');
+      if (p.method === 'transfer') {
+        bindCanvasZoom('attach-canvas-bank', '匯款帳號憑證');
+      }
+    });
+
+    document.getElementById('attach-modal').classList.add('show');
+  }
+
+  function closeAttachModal() {
+    document.getElementById('attach-modal').classList.remove('show');
+  }
+
+  function bindAttachModal() {
+    document.getElementById('btn-attach-close').addEventListener('click', closeAttachModal);
+    document.getElementById('btn-attach-close-foot').addEventListener('click', closeAttachModal);
+    document.getElementById('attach-modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeAttachModal();
+    });
+  }
+
+  // ==================== 圖片燈箱 ====================
+  function bindCanvasZoom(canvasId, label) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    canvas.onclick = () => openLightbox(canvasId, label);
+  }
+
+  function openLightbox(canvasId, label) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const dataUrl = canvas.toDataURL('image/png');
+    const img = document.getElementById('lightbox-img');
+    const lbl = document.getElementById('lightbox-label-text');
+    if (img) { img.src = dataUrl; img.alt = label; }
+    if (lbl) lbl.textContent = label;
+    document.getElementById('img-lightbox').classList.add('show');
+  }
+
+  function closeLightbox() {
+    const lb = document.getElementById('img-lightbox');
+    if (lb) lb.classList.remove('show');
+  }
+
+  function bindLightbox() {
+    document.getElementById('btn-lightbox-close').addEventListener('click', closeLightbox);
+    // 點擊黑色背景（非圖片區域）關閉
+    document.getElementById('img-lightbox').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget || e.target.id === 'img-lightbox-body') closeLightbox();
+    });
+    // ESC 關閉（燈箱優先於下層附件 modal）
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      const lb = document.getElementById('img-lightbox');
+      if (lb && lb.classList.contains('show')) {
+        closeLightbox();
+        e.stopPropagation();
+      }
+    }, true);
+  }
+
   // ==================== 權限 toggle ====================
   function bindPermToggle() {
     const cb = document.getElementById('perm-edit-payment');
@@ -1063,15 +1547,40 @@
   document.addEventListener('DOMContentLoaded', () => {
     bindPermToggle();
     bindPageSize();
-    setDefaultDateRangeLast30Days();
     filters.method = 'transfer';
     bindFilters();
     applyFiltersFromUI();
     bindBatchActions();
     bindEditPay();
     bindNotePay();
+    bindMarkStatus();
     bindExportRecon();
+    bindExportTransfer();
+    // 篩選收合 / 清除
+    (function () {
+      const btnToggle = document.getElementById('btn-toggle-advanced');
+      const filterGrid = document.getElementById('filter-grid');
+      if (btnToggle && filterGrid) {
+        btnToggle.addEventListener('click', () => {
+          const collapsed = filterGrid.classList.toggle('collapsed');
+          btnToggle.innerHTML = collapsed
+            ? '<i class="fa-solid fa-chevron-down"></i>展開篩選'
+            : '<i class="fa-solid fa-chevron-up"></i>收合篩選';
+        });
+      }
+      const btnClear = document.getElementById('btn-clear-filter');
+      if (btnClear && filterGrid) {
+        btnClear.addEventListener('click', () => {
+          filterGrid.querySelectorAll('input').forEach((el) => (el.value = ''));
+          filterGrid.querySelectorAll('select').forEach((el) => (el.selectedIndex = 0));
+          const s = document.getElementById('btn-filter-search');
+          if (s) s.click();
+        });
+      }
+    })();
     bindMonthlyReport();
+    bindAttachModal();
+    bindLightbox();
     document
       .getElementById('btn-history-close')
       .addEventListener('click', () =>
