@@ -446,6 +446,16 @@
       eligibleApproved: false,
     },
     {
+      id: 'M2026053002',
+      name: '陳Ｏ君',
+      product: '一般貸款',
+      payoutAmount: 300000,
+      snapshot: { base: 1000, ratio: 0.5, cap: 5000 },
+      payoutAt: '2026/05/31',
+      status: 'rewardable',
+      eligibleApproved: false,
+    },
+    {
       id: 'M2026050806',
       name: '李Ｏ仁',
       product: '信用貸款',
@@ -553,6 +563,12 @@
       id: 'M2026052917',
       approvedAt: '2026/05/29 16:40',
       approvedBy: '會計A02',
+      note: '線下核對完成，資格確認通過',
+    },
+    {
+      id: 'M2026053002',
+      approvedAt: '2026/06/01 10:00',
+      approvedBy: '會計A01',
       note: '線下核對完成，資格確認通過',
     },
   ];

@@ -13,6 +13,7 @@
       referrerName: '李大華', referrerTag: '員工', referrerCid: 'U240105002',
       refereeName: '張家豪', refereePhone: '0933678111',
       caseType: 'general',
+      loanTypes: ['房屋貸款', '汽車貸款'],
       submitAt: '2026/05/15 11:05', payoutAt: '2026/05/16',
       campaignId: 'CAMP-2026Q2',
       snapshot: {
@@ -29,6 +30,7 @@
       warningCodes: ['E-OLD', 'E-150'],
       customerId: '2605160003',
       referrerListId: '2401050002',
+      // 多筆支號：房貸與車貸分別開立收款單
       receipts: [{ suffix: 1, amount: 6000 }, { suffix: 2, amount: 2000 }, { suffix: 3, amount: 10000 }],
     },
     {
@@ -37,6 +39,7 @@
       referrerName: '王小毅', referrerTag: '會員', referrerCid: 'U250310001',
       refereeName: '方家豪', refereePhone: '0912345789',
       caseType: 'negotiation',
+      loanTypes: ['債務協商'],
       submitAt: '2026/05/29 10:00', payoutAt: '2026/05/30',
       campaignId: 'CAMP-2026Q2',
       snapshot: { base: 2000, ratio: 0.1, cap: 15000 },
@@ -46,7 +49,8 @@
       warningCodes: ['E-PAY'],
       customerId: '2605290001',
       referrerListId: '2503100001',
-      receipts: [{ suffix: 1, amount: 3000 }, { suffix: 2, amount: 2500 }],
+      // 單筆收款，無支號
+      receipts: [{ amount: 5500 }],
     },
     {
       caseId: 'M2026053002',
@@ -54,6 +58,7 @@
       referrerName: '葉文群', referrerTag: '會員', referrerCid: 'U230408009',
       refereeName: '陳怡君', refereePhone: '0966123456',
       caseType: 'general',
+      loanTypes: ['房屋貸款'],
       submitAt: '2026/05/30 14:30', payoutAt: '2026/05/31',
       campaignId: 'CAMP-2026Q2',
       snapshot: { base: 1000, ratio: 0.5, cap: 5000 },
@@ -62,7 +67,8 @@
       status: 'pending_approval',
       customerId: '2605300002',
       referrerListId: '2304080009',
-      receipts: [{ suffix: 1, amount: 2500 }],
+      // 單筆收款，無支號
+      receipts: [{ amount: 2500 }],
     },
     {
       caseId: 'M2026051205',
@@ -70,6 +76,7 @@
       referrerName: '王小毅', referrerTag: '會員', referrerCid: 'U250310001',
       refereeName: '吳雅芳', refereePhone: '0955333222',
       caseType: 'negotiation',
+      loanTypes: ['債務協商'],
       submitAt: '2026/05/12 16:30', payoutAt: '2026/05/13',
       campaignId: 'CAMP-2026Q2',
       snapshot: { base: 1000, ratio: 0.5, cap: 5000 },
@@ -81,7 +88,8 @@
       approveNote: '已核對撥款單據，金額無誤',
       customerId: '2605130004',
       referrerListId: '2503100001',
-      receipts: [{ suffix: 1, amount: 2500 }],
+      // 多筆支號（分兩期收款）
+      receipts: [{ suffix: 1, amount: 1500 }, { suffix: 2, amount: 1000 }],
     },
     {
       caseId: 'M2026042016',
@@ -89,6 +97,7 @@
       referrerName: '林副總', referrerTag: '員工', referrerCid: 'U240214003',
       refereeName: '蘇建仁', refereePhone: '0977001122',
       caseType: 'general',
+      loanTypes: ['信用貸款'],
       submitAt: '2026/04/20 09:00', payoutAt: '2026/04/22',
       campaignId: 'CAMP-2026Q2',
       snapshot: { base: 500, ratio: 0, cap: 500 },
@@ -100,7 +109,8 @@
       approveNote: '',
       customerId: '2604200016',
       referrerListId: '2402140003',
-      receipts: [{ suffix: 1, amount: 500 }],
+      // 單筆收款，無支號
+      receipts: [{ amount: 500 }],
     },
   ];
 
@@ -184,14 +194,14 @@
   function buildReceiptListHtml(r) {
     const base = receiptNoOf(r);
     if (base === '—') return '—';
-    const items = Array.isArray(r.receipts) && r.receipts.length ? r.receipts : [{ suffix: 1, amount: r.amount }];
+    const items = Array.isArray(r.receipts) && r.receipts.length ? r.receipts : [{ amount: r.amount }];
     return '<div class="receipt-link-list">' + items.map((item) => {
-      const no = base + '-' + item.suffix;
+      // 有支號：base-1 / base-2；無支號（單筆）：直接顯示 base
+      const no = item.suffix != null ? base + '-' + item.suffix : base;
       return '<div class="receipt-link-item">' +
         '<a class="receipt-link" href="' + EXT_RECEIPT_BASE_URL + no + '" target="_blank" rel="noopener">' +
         '<i class="fa-solid fa-arrow-up-right-from-square" style="font-size:9px;"></i>' + no +
         '</a>' +
-        '<span class="receipt-amount">($' + Number(item.amount).toLocaleString() + ')</span>' +
         '</div>';
     }).join('') + '</div>';
   }
@@ -228,6 +238,13 @@
   function isBatchSelectable(r) { return r.status === 'pending_approval'; }
 
   // ─── render ───────────────────────────────────────────────
+  function renderLoanTypeChips(r) {
+    if (!r.loanTypes || !r.loanTypes.length) return '';
+    return '<div class="loan-type-chips">' +
+      r.loanTypes.map((t) => '<span class="loan-type-chip">' + t + '</span>').join('') +
+      '</div>';
+  }
+
   function renderRow(r) {
     const s = STATUS_META[r.status] || { label: r.status, cls: '' };
     const tagCls = TAG_BADGE[r.referrerTag] || 'badge-gray';
@@ -238,7 +255,7 @@
     return `
       <tr data-id="${r.caseId}"${warnHtml ? ' class="has-warn-code"' : ''}>
         <td>${canCheck ? `<input type="checkbox" class="row-check" data-id="${r.caseId}" ${checked ? 'checked' : ''}>` : ''}</td>
-        <td class="mono">${r.caseId}</td>
+        <td class="mono">${r.caseId}${renderLoanTypeChips(r)}</td>
         <td><strong>${r.referrerName}</strong></td>
         <td class="mono" style="font-size:12px;">${r.referrerCid}</td>
         <td>${r.referrerTag}</td>

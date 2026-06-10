@@ -88,14 +88,17 @@
       el.textContent = txt;
       el.classList.toggle('ps-empty', !hasData);
     }
-    if (bank.bankName) {
-      set('bank-name-display',      bank.bankName,                   true);
-      set('bank-acct-name-display', maskAccountName(bank.accountName), true);
+    if (bank.bankCode || bank.bankName) {
+      var bankDisplay = bank.bankCode
+        ? (bank.bankCode + (bank.bankBranch ? ' / ' + bank.bankBranch : ''))
+        : bank.bankName;
+      set('bank-name-display',      bankDisplay,                      true);
       set('bank-acct-no-display',   maskAccountNo(bank.accountNo),    true);
+      set('bank-acct-name-display', maskAccountName(bank.accountName), true);
     } else {
       set('bank-name-display',      '尚未設定', false);
-      set('bank-acct-name-display', '—',       false);
-      set('bank-acct-no-display',   '—',       false);
+      set('bank-acct-no-display',   '—',        false);
+      set('bank-acct-name-display', '—',        false);
     }
   }
 
@@ -257,18 +260,20 @@
     var panel = document.getElementById('bank-edit-panel');
     var cancelBtn = document.getElementById('btn-cancel-bank');
     var saveBtn = document.getElementById('btn-save-bank');
-    var inpName = document.getElementById('inp-bank-name');
-    var inpAcctName = document.getElementById('inp-bank-acct-name');
-    var inpAcctNo = document.getElementById('inp-bank-acct-no');
+    var inpCode = document.getElementById('inp-bank-code');
+    var inpBranch = document.getElementById('inp-bank-branch');
+    var inpAccount = document.getElementById('inp-bank-account');
+    var inpHolder = document.getElementById('inp-bank-holder');
 
     if (!editBtn || !panel) return;
 
     editBtn.addEventListener('click', function () {
       var settings = getSettings();
       var bank = (settings.withdrawal && settings.withdrawal.bank) || {};
-      if (inpName) inpName.value = bank.bankName || '';
-      if (inpAcctName) inpAcctName.value = bank.accountName || '';
-      if (inpAcctNo) inpAcctNo.value = bank.accountNo || '';
+      if (inpCode) inpCode.value = bank.bankCode || '';
+      if (inpBranch) inpBranch.value = bank.bankBranch || '';
+      if (inpAccount) inpAccount.value = bank.accountNo || '';
+      if (inpHolder) inpHolder.value = bank.accountName || '';
       panel.hidden = false;
       editBtn.hidden = true;
     });
@@ -282,16 +287,24 @@
 
     if (saveBtn) {
       saveBtn.addEventListener('click', function () {
-        var bankName = inpName ? inpName.value.trim() : '';
-        var accountName = inpAcctName ? inpAcctName.value.trim() : '';
-        var accountNo = inpAcctNo ? inpAcctNo.value.trim() : '';
-        if (!bankName || !accountName || !accountNo) {
-          alert('請填寫所有必填欄位');
+        var bankCode = inpCode ? inpCode.value.trim() : '';
+        var bankBranch = inpBranch ? inpBranch.value.trim() : '';
+        var accountNo = inpAccount ? inpAccount.value.trim() : '';
+        var accountName = inpHolder ? inpHolder.value.trim() : '';
+        if (!bankCode || bankCode.length !== 3) {
+          alert('請填寫 3 碼銀行代碼（如 808）');
           return;
         }
+        if (!bankBranch || bankBranch.length !== 4) {
+          alert('請填寫 4 碼分行代號');
+          return;
+        }
+        if (!accountNo) { alert('請填寫收款人帳號'); return; }
+        if (/[\s\-]/.test(accountNo)) { alert('帳號請勿包含空格或連字號（-）'); return; }
+        if (!accountName) { alert('請填寫收款人戶名'); return; }
         var settings = getSettings();
         var withdrawal = settings.withdrawal || {};
-        withdrawal.bank = { bankName: bankName, accountName: accountName, accountNo: accountNo };
+        withdrawal.bank = { bankCode: bankCode, bankBranch: bankBranch, accountNo: accountNo, accountName: accountName };
         patchSettings({ withdrawal: withdrawal });
         panel.hidden = true;
         editBtn.hidden = false;

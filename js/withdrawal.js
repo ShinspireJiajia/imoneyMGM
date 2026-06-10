@@ -142,10 +142,11 @@
     cashBranch: '',       // 'taipei' | 'taichung'
     editMode: false,      // 從獎金頁「修改提領資料」進入
     editTargetId: null,   // 對應 mgm_pending_withdraw_apply 中的 id
+    editTargetAmount: 0,  // 退件重填時保留原始金額供顯示
   };
 
   // 依申請日計算預計撥款日
-  // 規則：15 日（含）前申請 → 當月 25 日；超過 15 日 → 次月 25 日；遇週六延至週一（+2），遇週日延至週一（+1）
+  // 規則：15 日（含）前申請 → 當月 25 日；超過 15 日 → 次月 25 日
   function calcExpectedPayoutDate() {
     const today = new Date();
     const day = today.getDate();
@@ -155,11 +156,7 @@
       month += 1;
       if (month > 11) { month = 0; year += 1; }
     }
-    const payout = new Date(year, month, 25);
-    const dow = payout.getDay();
-    if (dow === 6) payout.setDate(27);       // 週六 → 下週一
-    else if (dow === 0) payout.setDate(26);  // 週日 → 隔天週一
-    return fmtDateYmd(payout);
+    return fmtDateYmd(new Date(year, month, 25));
   }
 
   function toDateOnly(d) {
@@ -327,7 +324,9 @@
 
   function renderSummary() {
     const items = getSelectedItems();
-    const total = items.reduce((s, r) => s + r.amount, 0);
+    const total = items.length > 0
+      ? items.reduce((s, r) => s + r.amount, 0)
+      : (state.editTargetAmount || 0);
     const totalEl = document.getElementById('summary-total');
     const listEl = document.getElementById('summary-list');
 
@@ -472,7 +471,7 @@
         ? window.MGMCommon.getRewardsDemo()
         : [];
       return demoList.find(
-        (r) => r.id === id && (r.status === 'transferring' || r.status === 'pending_pickup')
+        (r) => r.id === id && (r.status === 'transferring' || r.status === 'pending_pickup' || r.status === 'transfer_failed')
       ) || null;
     } catch {
       return null;
@@ -483,10 +482,18 @@
   function enterEditMode(target) {
     state.editMode = true;
     state.editTargetId = target.id;
+    state.editTargetAmount = Number(target.amount) || 0;
 
     // 顯示「修改提領資料」標題提示
     const editBanner = document.getElementById('withdraw-edit-banner');
     if (editBanner) editBanner.hidden = false;
+
+    // 退件重填：留在步驟 1 讓用戶重新選擇方式，只預選原方式並顯示原始金額
+    if (target.status === 'transfer_failed') {
+      if (target.method) selectMethod(target.method);
+      renderSummary();
+      return;
+    }
 
     // 自動選好方式（步驟一）並直接進步驟 2
     selectMethod(target.method);
