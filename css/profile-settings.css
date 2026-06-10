@@ -209,6 +209,13 @@
   text-decoration: none;
 }
 
+/* 銀行代碼 + 分行代號 並排 */
+.bank-code-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 /* ── dashboard 頭像區塊：設定按鈕 ── */
 .profile-avatar-wrap {
   display: flex;
