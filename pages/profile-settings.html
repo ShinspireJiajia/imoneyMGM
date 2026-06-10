@@ -85,31 +85,40 @@
           </div>
           <div class="ps-info-list" id="bank-display">
             <div class="ps-info-row">
-              <span class="ps-info-label">銀行 / 分行</span>
+              <span class="ps-info-label">銀行 / 分行代號</span>
               <span class="ps-info-value ps-empty" id="bank-name-display">尚未設定</span>
             </div>
             <div class="ps-info-row">
-              <span class="ps-info-label">戶名</span>
-              <span class="ps-info-value ps-empty" id="bank-acct-name-display">—</span>
+              <span class="ps-info-label">收款人帳號</span>
+              <span class="ps-info-value ps-empty" id="bank-acct-no-display">—</span>
             </div>
             <div class="ps-info-row">
-              <span class="ps-info-label">帳號</span>
-              <span class="ps-info-value ps-empty" id="bank-acct-no-display">—</span>
+              <span class="ps-info-label">收款人戶名</span>
+              <span class="ps-info-value ps-empty" id="bank-acct-name-display">—</span>
             </div>
           </div>
           <div class="ps-edit-panel" id="bank-edit-panel" hidden>
-            <div class="field">
-              <label class="field-label field-required" for="inp-bank-name">銀行 / 分行</label>
-              <input class="field-input" id="inp-bank-name" type="text" placeholder="玉山銀行 信義分行" />
+            <div class="bank-code-row">
+              <div class="field">
+                <label class="field-label field-required" for="inp-bank-code">銀行代碼</label>
+                <input class="field-input" id="inp-bank-code" type="text" inputmode="numeric" maxlength="3" placeholder="例如 808" autocomplete="off" />
+                <span class="field-hint">3 碼，如 808（玉山）、004（臺銀）</span>
+              </div>
+              <div class="field">
+                <label class="field-label field-required" for="inp-bank-branch">分行代號</label>
+                <input class="field-input" id="inp-bank-branch" type="text" inputmode="numeric" maxlength="4" placeholder="例如 0001" autocomplete="off" />
+                <span class="field-hint">4 碼，可查看存摺封面</span>
+              </div>
             </div>
             <div class="field">
-              <label class="field-label field-required" for="inp-bank-acct-name">戶名</label>
-              <input class="field-input" id="inp-bank-acct-name" type="text" placeholder="與存摺相同" />
+              <label class="field-label field-required" for="inp-bank-account">收款人帳號</label>
+              <input class="field-input" id="inp-bank-account" type="text" inputmode="numeric" placeholder="完整銀行帳號" autocomplete="off" />
+              <span class="field-hint">請輸入完整帳號，請勿包含空格或連字號（-）</span>
             </div>
             <div class="field">
-              <label class="field-label field-required" for="inp-bank-acct-no">帳號</label>
-              <input class="field-input" id="inp-bank-acct-no" type="text" inputmode="numeric"
-                placeholder="請輸入完整帳號" />
+              <label class="field-label field-required" for="inp-bank-holder">收款人戶名</label>
+              <input class="field-input" id="inp-bank-holder" type="text" placeholder="與存摺封面完全一致" />
+              <span class="field-hint">請填寫與存摺封面完全一致的公司名稱或個人姓名</span>
             </div>
 
             <div class="field" style="margin-top:18px;">
