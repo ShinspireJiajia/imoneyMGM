@@ -16,6 +16,7 @@ body.admin {
     'sidebar main';
   height: 100vh;
   width: 100%;
+  transition: grid-template-columns 0.2s ease;
 }
 
 /* ============== 頂部 Header ============== */
@@ -265,6 +266,63 @@ body.admin {
   border-top: 1px solid var(--color-border);
   font-size: 11px;
   color: var(--color-text-muted);
+}
+
+/* ── Sidebar 收合按鈕 ── */
+.sidebar-toggle-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition: all 0.15s;
+}
+.sidebar-toggle-btn:hover {
+  background: var(--color-primary-50);
+  color: var(--color-primary-dark);
+  border-color: var(--color-primary-100);
+}
+
+/* ── 收合狀態 ── */
+.admin-frame.sidebar-collapsed {
+  grid-template-columns: 60px 1fr;
+}
+.admin-frame.sidebar-collapsed .admin-logo-text,
+.admin-frame.sidebar-collapsed .admin-nav-section,
+.admin-frame.sidebar-collapsed .admin-nav-item span,
+.admin-frame.sidebar-collapsed .admin-nav-item .badge-num,
+.admin-frame.sidebar-collapsed .admin-sidebar-footer {
+  display: none;
+}
+.admin-frame.sidebar-collapsed .admin-logo {
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  gap: 6px;
+}
+.admin-frame.sidebar-collapsed .sidebar-toggle-btn {
+  margin-left: 0;
+  width: 36px;
+}
+.admin-frame.sidebar-collapsed .admin-nav-item {
+  justify-content: center;
+  padding: 10px;
+  border-left: 0;
+}
+.admin-frame.sidebar-collapsed .admin-nav-item.active {
+  background: var(--color-primary-100);
+  border-left: 0;
+}
+.admin-frame.sidebar-collapsed .admin-user-info {
+  display: none;
 }
 
 /* ============== Main 內容區 ============== */
