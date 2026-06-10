@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>提領流程圖 — 理財通 MGM</title>
+<style>
+:root{
+  --lf:#7c3aed; --lb:#0f766e;
+  --na:#f0f4ff; --ba:#818cf8; --ta:#312e81;
+  --np:#eff6ff; --bp:#3b82f6; --tp:#1e40af;
+  --ns:#f0fdf4; --bs:#16a34a; --ts:#14532d;
+  --nf:#fef2f2; --bf:#dc2626; --tf:#7f1d1d;
+  --nw:#fff7ed; --bw:#d97706; --tw:#78350f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"微軟正黑體","Noto Sans TC",sans-serif;font-size:13px;background:#f1f5f9;padding:18px 16px 48px}
+
+/* ── Title ── */
+.ttl{text-align:center;margin-bottom:12px}
+.ttl h1{font-size:16pt;font-weight:800;color:#1e293b}
+.ttl p{font-size:9pt;color:#64748b;margin-top:2px}
+
+/* ── Legend ── */
+.leg{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.lt{display:inline-flex;align-items:center;gap:5px;font-size:8.5pt;font-weight:700;
+    padding:3px 10px;border-radius:20px;border:1.5px solid}
+.lt-a{background:var(--na);border-color:var(--ba);color:var(--ta)}
+.lt-p{background:var(--np);border-color:var(--bp);color:var(--tp)}
+.lt-s{background:var(--ns);border-color:var(--bs);color:var(--ts)}
+.lt-f{background:var(--nf);border-color:var(--bf);color:var(--tf)}
+.lt-w{background:var(--nw);border-color:var(--bw);color:var(--tw)}
+
+/* ── Main chart wrapper ── */
+.chart{max-width:880px;margin:0 auto}
+
+/* ── Swimlane headers ── */
+.sw-h{display:grid;grid-template-columns:1fr 52px 1fr;gap:2px}
+.sh{padding:6px;text-align:center;font-size:10pt;font-weight:800;
+    color:#fff;border-radius:6px 6px 0 0;letter-spacing:.5px}
+.sh-f{background:var(--lf)}
+.sh-b{background:var(--lb)}
+
+/* ── Body grid ── */
+.sw-b{
+  display:grid;
+  grid-template-columns:1fr 52px 1fr;
+  border:2px solid #e2e8f0;border-top:none;
+  border-radius:0 0 6px 6px;
+  background:#fff;
+}
+
+/* ── Lane cells ── */
+.cf{padding:0 8px;border-right:1px dashed #c4b5fd;display:flex;flex-direction:column;align-items:center}
+.cm{display:flex;flex-direction:column;align-items:center}
+.cb{padding:0 8px;border-left:1px dashed #99f6e4;display:flex;flex-direction:column;align-items:center}
+.cf-bg{background:rgba(124,58,237,.02)}
+.cb-bg{background:rgba(15,118,110,.02)}
+
+/* Empty lane placeholder */
+.ef{padding:0 8px;border-right:1px dashed #c4b5fd;background:rgba(124,58,237,.015)}
+.eb{padding:0 8px;border-left:1px dashed #99f6e4;background:rgba(15,118,110,.015)}
+.em{padding:0}
+
+/* ── Nodes ── */
+.nd{
+  display:flex;align-items:flex-start;gap:6px;
+  padding:6px 9px;border-radius:6px;border:1.5px solid;
+  width:100%;margin:4px 0;line-height:1.4;cursor:default
+}
+.nt{font-weight:700;font-size:9.5pt}
+.nd_{font-size:8.5pt;opacity:.82;margin-top:1px}
+.nd-a{background:var(--na);border-color:var(--ba);color:var(--ta)}
+.nd-p{background:var(--np);border-color:var(--bp);color:var(--tp)}
+.nd-s{background:var(--ns);border-color:var(--bs);color:var(--ts)}
+.nd-f{background:var(--nf);border-color:var(--bf);color:var(--tf)}
+.nd-w{background:var(--nw);border-color:var(--bw);color:var(--tw)}
+
+/* Step badge */
+.sn{
+  flex-shrink:0;width:19px;height:19px;border-radius:50%;
+  background:#334155;color:#fff;
+  font-size:7pt;font-weight:800;
+  display:flex;align-items:center;justify-content:center;margin-top:2px
+}
+.sn-f{background:var(--lf)}
+.sn-b{background:var(--lb)}
+.sn-s{background:var(--bs)}
+.sn-r{background:var(--bf)}
+
+/* ── Arrows (vertical) ── */
+.av{display:flex;flex-direction:column;align-items:center;width:100%;padding:1px 0}
+.av::before{content:'';width:1.5px;height:9px;background:#94a3b8;display:block}
+.av::after{content:'▼';font-size:8pt;color:#94a3b8;margin-top:-4px}
+.av-lbl{font-size:7.5pt;color:#94a3b8;text-align:center;margin:-2px 0 1px}
+
+/* ── Cross-lane banner ── */
+.xrow{
+  grid-column:1/4;
+  display:flex;align-items:center;gap:6px;
+  padding:4px 12px;
+  background:#f8fafc;
+  border-top:1px solid #e2e8f0;
+  border-bottom:1px solid #e2e8f0;
+}
+.xrow.xl{flex-direction:row-reverse}
+.xline{flex:1;height:1.5px;background:#94a3b8}
+.xarr{font-size:11pt;color:#64748b;line-height:1}
+.xlbl{font-size:8pt;font-weight:700;color:#334155;padding:2px 8px;
+      background:#e2e8f0;border-radius:10px;white-space:nowrap}
+
+/* ── Phase label ── */
+.phase{
+  grid-column:1/4;padding:3px 12px;
+  font-size:7.5pt;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  color:#94a3b8;background:#f1f5f9;border-bottom:1px solid #e2e8f0;
+  text-align:center
+}
+
+/* ── Branch section ── */
+.br-wrap{max-width:880px;margin:0 auto}
+.br-fork{display:grid;grid-template-columns:1fr 1fr 1fr;height:16px;position:relative}
+.br-fork::before{content:'';position:absolute;top:0;left:16.67%;right:16.67%;height:1.5px;background:#94a3b8}
+.br-fork-t{display:flex;justify-content:center}
+.br-fork-t::before{content:'';width:1.5px;height:16px;background:#94a3b8}
+
+.br-heads{display:grid;grid-template-columns:1fr 1fr 1fr;
+  border:2px solid #e2e8f0;border-bottom:none;border-radius:6px 6px 0 0;overflow:hidden}
+.bh{padding:6px 8px;text-align:center;font-size:8.5pt;font-weight:800;letter-spacing:.5px}
+.bh:not(:last-child){border-right:1px solid #e2e8f0}
+.bh-s{background:var(--ns);color:var(--ts)}
+.bh-f{background:var(--nf);color:var(--tf)}
+.bh-p{background:var(--na);color:var(--ta)}
+
+.br-grid{display:grid;grid-template-columns:1fr 1fr 1fr;
+  border:2px solid #e2e8f0;border-top:none;border-radius:0 0 6px 6px;overflow:hidden}
+.bc{display:flex;flex-direction:column;align-items:center;padding:8px 8px 12px}
+.bc:not(:last-child){border-right:1.5px dashed #e2e8f0}
+.bc-s{background:#f0fdf4}
+.bc-f{background:#fef2f2}
+.bc-p{background:#f0f4ff}
+.ba{display:flex;flex-direction:column;align-items:center;padding:1px 0;width:100%}
+.ba::before{content:'';width:1.5px;height:7px;background:#94a3b8;display:block}
+.ba::after{content:'▼';font-size:7.5pt;color:#94a3b8;margin-top:-3px}
+
+/* role badge inside branch */
+.rb{font-size:7pt;font-weight:800;border-radius:10px;padding:1px 6px;margin-bottom:2px;display:inline-block}
+.rb-f{background:#ede9fe;color:var(--lf)}
+.rb-b{background:#ccfbf1;color:var(--lb)}
+
+/* ── Final bar ── */
+.fin{
+  max-width:880px;margin:0 auto;
+  background:var(--ns);border:2px solid var(--bs);border-top:none;
+  padding:10px 16px;text-align:center;border-radius:0 0 6px 6px
+}
+.fin h3{color:var(--ts);font-size:10pt;margin-bottom:2px}
+.fin p{color:#166534;font-size:8.5pt}
+
+footer{text-align:center;color:#94a3b8;font-size:8pt;margin-top:20px}
+</style>
+</head>
+<body>
+
+<div class="ttl">
+  <h1>理財通 MGM｜提領動作流程圖</h1>
+  <p>泳道（左右欄）區分角色 ‧ 色彩代表狀態 ‧ 數字代表步驟順序</p>
+</div>
+
+<div class="leg">
+  <span class="lt lt-a">一般操作</span>
+  <span class="lt lt-p">處理中</span>
+  <span class="lt lt-s">完成 / 成功</span>
+  <span class="lt lt-f">失敗 / 需處理</span>
+  <span class="lt lt-w">待確認 / 待撥款</span>
+</div>
+
+<!-- ══════════ MAIN CHART ══════════ -->
+<div class="chart">
+  <div class="sw-h">
+    <div class="sh sh-f">📱 前台（使用者）</div>
+    <div style="background:transparent"></div>
+    <div class="sh sh-b">🖥️ 後台（行政）</div>
+  </div>
+
+  <div class="sw-b">
+
+    <!-- ── Phase A 核款 ── -->
+    <div class="phase">Phase A · 後台核款</div>
+
+    <!-- Row: S1 S2 在後台，前台待機 -->
+    <div class="ef"></div>
+    <div class="em"></div>
+    <div class="cb cb-bg">
+      <div class="nd nd-a">
+        <span class="sn sn-b">1</span>
+        <div><div class="nt">推薦案件獎金核款</div>
+        <div class="nd_">勾選案件 → 點「核准」</div></div>
+      </div>
+      <div class="av"></div>
+      <div class="nd nd-a">
+        <span class="sn sn-b">2</span>
+        <div><div class="nt">發送核款通知 Modal</div>
+        <div class="nd_">選 LINE / 簡訊 → 確認核款並發送通知<br/>案件狀態 → <b>已核款</b></div></div>
+      </div>
+    </div>
+
+    <!-- Cross: 通知 → 前台 -->
+    <div class="xrow xl">
+      <div class="xarr">◄</div>
+      <div class="xline"></div>
+      <div class="xlbl">核款通知（LINE / 簡訊）</div>
+      <div class="xline"></div>
+    </div>
+
+    <!-- ── Phase B 提領申請 ── -->
+    <div class="phase">Phase B · 前台提領申請</div>
+
+    <!-- Row: S3–S6 在前台，後台待機 -->
+    <div class="cf cf-bg">
+      <div class="nd nd-s">
+        <span class="sn sn-s">3</span>
+        <div><div class="nt">我的獎金</div>
+        <div class="nd_">可提領總額出現 ‧ 案件顯示效期</div></div>
+      </div>
+      <div class="av"><span class="av-lbl">點「→ 全部提領」</span></div>
+      <div class="nd nd-a">
+        <span class="sn sn-f">4</span>
+        <div><div class="nt">提領申請 Step 1</div>
+        <div class="nd_">確認合計金額 ‧ 選擇方式（現場領取 / 匯款入帳）</div></div>
+      </div>
+      <div class="av"><span class="av-lbl">選方式 → 下一步</span></div>
+      <div class="nd nd-a">
+        <span class="sn sn-f">5</span>
+        <div><div class="nt">提領申請 Step 2</div>
+        <div class="nd_">填稅務資料 ‧ 匯款帳戶 or 現場預約 ‧ 上傳文件</div></div>
+      </div>
+      <div class="av"><span class="av-lbl">送出申請</span></div>
+      <div class="nd nd-p">
+        <span class="sn sn-f">6</span>
+        <div><div class="nt">提領申請 Step 3（完成）</div>
+        <div class="nd_">顯示金額 ‧ 方式 ‧ 預計撥款日（當月或次月 25 日）</div></div>
+      </div>
+    </div>
+    <div class="em"></div>
+    <div class="eb"></div>
+
+    <!-- Cross: 申請 → 後台 -->
+    <div class="xrow">
+      <div class="xarr">►</div>
+      <div class="xline"></div>
+      <div class="xlbl">申請送出 · 建立款項記錄</div>
+      <div class="xline"></div>
+    </div>
+
+    <!-- ── Phase C 撥款等待 ── -->
+    <div class="phase">Phase C · 等待撥款</div>
+
+    <!-- Row: S7 前台 + S8 S9 後台 同期 -->
+    <div class="cf cf-bg">
+      <div class="nd nd-p">
+        <span class="sn sn-f">7</span>
+        <div><div class="nt">我的獎金 — 處理中</div>
+        <div class="nd_">匯款：匯款處理中 ‧ 預計撥款日<br/>現場：待現場領取 ‧ 預約門市 &amp; 時段<br/>可點「修改提領資料」</div></div>
+      </div>
+    </div>
+    <div class="em"></div>
+    <div class="cb cb-bg">
+      <div class="nd nd-w">
+        <span class="sn sn-b">8</span>
+        <div><div class="nt">提領功能管理</div>
+        <div class="nd_">狀態：待撥款 ‧ 款項編號 / 推薦人 / 金額 / 方式</div></div>
+      </div>
+      <div class="av"></div>
+      <div class="nd nd-w">
+        <span class="sn sn-b">9</span>
+        <div><div class="nt">更新撥款狀態</div>
+        <div class="nd_">逐筆或批次操作 → 見下方三條分支路徑</div></div>
+      </div>
+    </div>
+
+    <!-- Cross: 狀態 → 前台 -->
+    <div class="xrow xl">
+      <div class="xarr">◄</div>
+      <div class="xline"></div>
+      <div class="xlbl">狀態即時更新 · 前台反映結果</div>
+      <div class="xline"></div>
+    </div>
+
+  </div><!-- /sw-b -->
+</div><!-- /chart -->
+
+
+<!-- ══════════ 分岔入口 ══════════ -->
+<div class="br-wrap">
+  <div class="br-fork">
+    <div class="br-fork-t"></div>
+    <div class="br-fork-t"></div>
+    <div class="br-fork-t"></div>
+  </div>
+
+  <div class="br-heads">
+    <div class="bh bh-s">路 A｜匯款入帳成功</div>
+    <div class="bh bh-f">路 B｜匯款失敗 → 退件重填</div>
+    <div class="bh bh-p">路 C｜現場領取完成</div>
+  </div>
+
+  <div class="br-grid">
+
+    <!-- ─ 路 A ─ -->
+    <div class="bc bc-s">
+      <div class="nd nd-a" style="width:100%">
+        <span class="sn sn-b">10</span>
+        <div><span class="rb rb-b">後台</span>
+        <div class="nt">批次標記「已撥款」</div>
+        <div class="nd_">款項狀態 → 已匯款</div></div>
+      </div>
+      <div class="ba"></div>
+      <div class="nd nd-s" style="width:100%">
+        <span class="sn sn-s">11</span>
+        <div><span class="rb rb-f">前台</span>
+        <div class="nt">我的獎金 — 已完成</div>
+        <div class="nd_">✅ 已匯款 ‧ 顯示實際撥款日</div></div>
+      </div>
+    </div>
+
+    <!-- ─ 路 B ─ -->
+    <div class="bc bc-f">
+      <div class="nd nd-a" style="width:100%">
+        <span class="sn sn-b">10</span>
+        <div><span class="rb rb-b">後台</span>
+        <div class="nt">更新狀態 → 匯款失敗</div>
+        <div class="nd_">填失敗原因（戶名不符 / 帳號錯誤）</div></div>
+      </div>
+      <div class="ba"></div>
+      <div class="nd nd-f" style="width:100%">
+        <span class="sn sn-r">11</span>
+        <div><span class="rb rb-f">前台</span>
+        <div class="nt">我的獎金 — 提領失敗</div>
+        <div class="nd_">❗ 提領失敗需處理 ‧ 顯示失敗原因<br/>按鈕：「重新填寫提領資料」</div></div>
+      </div>
+      <div class="ba"></div>
+      <div class="nd nd-a" style="width:100%">
+        <span class="sn sn-f">12</span>
+        <div><span class="rb rb-f">前台</span>
+        <div class="nt">提領申請 Step 1（退件重填）</div>
+        <div class="nd_">顯示原始金額 ‧ 原方式預選<br/>提示：修改已送出的提領資料</div></div>
+      </div>
+      <div class="ba"></div>
+      <div class="nd nd-a" style="width:100%">
+        <span class="sn sn-f">13</span>
+        <div><span class="rb rb-f">前台</span>
+        <div class="nt">提領申請 Step 2（重填）</div>
+        <div class="nd_">帶入上次資料 ‧ 修改錯誤帳戶 ‧ 送出</div></div>
+      </div>
+      <div class="ba"></div>
+      <div class="nd nd-p" style="width:100%">
+        <span class="sn sn-f">14</span>
+        <div><span class="rb rb-f">前台</span>
+        <div class="nt">提領申請 Step 3（重填完成）</div>
+        <div class="nd_">「提領資料已修改」→ 回到 Step 7 處理中</div></div>
+      </div>
+    </div>
+
+    <!-- ─ 路 C ─ -->
+    <div class="bc bc-p">
+      <div class="nd nd-a" style="width:100%">
+        <span class="sn sn-b">10</span>
+        <div><span class="rb rb-b">後台</span>
+        <div class="nt">提領功能管理（現場提領）</div>
+        <div class="nd_">查看預約門市 / 日期時段<br/>勾選「待領取」款項</div></div>
+      </div>
+      <div class="ba"></div>
+      <div class="nd nd-a" style="width:100%">
+        <span class="sn sn-b">11</span>
+        <div><span class="rb rb-b">後台</span>
+        <div class="nt">批次標記「已領取」</div>
+        <div class="nd_">款項狀態 → 已領取</div></div>
+      </div>
+      <div class="ba"></div>
+      <div class="nd nd-s" style="width:100%">
+        <span class="sn sn-s">12</span>
+        <div><span class="rb rb-f">前台</span>
+        <div class="nt">我的獎金 — 已完成</div>
+        <div class="nd_">✅ 已領取 ‧ 顯示實際撥款日</div></div>
+      </div>
+    </div>
+
+  </div><!-- /br-grid -->
+
+  <div class="fin">
+    <h3>🏁 最終完成狀態（路 A / 路 C）</h3>
+    <p>「已完成」區段顯示實際撥款日 ‧ 資料保存近 <b>18 個月</b>（依最終狀態更新日計算）</p>
+  </div>
+</div>
+
+<footer>理財通 MGM ／ 提領動作流程圖 ／ 2026-06-10</footer>
+
+</body>
+</html>
