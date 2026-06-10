@@ -6,6 +6,10 @@
 (function () {
   'use strict';
 
+  // 獎金規則參照 admin-matrix PROJECT_OPTIONS（CAMP-C-2026Q2）
+  // 固定獎金制：house_loan $5000 / car_loan $1500 / credit_loan $3600
+  //             pre_negotiation $2000 / rehabilitation $2000
+  // 疊加上限（overlapCap）：$20,000
   const CASES = [
     {
       caseId: 'M2026051504',
@@ -15,23 +19,23 @@
       caseType: 'general',
       loanTypes: ['房屋貸款', '汽車貸款'],
       submitAt: '2026/05/15 11:05', payoutAt: '2026/05/16',
-      campaignId: 'CAMP-2026Q2',
+      campaignId: 'CAMP-C-2026Q2',
       snapshot: {
-        mode: 'additive',
-        totalCap: 18000,
+        campaignId: 'CAMP-C-2026Q2',
+        overlapCapEnabled: true,
+        overlapCap: 20000,
         items: [
-          { projectLabel: '房屋貸款', base: 2000, ratio: 0.1, cap: 15000 },
-          { projectLabel: '汽車貸款', base: 1000, ratio: 0.5, cap: 5000 },
+          { projectKey: 'house_loan', label: '房屋貸款', trigger: '付訖服務費',                                      bonus: 5000 },
+          { projectKey: 'car_loan',   label: '汽車貸款', trigger: '付訖服務費',                                      bonus: 1500 },
         ],
       },
-      amount: 18000,
+      amount: 6500,         // 5000 + 1500，未達疊加上限 $20,000
       payoutAmount: 4500000,
       status: 'pending_approval',
       warningCodes: ['E-OLD', 'E-150'],
       customerId: '2605160003',
       referrerListId: '2401050002',
-      // 多筆支號：房貸與車貸分別開立收款單
-      receipts: [{ suffix: 1, amount: 6000 }, { suffix: 2, amount: 2000 }, { suffix: 3, amount: 10000 }],
+      receipts: [{ suffix: 1, amount: 12000 }, { suffix: 2, amount: 8000 }, { suffix: 3, amount: 6000 }],
     },
     {
       caseId: 'M2026052901',
@@ -39,18 +43,24 @@
       referrerName: '王小毅', referrerTag: '會員', referrerCid: 'U250310001',
       refereeName: '方家豪', refereePhone: '0912345789',
       caseType: 'negotiation',
-      loanTypes: ['債務協商'],
+      loanTypes: ['前置協商'],
       submitAt: '2026/05/29 10:00', payoutAt: '2026/05/30',
-      campaignId: 'CAMP-2026Q2',
-      snapshot: { base: 2000, ratio: 0.1, cap: 15000 },
-      amount: 5500,
+      campaignId: 'CAMP-C-2026Q2',
+      snapshot: {
+        campaignId: 'CAMP-C-2026Q2',
+        overlapCapEnabled: true,
+        overlapCap: 20000,
+        items: [
+          { projectKey: 'pre_negotiation', label: '前置協商', trigger: '需繳滿第三期服務費（第一期 ≥ $6,000 起算）', bonus: 2000 },
+        ],
+      },
+      amount: 2000,
       payoutAmount: 3500000,
       status: 'pending_approval',
       warningCodes: ['E-PAY'],
       customerId: '2605290001',
       referrerListId: '2503100001',
-      // 單筆收款，無支號
-      receipts: [{ amount: 5500 }],
+      receipts: [{ amount: 18000 }],
     },
     {
       caseId: 'M2026053002',
@@ -60,15 +70,21 @@
       caseType: 'general',
       loanTypes: ['房屋貸款'],
       submitAt: '2026/05/30 14:30', payoutAt: '2026/05/31',
-      campaignId: 'CAMP-2026Q2',
-      snapshot: { base: 1000, ratio: 0.5, cap: 5000 },
-      amount: 2500,
-      payoutAmount: 300000,
+      campaignId: 'CAMP-C-2026Q2',
+      snapshot: {
+        campaignId: 'CAMP-C-2026Q2',
+        overlapCapEnabled: true,
+        overlapCap: 20000,
+        items: [
+          { projectKey: 'house_loan', label: '房屋貸款', trigger: '付訖服務費',                                      bonus: 5000 },
+        ],
+      },
+      amount: 5000,
+      payoutAmount: 2800000,
       status: 'pending_approval',
       customerId: '2605300002',
       referrerListId: '2304080009',
-      // 單筆收款，無支號
-      receipts: [{ amount: 2500 }],
+      receipts: [{ amount: 15000 }],
     },
     {
       caseId: 'M2026051205',
@@ -76,20 +92,26 @@
       referrerName: '王小毅', referrerTag: '會員', referrerCid: 'U250310001',
       refereeName: '吳雅芳', refereePhone: '0955333222',
       caseType: 'negotiation',
-      loanTypes: ['債務協商'],
+      loanTypes: ['更生方案'],
       submitAt: '2026/05/12 16:30', payoutAt: '2026/05/13',
-      campaignId: 'CAMP-2026Q2',
-      snapshot: { base: 1000, ratio: 0.5, cap: 5000 },
-      amount: 2500,
-      payoutAmount: 300000,
+      campaignId: 'CAMP-C-2026Q2',
+      snapshot: {
+        campaignId: 'CAMP-C-2026Q2',
+        overlapCapEnabled: true,
+        overlapCap: 20000,
+        items: [
+          { projectKey: 'rehabilitation', label: '更生方案', trigger: '需繳滿第三期服務費（第一期 ≥ $6,000 起算）', bonus: 2000 },
+        ],
+      },
+      amount: 2000,
+      payoutAmount: 1500000,
       status: 'rewardable',
       approvedAt: '2026/05/14 09:20',
       approvedBy: '財務 - Mary',
       approveNote: '已核對撥款單據，金額無誤',
       customerId: '2605130004',
       referrerListId: '2503100001',
-      // 多筆支號（分兩期收款）
-      receipts: [{ suffix: 1, amount: 1500 }, { suffix: 2, amount: 1000 }],
+      receipts: [{ suffix: 1, amount: 9000 }, { suffix: 2, amount: 8000 }],
     },
     {
       caseId: 'M2026042016',
@@ -99,18 +121,24 @@
       caseType: 'general',
       loanTypes: ['信用貸款'],
       submitAt: '2026/04/20 09:00', payoutAt: '2026/04/22',
-      campaignId: 'CAMP-2026Q2',
-      snapshot: { base: 500, ratio: 0, cap: 500 },
-      amount: 500,
-      payoutAmount: 200000,
+      campaignId: 'CAMP-C-2026Q2',
+      snapshot: {
+        campaignId: 'CAMP-C-2026Q2',
+        overlapCapEnabled: true,
+        overlapCap: 20000,
+        items: [
+          { projectKey: 'credit_loan', label: '信用貸款', trigger: '付訖服務費',                                     bonus: 3600 },
+        ],
+      },
+      amount: 3600,
+      payoutAmount: 500000,
       status: 'rewardable',
       approvedAt: '2026/04/23 14:00',
       approvedBy: '財務 - John',
       approveNote: '',
       customerId: '2604200016',
       referrerListId: '2402140003',
-      // 單筆收款，無支號
-      receipts: [{ amount: 500 }],
+      receipts: [{ amount: 8000 }],
     },
   ];
 
@@ -441,21 +469,20 @@
       }
     }
 
-    // 快照參數
+    // 快照參數（matrix 格式：items[{ projectKey, label, trigger, bonus }]）
     const snapSec = document.getElementById('pm-section-snapshot');
     const snapEl  = document.getElementById('pm-snapshot');
     const snap = r.snapshot;
-    if (snap && (Array.isArray(snap.items) || snap.base != null)) {
+    if (snap && Array.isArray(snap.items) && snap.items.length) {
       snapSec.hidden = false;
-      if (Array.isArray(snap.items)) {
-        const lines = snap.items.map((x) =>
-          `- ${x.projectLabel}：底包 $${x.base.toLocaleString()} ／ 比例 ${x.ratio}% ／ 單筆上限 $${x.cap.toLocaleString()}`
-        );
-        const capLine = snap.totalCap != null ? `\n組合總上限：$${snap.totalCap.toLocaleString()}` : '';
-        snapEl.textContent = `疊加制快照：\n${lines.join('\n')}${capLine}\n快照來源：當期活動`;
-      } else {
-        snapEl.textContent = `固定底包 $${(snap.base || 0).toLocaleString()} ／ 抽成比例 ${snap.ratio || 0}% ／ 單筆上限 $${(snap.cap || 0).toLocaleString()}\n快照來源：當期活動`;
-      }
+      const lines = snap.items.map((x) =>
+        `  ${x.label}（${x.trigger}）→ $${Number(x.bonus).toLocaleString()}`
+      );
+      const capLine = snap.overlapCapEnabled
+        ? `多項疊加上限：$${Number(snap.overlapCap || 0).toLocaleString()}（啟用）`
+        : '多項疊加上限：未啟用';
+      const src = snap.campaignId ? `快照來源：${snap.campaignId}` : '快照來源：當期活動';
+      snapEl.textContent = `觸發項目：\n${lines.join('\n')}\n${capLine}\n${src}`;
       snapEl.style.whiteSpace = 'pre-line';
     } else {
       snapSec.hidden = true;

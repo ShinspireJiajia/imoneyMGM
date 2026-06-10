@@ -121,4 +121,29 @@
   // 初始
   const initial = (location.hash || '#admin-campaigns').slice(1);
   go(PAGES[initial] ? initial : 'admin-campaigns');
+
+  // ─── Sidebar 收合 ────────────────────────────────────────
+  const frame      = document.querySelector('.admin-frame');
+  const toggleBtn  = document.getElementById('btn-sidebar-toggle');
+  const STORAGE_KEY = 'mgm_admin_sidebar_collapsed';
+
+  function setSidebarCollapsed(collapsed) {
+    frame.classList.toggle('sidebar-collapsed', collapsed);
+    if (!toggleBtn) return;
+    toggleBtn.setAttribute('aria-expanded', String(!collapsed));
+    toggleBtn.title = collapsed ? '展開選單' : '收合選單';
+    const icon = toggleBtn.querySelector('i');
+    if (icon) icon.className = collapsed ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-left';
+    try { localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0'); } catch {}
+  }
+
+  if (toggleBtn && frame) {
+    toggleBtn.addEventListener('click', () =>
+      setSidebarCollapsed(!frame.classList.contains('sidebar-collapsed'))
+    );
+    // 恢復上次收合狀態
+    try {
+      if (localStorage.getItem(STORAGE_KEY) === '1') setSidebarCollapsed(true);
+    } catch {}
+  }
 })();
