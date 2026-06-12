@@ -145,8 +145,7 @@
             <thead>
               <tr>
                 <th style="width:36px;"></th>
-                <th>款項編號</th>
-                <th>案號</th>
+                <th>提領編號</th>
                 <th>會員編號</th>
                 <th>推薦人</th>
                 <th>標籤</th>
@@ -256,6 +255,39 @@
             <button id="btn-edit-pay-save" type="button" class="btn btn-primary">
               <i class="fa-solid fa-check"></i>儲存變更
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 提領明細 Modal -->
+    <div id="cash-wd-detail-modal" class="history-modal-bg">
+      <div class="history-modal" style="max-width:680px;">
+        <div class="history-modal-head">
+          <h3>
+            <i class="fa-solid fa-list-ul"></i>提領明細
+            <span style="font-size:13px;margin-left:8px;font-family:'Courier New',monospace;color:var(--color-primary-dark);" id="cash-wd-detail-id">—</span>
+          </h3>
+          <span id="btn-cash-wd-detail-close" class="history-modal-close" role="button" tabindex="0">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </div>
+        <div class="history-modal-body" style="padding:18px 22px;">
+          <div class="wd-detail-summary">
+            <div class="item"><span>推薦人</span><strong id="cash-wd-detail-ref">—</strong></div>
+            <div class="item"><span>金額</span><strong id="cash-wd-detail-total">—</strong></div>
+            <div class="item"><span>門市</span><strong id="cash-wd-detail-branch">—</strong></div>
+            <div class="item"><span>預計領取日</span><strong id="cash-wd-detail-pickup">—</strong></div>
+            <div class="item"><span>狀態</span><strong id="cash-wd-detail-status">—</strong></div>
+          </div>
+          <p style="font-size:12px;color:var(--color-text-muted);margin:12px 0 4px;">點擊「明細」可查看提領單內包含的款項</p>
+          <div style="overflow-x:auto;margin-top:8px;">
+            <table class="data-table data-table-sm">
+              <thead><tr>
+                <th>案號</th><th>產品</th><th>金額</th><th>狀態</th>
+              </tr></thead>
+              <tbody id="cash-wd-detail-tbody"></tbody>
+            </table>
           </div>
         </div>
       </div>

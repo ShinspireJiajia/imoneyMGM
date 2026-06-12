@@ -79,7 +79,7 @@
         <div class="filter-grid" id="filter-grid">
           <div class="field-row">
             <label class="field-label">關鍵字搜尋</label>
-            <input id="filter-keyword" class="field-input" type="text" placeholder="款項編號、案號、推薦人…" />
+            <input id="filter-keyword" class="field-input" type="text" placeholder="提領編號、會員編號、推薦人…" />
           </div>
           <div class="field-row">
             <label class="field-label">狀態</label>
@@ -162,13 +162,13 @@
             <thead>
               <tr>
                 <th style="width: 36px;"></th>
-                <th>款項編號</th>
-                <th>案號</th>
+                <th>提領編號</th>
                 <th>會員編號</th>
                 <th>推薦人</th>
                 <th>標籤</th>
-                <th>稅務資訊</th>
                 <th>金額</th>
+                <th>匯款手續費</th>
+                <th>應付金額</th>
                 <th>方式</th>
                 <th>狀態</th>
                 <th>操作</th>
@@ -179,7 +179,7 @@
         </div>
 
         <div style="padding: 14px 20px; border-top: 1px solid var(--color-border-light); font-size: var(--font-xs); color: var(--color-text-secondary); display: flex; gap: 16px; flex-wrap: wrap;">
-          <span><i class="fa-solid fa-circle-info"></i> 點擊「歷程」可查看該筆款項完整異動軌跡</span>
+          <span><i class="fa-solid fa-circle-info"></i> 點擊「明細」可查看提領單內包含的款項</span>
           <span style="color: var(--color-danger);">
         </div>
 
@@ -321,32 +321,43 @@
       </div>
     </div>
 
-    <!-- 異動歷程 Modal -->
+    <!-- 提領明細 Modal -->
     <div id="history-modal" class="history-modal-bg">
-      <div class="history-modal">
+      <div class="history-modal" style="max-width: 680px;">
         <div class="history-modal-head">
           <h3>
-            <i class="fa-solid fa-clock-rotate-left"></i>款項異動歷程
+            <i class="fa-solid fa-list-ul"></i>提領明細
             <span style="font-size: 13px; margin-left: 8px; font-family: 'Courier New', monospace; color: var(--color-primary-dark);" id="history-payid">—</span>
           </h3>
           <span id="btn-history-close" class="history-modal-close" role="button" tabindex="0">
             <i class="fa-solid fa-xmark"></i>
           </span>
         </div>
-        <div class="history-modal-body">
-          <!-- 款項摘要 -->
-          <div class="history-payment-summary">
-            <div class="item">推薦人 <strong id="history-ref">—</strong></div>
-            <div class="item">稅務資訊 <strong id="history-tax">—</strong></div>
-            <div class="item">金額 <strong id="history-amount">—</strong></div>
-            <div class="item">方式 <strong id="history-method">—</strong></div>
-            <div class="item">目前狀態 <strong id="history-status">—</strong></div>
+        <div class="history-modal-body" style="padding: 18px 22px;">
+          <!-- 提領摘要 -->
+          <div class="wd-detail-summary">
+            <div class="item"><span>推薦人</span><strong id="wd-detail-ref">—</strong></div>
+            <div class="item"><span>金額</span><strong id="wd-detail-total">—</strong></div>
+            <div class="item"><span>匯款手續費</span><strong id="wd-detail-fee" style="color:var(--color-text-muted);">—</strong></div>
+            <div class="item"><span>應付金額</span><strong id="wd-detail-net" style="color:var(--color-success-dark);">—</strong></div>
+            <div class="item"><span>方式</span><strong id="wd-detail-method">—</strong></div>
+            <div class="item"><span>狀態</span><strong id="wd-detail-status">—</strong></div>
           </div>
 
-          <!-- Timeline -->
-          <div id="history-timeline" class="timeline-vertical"></div>
-
-
+          <!-- 款項明細表 -->
+          <div style="overflow-x:auto; margin-top: 16px;">
+            <table class="data-table data-table-sm">
+              <thead>
+                <tr>
+                  <th>案號</th>
+                  <th>產品</th>
+                  <th>金額</th>
+                  <th>狀態</th>
+                </tr>
+              </thead>
+              <tbody id="wd-detail-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

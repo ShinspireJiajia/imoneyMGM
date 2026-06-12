@@ -53,9 +53,15 @@
       <!-- 列表 -->
       <section class="list-card">
         <div class="list-head">
-          <h3>員工清單</h3>
-          <div class="list-head-hint">
-            離職員工透過前台完成身分綁定後，將同步寫入推薦人清單
+          <div>
+            <h3>員工清單</h3>
+            <div class="list-head-hint">
+              每日排程與人員主檔比對，比對不到的員工將自動標記為離職
+            </div>
+          </div>
+          <div class="sync-status">
+            <i class="fa-solid fa-rotate"></i>
+            最後同步：<span id="last-sync-time">—</span>
           </div>
         </div>
 
