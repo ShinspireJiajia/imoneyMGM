@@ -785,3 +785,41 @@
   margin-top: 2px;
   letter-spacing: 0.3px;
 }
+
+/* ===================== 提領明細 modal — 摘要列 ===================== */
+.wd-detail-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  background: linear-gradient(135deg, var(--color-primary-50) 0%, #fdf4ff 100%);
+  border: 1px solid var(--color-primary-100);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 4px;
+}
+
+.wd-detail-summary .item {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+}
+
+.wd-detail-summary .item span {
+  display: block;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+.wd-detail-summary .item strong {
+  display: block;
+  font-size: var(--font-sm);
+  color: var(--color-primary-dark);
+  font-weight: 700;
+}
+
+/* 明細表（小尺寸） */
+.data-table-sm th,
+.data-table-sm td {
+  padding: 8px 10px;
+  font-size: var(--font-xs);
+}

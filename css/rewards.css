@@ -1125,3 +1125,100 @@
   font-size: 14px;
   color: var(--color-text-secondary);
 }
+
+/* ===================== 提領編號分組卡片（處理中 / 已完成） ===================== */
+.reward-item.reward-item-group {
+  flex-direction: column;
+  padding: 12px 14px;
+  gap: 0;
+}
+
+.reward-item.reward-item-group .reward-item-body,
+.reward-item.reward-item-group .reward-item-amount {
+  display: none;
+}
+
+.wd-group-id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  margin-bottom: 10px;
+}
+
+.wd-group-id i {
+  color: var(--color-primary);
+}
+
+.wd-group-items {
+  border-top: 1px solid var(--color-border-light);
+  padding-top: 8px;
+  margin-bottom: 4px;
+}
+
+.wd-group-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  font-size: var(--font-sm);
+  color: var(--color-text);
+  border-bottom: 1px dashed var(--color-border-light);
+}
+
+.wd-group-item:last-child {
+  border-bottom: none;
+}
+
+.wd-group-item-name {
+  color: var(--color-text-secondary);
+}
+
+.wd-group-item-amount {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.wd-group-fee-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0 2px;
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border-light);
+  margin-top: 4px;
+}
+
+.wd-group-fee {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #ef4444;
+}
+
+.wd-group-net-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0 8px;
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.wd-group-net {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-success-dark);
+}
+
+.wd-group-method {
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+  padding-bottom: 4px;
+}

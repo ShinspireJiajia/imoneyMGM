@@ -445,6 +445,17 @@ a.rv-ext-link:hover { opacity: 0.75; }
   color: var(--color-text-secondary);
 }
 
+.rv-reason.tone-danger {
+  background: #FEF2F2;
+  border-left-color: var(--color-danger);
+  color: #991B1B;
+}
+
+/* 警示代碼說明 section icon */
+#rv-section-reason h4 i {
+  color: var(--color-warning);
+}
+
 .rv-snapshot {
   padding: 10px 14px;
   background: var(--color-bg);

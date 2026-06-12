@@ -37,3 +37,18 @@
   color: var(--color-text-muted);
   border: 1px solid var(--color-border);
 }
+
+/* 同步狀態列 */
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.sync-status i {
+  color: var(--color-success);
+  font-size: 12px;
+}
