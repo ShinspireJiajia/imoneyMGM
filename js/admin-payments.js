@@ -1,14 +1,297 @@
 /* ==========================================================
    admin-payments.js - 分潤帳務（財務功能）
-   功能：列表、批次標記、異動歷程、Append-only 稽核
+   功能：列表（以提領編號為主）、批次標記、明細表格、Append-only 稽核
    ========================================================== */
 
 (function () {
   'use strict';
 
-  // 款項 demo
+  // ==========================================================
+  // 提領編號 demo
+  // 每個 WITHDRAWAL 代表會員一次提領申請（可包含多筆款項）
   // status: pending（待撥款）/ transferred（已匯款）
   //        / pickup（待現場領取）/ completed（已領取）/ failed（撥款回退）
+  // ==========================================================
+  const WITHDRAWALS = [
+    {
+      id: 'WD-2026052201',
+      memberId: 'U240105002',
+      memberName: '李大華',
+      tag: '員工',
+      method: 'transfer',
+      bank: '玉山銀行',
+      bankLast4: '1234',
+      branch: null,
+      expectedPickupDate: null,
+      appliedAt: '2026/05/22 10:30',
+      status: 'pending',
+      fee: 30,
+      paymentIds: ['PAY-26052201', 'PAY-26052205'],
+      totalAmount: 8000,
+      netAmount: 7970,
+      transferredAt: null,
+      failReason: null,
+      note: '',
+      history: [],
+    },
+    {
+      id: 'WD-2026052202',
+      memberId: 'U250310001',
+      memberName: '王小毅',
+      tag: '會員',
+      method: 'transfer',
+      bank: '中信銀行',
+      bankLast4: '5678',
+      branch: null,
+      expectedPickupDate: null,
+      appliedAt: '2026/05/22 14:15',
+      status: 'pending',
+      fee: 30,
+      paymentIds: ['PAY-26052202'],
+      totalAmount: 2500,
+      netAmount: 2470,
+      transferredAt: null,
+      failReason: null,
+      note: '',
+      history: [],
+    },
+    {
+      id: 'WD-2026052203',
+      memberId: 'U250310001',
+      memberName: '王小毅',
+      tag: '會員',
+      method: 'cash',
+      bank: null,
+      bankLast4: null,
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/05',
+      appliedAt: '2026/05/22 16:00',
+      status: 'pickup',
+      fee: 0,
+      paymentIds: ['PAY-26052203'],
+      totalAmount: 3000,
+      netAmount: 3000,
+      transferredAt: null,
+      failReason: null,
+      note: '',
+      history: [],
+    },
+    {
+      id: 'WD-2026052104',
+      memberId: 'U230620004',
+      memberName: '陳前輩',
+      tag: '離職員工',
+      method: 'transfer',
+      bank: '玉山銀行',
+      bankLast4: '4567',
+      branch: null,
+      expectedPickupDate: null,
+      appliedAt: '2026/05/22 09:00',
+      status: 'pending',
+      fee: 30,
+      paymentIds: ['PAY-26052105'],
+      totalAmount: 500,
+      netAmount: 470,
+      transferredAt: null,
+      failReason: null,
+      note: '',
+      history: [],
+    },
+    {
+      id: 'WD-2026052005',
+      memberId: 'U240310010',
+      memberName: '黃俊偉',
+      tag: '會員',
+      method: 'cash',
+      bank: null,
+      bankLast4: null,
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/05',
+      appliedAt: '2026/05/20 11:20',
+      status: 'pickup',
+      fee: 0,
+      paymentIds: ['PAY-26052006'],
+      totalAmount: 1800,
+      netAmount: 1800,
+      transferredAt: null,
+      failReason: null,
+      note: '',
+      history: [],
+    },
+    {
+      id: 'WD-2026043001',
+      memberId: 'U241020011',
+      memberName: '何若蓁',
+      tag: '會員',
+      method: 'transfer',
+      bank: '玉山銀行',
+      bankLast4: '1234',
+      branch: null,
+      expectedPickupDate: null,
+      appliedAt: '2026/04/26 09:00',
+      status: 'transferred',
+      fee: 30,
+      paymentIds: ['PAY-26043007', 'PAY-26043008'],
+      totalAmount: 8500,
+      netAmount: 8470,
+      transferredAt: '2026/04/30 14:30',
+      failReason: null,
+      note: '',
+      history: [],
+    },
+    {
+      id: 'WD-2026032801',
+      memberId: 'U240815012',
+      memberName: '高志仁',
+      tag: '會員',
+      method: 'cash',
+      bank: null,
+      bankLast4: null,
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/03/28',
+      appliedAt: '2026/03/25 14:00',
+      status: 'completed',
+      fee: 0,
+      paymentIds: ['PAY-26032808'],
+      totalAmount: 500,
+      netAmount: 500,
+      transferredAt: null,
+      failReason: null,
+      note: '',
+      history: [],
+    },
+    {
+      id: 'WD-2026060101',
+      memberId: 'U250601011',
+      memberName: '陳小玲',
+      tag: '會員',
+      method: 'cash',
+      bank: null,
+      bankLast4: null,
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/03',
+      appliedAt: '2026/06/01 09:30',
+      status: 'pickup',
+      fee: 0,
+      paymentIds: ['PAY-26060301'],
+      totalAmount: 3200,
+      netAmount: 3200,
+      transferredAt: null,
+      failReason: null,
+      note: '',
+      history: [],
+    },
+    {
+      id: 'WD-2026060201',
+      memberId: 'U250601012',
+      memberName: '蔡明芳',
+      tag: '會員',
+      method: 'cash',
+      bank: null,
+      bankLast4: null,
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/05',
+      appliedAt: '2026/06/01 14:00',
+      status: 'pending',
+      fee: 0,
+      paymentIds: ['PAY-26060302'],
+      totalAmount: 2200,
+      netAmount: 2200,
+      transferredAt: null,
+      failReason: null,
+      note: '',
+      history: [],
+    },
+    {
+      id: 'WD-2026060202',
+      memberId: 'U250601013',
+      memberName: '林正豪',
+      tag: '員工',
+      method: 'cash',
+      bank: null,
+      bankLast4: null,
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/06',
+      appliedAt: '2026/06/02 10:15',
+      status: 'pending',
+      fee: 0,
+      paymentIds: ['PAY-26060303'],
+      totalAmount: 4500,
+      netAmount: 4500,
+      transferredAt: null,
+      failReason: null,
+      note: '',
+      history: [],
+    },
+    {
+      id: 'WD-2026060203',
+      memberId: 'U250601014',
+      memberName: '謝佳慧',
+      tag: '會員',
+      method: 'cash',
+      bank: null,
+      bankLast4: null,
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/07',
+      appliedAt: '2026/06/02 15:30',
+      status: 'pending',
+      fee: 0,
+      paymentIds: ['PAY-26060304'],
+      totalAmount: 1500,
+      netAmount: 1500,
+      transferredAt: null,
+      failReason: null,
+      note: '',
+      history: [],
+    },
+    {
+      id: 'WD-2026060204',
+      memberId: 'U250601015',
+      memberName: '吳志遠',
+      tag: '離職員工',
+      method: 'cash',
+      bank: null,
+      bankLast4: null,
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/07',
+      appliedAt: '2026/06/02 16:45',
+      status: 'pending',
+      fee: 0,
+      paymentIds: ['PAY-26060305'],
+      totalAmount: 3800,
+      netAmount: 3800,
+      transferredAt: null,
+      failReason: null,
+      note: '',
+      history: [],
+    },
+    {
+      id: 'WD-2026050301',
+      memberId: 'U241105013',
+      memberName: '林雅妤',
+      tag: '會員',
+      method: 'transfer',
+      bank: '玉山銀行',
+      bankLast4: '9999',
+      branch: null,
+      expectedPickupDate: null,
+      appliedAt: '2026/05/03 10:00',
+      status: 'failed',
+      fee: 30,
+      paymentIds: ['PAY-26050309'],
+      totalAmount: 500,
+      netAmount: 470,
+      transferredAt: null,
+      failReason: '帳號錯誤，銀行退匯',
+      note: '',
+      history: [],
+    },
+  ];
+
+  // ==========================================================
+  // 款項明細 demo（供明細 modal 及 campaign 聚合使用）
+  // 每筆對應一個獎金案件，透過 withdrawalId 歸屬於某個提領編號
+  // ==========================================================
   const PAYMENTS = [
     {
       id: 'PAY-26052201',
@@ -24,6 +307,23 @@
       appliedAt: '2026/05/22 10:30',
       status: 'pending',
       campaignId: 'CAMP-E-2026Q2',
+      withdrawalId: 'WD-2026052201',
+    },
+    {
+      id: 'PAY-26052205',
+      caseId: 'M2026051601',
+      memberId: 'U240105002',
+      referrer: '李大華',
+      tag: '員工',
+      product: '信用貸款',
+      amount: 1500,
+      method: 'transfer',
+      bank: '玉山銀行',
+      bankLast4: '1234',
+      appliedAt: '2026/05/22 10:30',
+      status: 'pending',
+      campaignId: 'CAMP-E-2026Q2',
+      withdrawalId: 'WD-2026052201',
     },
     {
       id: 'PAY-26052202',
@@ -39,6 +339,7 @@
       appliedAt: '2026/05/22 14:15',
       status: 'pending',
       campaignId: 'CAMP-C-2026Q2',
+      withdrawalId: 'WD-2026052202',
     },
     {
       id: 'PAY-26052203',
@@ -54,6 +355,7 @@
       appliedAt: '2026/05/22 16:00',
       status: 'pickup',
       campaignId: 'CAMP-C-2026Q2',
+      withdrawalId: 'WD-2026052203',
     },
     {
       id: 'PAY-26052105',
@@ -69,6 +371,7 @@
       appliedAt: '2026/05/22 09:00',
       status: 'pending',
       campaignId: 'CAMP-E-2026Q2',
+      withdrawalId: 'WD-2026052104',
     },
     {
       id: 'PAY-26052006',
@@ -84,6 +387,7 @@
       appliedAt: '2026/05/20 11:20',
       status: 'pickup',
       campaignId: 'CAMP-C-2026Q2',
+      withdrawalId: 'WD-2026052005',
     },
     {
       id: 'PAY-26043007',
@@ -100,6 +404,24 @@
       transferredAt: '2026/04/30 14:30',
       status: 'transferred',
       campaignId: 'CAMP-C-2026Q2',
+      withdrawalId: 'WD-2026043001',
+    },
+    {
+      id: 'PAY-26043008',
+      caseId: 'M2026031210',
+      memberId: 'U241020011',
+      referrer: '何若蓁',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 3000,
+      method: 'transfer',
+      bank: '玉山銀行',
+      bankLast4: '1234',
+      appliedAt: '2026/04/26 09:00',
+      transferredAt: '2026/04/30 14:30',
+      status: 'transferred',
+      campaignId: 'CAMP-C-2026Q2',
+      withdrawalId: 'WD-2026043001',
     },
     {
       id: 'PAY-26032808',
@@ -116,6 +438,7 @@
       pickedUpAt: '2026/03/28 11:30',
       status: 'completed',
       campaignId: 'CAMP-C-2026Q1',
+      withdrawalId: 'WD-2026032801',
     },
     {
       id: 'PAY-26060301',
@@ -131,6 +454,7 @@
       appliedAt: '2026/06/01 09:30',
       status: 'pickup',
       campaignId: 'CAMP-C-2026Q2',
+      withdrawalId: 'WD-2026060101',
     },
     {
       id: 'PAY-26060302',
@@ -146,6 +470,7 @@
       appliedAt: '2026/06/01 14:00',
       status: 'pending',
       campaignId: 'CAMP-C-2026Q2',
+      withdrawalId: 'WD-2026060201',
     },
     {
       id: 'PAY-26060303',
@@ -161,6 +486,7 @@
       appliedAt: '2026/06/02 10:15',
       status: 'pending',
       campaignId: 'CAMP-E-2026Q2',
+      withdrawalId: 'WD-2026060202',
     },
     {
       id: 'PAY-26060304',
@@ -176,6 +502,7 @@
       appliedAt: '2026/06/02 15:30',
       status: 'pending',
       campaignId: 'CAMP-C-2026Q2',
+      withdrawalId: 'WD-2026060203',
     },
     {
       id: 'PAY-26060305',
@@ -191,6 +518,7 @@
       appliedAt: '2026/06/02 16:45',
       status: 'pending',
       campaignId: 'CAMP-E-2026Q2',
+      withdrawalId: 'WD-2026060204',
     },
     {
       id: 'PAY-26050309',
@@ -208,6 +536,7 @@
       status: 'failed',
       failReason: '帳號錯誤，銀行退匯',
       campaignId: 'CAMP-C-2026Q2',
+      withdrawalId: 'WD-2026050301',
     },
   ];
 
@@ -241,28 +570,38 @@
     });
   }
 
-  syncPaymentsWithRewardSource();
+  function syncWithdrawalsFromPayments() {
+    WITHDRAWALS.forEach((w) => {
+      const pays = w.paymentIds.map((pid) => PAYMENTS.find((p) => p.id === pid)).filter(Boolean);
+      if (pays.length === 0) return;
+      w.fee = w.method === 'transfer' ? 30 : 0;
+      w.totalAmount = pays.reduce((s, p) => s + p.amount, 0);
+      w.netAmount = w.totalAmount - w.fee;
+    });
+  }
 
-  // 異動歷程（key 為 paymentId，Append-only）
+  syncPaymentsWithRewardSource();
+  syncWithdrawalsFromPayments();
+
+  // 異動歷程（key 為 withdrawalId，Append-only）
   const HISTORY = {
-    'PAY-26052201': [
-      { time: '2026/05/22 10:30', actor: '推薦人 - 李大華', action: '建立提領申請', desc: '勾選 1 筆，方式：匯款（玉山 *1234）', cls: 'done' },
-      { time: '2026/05/22 11:45', actor: '系統', action: '財務待審佇列', desc: '案件 M2026051504 進入財務待撥款佇列', cls: 'done' },
+    'WD-2026052201': [
+      { time: '2026/05/22 10:30', actor: '推薦人 - 李大華', action: '建立提領申請', desc: '勾選 2 筆，方式：匯款（玉山 *1234）', cls: 'done' },
+      { time: '2026/05/22 11:45', actor: '系統', action: '財務待審佇列', desc: '案件進入財務待撥款佇列', cls: 'done' },
     ],
-    'PAY-26052105': [
+    'WD-2026052104': [
       { time: '2026/05/22 09:00', actor: '推薦人 - 陳前輩', action: '建立提領申請', desc: '勾選 1 筆，方式：匯款（玉山 *4567）', cls: 'done' },
       { time: '2026/05/22 11:30', actor: '財務 - Mary', action: '通過初步審核', desc: '已核對推薦人稅務資料，準備執行匯款', cls: 'done' },
       { time: '2026/05/22 15:20', actor: '財務 - Mary', action: '更新處理備註', desc: '已產出付款指示單，待人工後續作業', cls: '' },
     ],
-    'PAY-26043007': [
-      { time: '2026/04/24 09:00', actor: '系統', action: '案件撥款完成', desc: '貸款主案 M2026042214 撥款 NT$3,500,000', cls: 'done' },
-      { time: '2026/04/24 09:00', actor: '系統', action: '快照計算分潤', desc: '依快照（底包 $2,000 + 0.10% × 撥款額）= $5,500', cls: 'done' },
-      { time: '2026/04/26 09:00', actor: '推薦人 - 何若蓁', action: '建立提領申請', desc: '匯款方式：玉山 *1234', cls: 'done' },
+    'WD-2026043001': [
+      { time: '2026/04/24 09:00', actor: '系統', action: '案件撥款完成', desc: '貸款主案撥款完成', cls: 'done' },
+      { time: '2026/04/26 09:00', actor: '推薦人 - 何若蓁', action: '建立提領申請', desc: '勾選 2 筆，方式：匯款（玉山 *1234）', cls: 'done' },
       { time: '2026/04/28 14:00', actor: '財務 - Mary', action: '通過審核', desc: '稅務資料完整', cls: 'done' },
       { time: '2026/04/30 14:30', actor: '財務 - Mary', action: '完成匯款', desc: '匯出指示已送出，已通知推薦人', cls: 'done' },
       { time: '2026/04/30 15:00', actor: '系統', action: '自動通知推薦人', desc: '已發送 LINE OA 推播：匯款日期 2026/04/30', cls: 'done' },
     ],
-    'PAY-26050309': [
+    'WD-2026050301': [
       { time: '2026/05/03 10:00', actor: '推薦人 - 林雅妤', action: '建立提領申請', desc: '匯款方式：玉山 *9999', cls: 'done' },
       { time: '2026/05/04 11:00', actor: '財務 - John', action: '完成匯款', desc: '匯出指示已送出', cls: 'done' },
       { time: '2026/05/05 13:00', actor: '系統', action: '銀行回退', desc: '銀行系統回報：帳號錯誤，原款項已退回', cls: 'failed' },
@@ -270,31 +609,35 @@
     ],
   };
 
-  // Demo 推薦人已填資訊（實際應由後端提供，此處為前台展示用靜態資料）
+  // Demo 會員已填資訊（以 withdrawalId 為 key）
   const DEMO_MEMBER_DATA = {
-    'PAY-26052201': { realName: '李大華',  idNumber: 'A12****89', bankCode: '808', bankBranch: '0010', bankHolder: '李大華',  bankAccount: '80800100001234' },
-    'PAY-26052202': { realName: '王志誠',  idNumber: 'B23****90', bankCode: '822', bankBranch: '0021', bankHolder: '王志誠',  bankAccount: '82200200005678' },
-    'PAY-26052203': { realName: '王志誠',  idNumber: 'B23****90', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
-    'PAY-26052105': { realName: '陳文全',  idNumber: 'C34****01', bankCode: '808', bankBranch: '0033', bankHolder: '陳文全',  bankAccount: '80800100004567' },
-    'PAY-26052006': { realName: '黃俊偉',  idNumber: 'D45****12', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
-    'PAY-26043007': { realName: '何若蓁',  idNumber: 'F56****23', bankCode: '808', bankBranch: '0044', bankHolder: '何若蓁',  bankAccount: '80800100001234' },
-    'PAY-26032808': { realName: '高志仁',  idNumber: 'G67****34', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
-    'PAY-26060301': { realName: '陳小玲',  idNumber: 'H78****45', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
-    'PAY-26060302': { realName: '蔡明芳',  idNumber: 'I89****56', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
-    'PAY-26060303': { realName: '林正豪',  idNumber: 'J90****67', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
-    'PAY-26060304': { realName: '謝佳慧',  idNumber: 'K01****78', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
-    'PAY-26060305': { realName: '吳志遠',  idNumber: 'L12****89', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
-    'PAY-26050309': { realName: '林雅妤',  idNumber: 'M23****90', bankCode: '808', bankBranch: '0055', bankHolder: '林雅妤',  bankAccount: '80800100009999' },
+    'WD-2026052201': { realName: '李大華',  idNumber: 'A12****89', bankCode: '808', bankBranch: '0010', bankHolder: '李大華',  bankAccount: '80800100001234' },
+    'WD-2026052202': { realName: '王志誠',  idNumber: 'B23****90', bankCode: '822', bankBranch: '0021', bankHolder: '王志誠',  bankAccount: '82200200005678' },
+    'WD-2026052203': { realName: '王志誠',  idNumber: 'B23****90', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'WD-2026052104': { realName: '陳文全',  idNumber: 'C34****01', bankCode: '808', bankBranch: '0033', bankHolder: '陳文全',  bankAccount: '80800100004567' },
+    'WD-2026052005': { realName: '黃俊偉',  idNumber: 'D45****12', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'WD-2026043001': { realName: '何若蓁',  idNumber: 'F56****23', bankCode: '808', bankBranch: '0044', bankHolder: '何若蓁',  bankAccount: '80800100001234' },
+    'WD-2026032801': { realName: '高志仁',  idNumber: 'G67****34', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'WD-2026060101': { realName: '陳小玲',  idNumber: 'H78****45', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'WD-2026060201': { realName: '蔡明芳',  idNumber: 'I89****56', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'WD-2026060202': { realName: '林正豪',  idNumber: 'J90****67', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'WD-2026060203': { realName: '謝佳慧',  idNumber: 'K01****78', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'WD-2026060204': { realName: '吳志遠',  idNumber: 'L12****89', bankCode: null,  bankBranch: null,   bankHolder: null,     bankAccount: null },
+    'WD-2026050301': { realName: '林雅妤',  idNumber: 'M23****90', bankCode: '808', bankBranch: '0055', bankHolder: '林雅妤',  bankAccount: '80800100009999' },
   };
 
   // 同步讀取用戶在 withdrawal 填寫的提款資料（localStorage.mgm_pending_withdraw_apply）
-  function getDemoMemberData(payId) {
-    const demo = DEMO_MEMBER_DATA[payId] || { realName: '—', idNumber: '—', bankCode: null, bankBranch: null, bankHolder: null, bankAccount: null };
-    const p = PAYMENTS.find((x) => x.id === payId);
-    if (p) {
+  function getDemoMemberData(wdId) {
+    const demo = DEMO_MEMBER_DATA[wdId] || { realName: '—', idNumber: '—', bankCode: null, bankBranch: null, bankHolder: null, bankAccount: null };
+    const w = WITHDRAWALS.find((x) => x.id === wdId);
+    if (w) {
       try {
         const apply = JSON.parse(localStorage.getItem('mgm_pending_withdraw_apply') || '[]');
-        const entry = apply.find((a) => a.id === p.caseId);
+        const caseIds = w.paymentIds.map((pid) => {
+          const p = PAYMENTS.find((x) => x.id === pid);
+          return p ? p.caseId : null;
+        }).filter(Boolean);
+        const entry = apply.find((a) => caseIds.includes(a.id));
         if (entry) {
           return Object.assign({}, demo, {
             realName:    entry.realName    || demo.realName,
@@ -311,16 +654,16 @@
   }
 
   const STATUS_META = {
-    pending: { label: '待撥款', cls: 'pending', icon: 'fa-hourglass-half' },
-    transferred: { label: '已匯款', cls: 'transferred', icon: 'fa-circle-check' },
-    pickup: { label: '待現場領取', cls: 'pickup', icon: 'fa-store' },
-    completed: { label: '已領取', cls: 'completed', icon: 'fa-handshake' },
-    failed: { label: '銀行退匯', cls: 'failed', icon: 'fa-circle-exclamation' },
+    pending:     { label: '待撥款',    cls: 'pending',     icon: 'fa-hourglass-half' },
+    transferred: { label: '已匯款',    cls: 'transferred', icon: 'fa-circle-check' },
+    pickup:      { label: '待現場領取', cls: 'pickup',      icon: 'fa-store' },
+    completed:   { label: '已領取',    cls: 'completed',   icon: 'fa-handshake' },
+    failed:      { label: '銀行退匯',  cls: 'failed',      icon: 'fa-circle-exclamation' },
   };
 
   const TAG_META = {
-    會員: 'badge-purple',
-    員工: 'badge-green',
+    會員:   'badge-purple',
+    員工:   'badge-green',
     離職員工: 'badge-yellow',
   };
 
@@ -338,12 +681,10 @@
     status: 'all',
     method: 'all',
   };
-  // 分頁狀態
   let pgPage = 1;
   let pgSize = 20;
 
   // ---------- 編輯匯款資訊權限（demo：localStorage 持久化） ----------
-  // 實際部署時應由 RBAC / 帳號權限管理系統決定
   const PERM_KEY = 'mgm_perm_edit_payment';
   function canEditPayment() {
     try { return localStorage.getItem(PERM_KEY) === '1'; } catch { return false; }
@@ -356,60 +697,56 @@
     return n.toLocaleString();
   }
 
-  function fmtMethod(p) {
-    if (p.method === 'transfer') return '匯款';
-    if (p.method === 'cash') return '現場';
+  function fmtMethod(w) {
+    if (w.method === 'transfer') return '匯款';
+    if (w.method === 'cash') return '現場';
     return '—';
   }
 
-  function hasWithdrawDemand(p) {
-    return !!p.appliedAt;
-  }
-
-  function isBatchSelectable(p) {
-    return hasWithdrawDemand(p) && (p.status === 'pending' || p.status === 'pickup');
+  function isBatchSelectable(w) {
+    return !!w.appliedAt && (w.status === 'pending' || w.status === 'pickup');
   }
 
   function normalizeSelected() {
     selected = new Set(
       [...selected].filter((id) => {
-        const p = PAYMENTS.find((x) => x.id === id);
-        return p && isBatchSelectable(p);
+        const w = WITHDRAWALS.find((x) => x.id === id);
+        return w && isBatchSelectable(w);
       })
     );
   }
 
-  function canMarkStatus(p) {
-    return p.method === 'transfer' && (p.status === 'pending' || p.status === 'transferred' || p.status === 'failed');
+  function canMarkStatus(w) {
+    return w.method === 'transfer' && (w.status === 'pending' || w.status === 'transferred' || w.status === 'failed');
   }
 
-  function renderRow(p) {
-    const s = STATUS_META[p.status];
-    const tagCls = TAG_META[p.tag] || 'badge-gray';
-    const rowCls = p.status === 'failed' ? 'row-failed' : '';
-    const checked = selected.has(p.id);
-    const canCheck = isBatchSelectable(p);
+  function renderWithdrawalRow(w) {
+    const s = STATUS_META[w.status];
+    const tagCls = TAG_META[w.tag] || 'badge-gray';
+    const rowCls = w.status === 'failed' ? 'row-failed' : '';
+    const checked = selected.has(w.id);
+    const canCheck = isBatchSelectable(w);
 
-    const methodCell = p.method === 'cash'
-      ? `現場${p.expectedPickupDate
-          ? `<div style="margin-top:4px;display:inline-flex;align-items:center;gap:4px;background:var(--color-warning-light);color:var(--color-warning-dark);padding:2px 8px;border-radius:var(--radius-pill);font-size:11px;font-weight:600;"><i class="fa-regular fa-calendar" style="font-size:10px;"></i>預計 ${p.expectedPickupDate}</div>`
+    const methodCell = w.method === 'cash'
+      ? `現場${w.expectedPickupDate
+          ? `<div style="margin-top:4px;display:inline-flex;align-items:center;gap:4px;background:var(--color-warning-light);color:var(--color-warning-dark);padding:2px 8px;border-radius:var(--radius-pill);font-size:11px;font-weight:600;"><i class="fa-regular fa-calendar" style="font-size:10px;"></i>預計 ${w.expectedPickupDate}</div>`
           : '<div style="margin-top:4px;font-size:11px;color:var(--color-text-muted);">未設定預計日</div>'}`
-      : fmtMethod(p);
+      : fmtMethod(w);
 
     return `
       <tr class="${rowCls}">
         <td>
           ${canCheck
-            ? `<input type="checkbox" class="row-check" data-id="${p.id}" ${checked ? 'checked' : ''}>`
+            ? `<input type="checkbox" class="row-check" data-id="${w.id}" ${checked ? 'checked' : ''}>`
             : ''}
         </td>
-        <td class="cell-mono"><span class="mono-strong">${p.id}</span></td>
-        <td class="cell-mono">${p.caseId}</td>
-        <td class="cell-mono">${p.memberId || '—'}</td>
-        <td><strong>${p.referrer}</strong></td>
-        <td>${p.tag}</td>
-        <td class="cell-tax">${getTaxInfoByTag(p.tag)}</td>
-        <td class="cell-amount">$${fmt(p.amount)}</td>
+        <td class="cell-mono"><span class="mono-strong">${w.id}</span></td>
+        <td class="cell-mono">${w.memberId || '—'}</td>
+        <td><strong>${w.memberName}</strong></td>
+        <td>${w.tag}</td>
+        <td class="cell-amount">$${fmt(w.totalAmount)}</td>
+        <td class="cell-amount" style="color:var(--color-text-muted);">$${fmt(w.fee)}</td>
+        <td class="cell-amount" style="font-weight:700;color:var(--color-success-dark);">$${fmt(w.netAmount)}</td>
         <td class="cell-method">${methodCell}</td>
         <td>
           <span class="pay-status ${s.cls}">
@@ -417,19 +754,19 @@
           </span>
         </td>
         <td>
-          <button type="button" class="action-btn" data-action="attach" data-id="${p.id}">
+          <button type="button" class="action-btn" data-action="attach" data-id="${w.id}">
             <i class="fa-solid fa-paperclip"></i>提領資料
           </button>
-          <button type="button" class="action-btn" data-action="history" data-id="${p.id}">
-            <i class="fa-solid fa-clock-rotate-left"></i>歷程
+          <button type="button" class="action-btn" data-action="detail" data-id="${w.id}">
+            <i class="fa-solid fa-list-ul"></i>明細
           </button>
-          <button type="button" class="action-btn note" data-action="note-pay" data-id="${p.id}" title="${p.note ? '已有備註：' + p.note : '新增備註'}">
-            <i class="fa-regular fa-note-sticky"></i>${p.note ? '備註•' : '備註'}
+          <button type="button" class="action-btn note" data-action="note-pay" data-id="${w.id}" title="${w.note ? '已有備註：' + w.note : '新增備註'}">
+            <i class="fa-regular fa-note-sticky"></i>${w.note ? '備註•' : '備註'}
           </button>
-          ${canMarkStatus(p) ? `<button type="button" class="action-btn mark-status" data-action="mark-status" data-id="${p.id}">
+          ${canMarkStatus(w) ? `<button type="button" class="action-btn mark-status" data-action="mark-status" data-id="${w.id}">
             <i class="fa-solid fa-pen-to-square"></i>更新狀態
           </button>` : ''}
-          ${canEditPayment() ? `<button type="button" class="action-btn" data-action="edit-pay" data-id="${p.id}">
+          ${canEditPayment() ? `<button type="button" class="action-btn" data-action="edit-pay" data-id="${w.id}">
             <i class="fa-solid fa-pen-to-square"></i>編輯
           </button>` : ''}
         </td>
@@ -453,34 +790,23 @@
     return d;
   }
 
-  function isInDateRange(p, dateFrom, dateTo) {
-    const appliedDate = parseAppliedDate(p.appliedAt);
-    if (!appliedDate) return false;
-    const from = parseFilterDate(dateFrom, false);
-    const to = parseFilterDate(dateTo, true);
-    if (from && appliedDate < from) return false;
-    if (to && appliedDate > to) return false;
-    return true;
-  }
-
-  function getFiltered() {
-    const kw     = filters.keyword.trim().toLowerCase();
-    const rnKw   = filters.referrer.trim().toLowerCase();
-    const midKw  = filters.memberId.trim().toLowerCase();
-    const result = PAYMENTS.filter((p) => {
-      if (filters.status !== 'all' && p.status !== filters.status) return false;
-      if (filters.method !== 'all' && p.method !== filters.method) return false;
-      if (rnKw  && !(p.referrer  || '').toLowerCase().includes(rnKw))  return false;
-      if (midKw && !(p.memberId  || '').toLowerCase().includes(midKw)) return false;
+  function getFilteredWithdrawals() {
+    const kw    = filters.keyword.trim().toLowerCase();
+    const rnKw  = filters.referrer.trim().toLowerCase();
+    const midKw = filters.memberId.trim().toLowerCase();
+    const result = WITHDRAWALS.filter((w) => {
+      if (filters.status !== 'all' && w.status !== filters.status) return false;
+      if (filters.method !== 'all' && w.method !== filters.method) return false;
+      if (rnKw  && !(w.memberName || '').toLowerCase().includes(rnKw))  return false;
+      if (midKw && !(w.memberId   || '').toLowerCase().includes(midKw)) return false;
       if (!kw) return true;
 
-      const haystack = [p.id, p.caseId, p.memberId, p.referrer, p.tag, p.product]
+      const haystack = [w.id, w.memberId, w.memberName, w.tag, ...w.paymentIds]
         .filter(Boolean)
         .join(' ')
         .toLowerCase();
       return haystack.includes(kw);
     });
-    // 申請日期近到遠（新到舊）
     return result.sort((a, b) => {
       const ta = String(a.appliedAt || '').replace(/\//g, '-');
       const tb = String(b.appliedAt || '').replace(/\//g, '-');
@@ -490,7 +816,7 @@
 
   function render() {
     normalizeSelected();
-    const filtered = getFiltered();
+    const filtered = getFilteredWithdrawals();
     const total = filtered.length;
     const maxPage = Math.max(1, Math.ceil(total / pgSize));
     if (pgPage > maxPage) pgPage = maxPage;
@@ -499,24 +825,22 @@
 
     const tbody = document.getElementById('payments-tbody');
     tbody.innerHTML = pageRows.length
-      ? pageRows.map(renderRow).join('')
-      : `<tr><td colspan="12" style="padding:32px;text-align:center;color:var(--color-text-muted);">此分類目前沒有資料</td></tr>`;
+      ? pageRows.map(renderWithdrawalRow).join('')
+      : `<tr><td colspan="11" style="padding:32px;text-align:center;color:var(--color-text-muted);">此分類目前沒有資料</td></tr>`;
 
-    // KPI：待匯款（transfer+pending）、現場領取（cash 待領或待匯）、本月已撥款
-    const transferPending = PAYMENTS.filter((p) => p.method === 'transfer' && p.status === 'pending');
-    const cashPending     = PAYMENTS.filter((p) => p.method === 'cash' && (p.status === 'pending' || p.status === 'pickup'));
-    const done            = PAYMENTS.filter((p) => p.status === 'transferred' || p.status === 'completed');
+    // KPI：以 WITHDRAWALS 計算
+    const transferPending = WITHDRAWALS.filter((w) => w.method === 'transfer' && w.status === 'pending');
+    const cashPending     = WITHDRAWALS.filter((w) => w.method === 'cash' && (w.status === 'pending' || w.status === 'pickup'));
+    const done            = WITHDRAWALS.filter((w) => w.status === 'transferred' || w.status === 'completed');
 
-    document.getElementById('kpi-transfer-amount').textContent = '$' + fmt(transferPending.reduce((s, p) => s + p.amount, 0));
+    document.getElementById('kpi-transfer-amount').textContent = '$' + fmt(transferPending.reduce((s, w) => s + w.netAmount, 0));
     document.getElementById('kpi-transfer-count').textContent  = transferPending.length + ' 筆';
-    document.getElementById('kpi-cash-amount').textContent     = '$' + fmt(cashPending.reduce((s, p) => s + p.amount, 0));
+    document.getElementById('kpi-cash-amount').textContent     = '$' + fmt(cashPending.reduce((s, w) => s + w.netAmount, 0));
     document.getElementById('kpi-cash-count').textContent      = cashPending.length + ' 筆';
-    document.getElementById('kpi-done-amount').textContent     = '$' + fmt(done.reduce((s, p) => s + p.amount, 0));
+    document.getElementById('kpi-done-amount').textContent     = '$' + fmt(done.reduce((s, w) => s + w.netAmount, 0));
     document.getElementById('kpi-done-count').textContent      = done.length + ' 筆';
 
-    // 分頁元件
     renderPagination(total, maxPage);
-
     bindRowActions();
     updateBatchBar();
   }
@@ -535,7 +859,6 @@
     const btns = [];
     btns.push(`<button class="pg-btn" data-pg="prev" ${pgPage <= 1 ? 'disabled' : ''}>«</button>`);
 
-    // 顯示頁碼：當前 ±2，總是顯示 1 與最後一頁
     const pages = new Set([1, maxPage]);
     for (let i = Math.max(1, pgPage - 2); i <= Math.min(maxPage, pgPage + 2); i++) pages.add(i);
     const sorted = [...pages].sort((a, b) => a - b);
@@ -564,8 +887,8 @@
     document.querySelectorAll('.row-check').forEach((cb) => {
       cb.addEventListener('change', () => {
         const id = cb.dataset.id;
-        const p = PAYMENTS.find((x) => x.id === id);
-        if (!p || !isBatchSelectable(p)) {
+        const w = WITHDRAWALS.find((x) => x.id === id);
+        if (!w || !isBatchSelectable(w)) {
           cb.checked = false;
           selected.delete(id);
         } else if (cb.checked) {
@@ -576,8 +899,8 @@
         updateBatchBar();
       });
     });
-    document.querySelectorAll('[data-action="history"]').forEach((b) =>
-      b.addEventListener('click', () => openHistory(b.dataset.id))
+    document.querySelectorAll('[data-action="detail"]').forEach((b) =>
+      b.addEventListener('click', () => openWithdrawalDetail(b.dataset.id))
     );
     document.querySelectorAll('[data-action="edit-pay"]').forEach((b) =>
       b.addEventListener('click', () => openEditPay(b.dataset.id))
@@ -601,8 +924,8 @@
       return;
     }
     bar.classList.remove('hidden');
-    const items = [...selected].map((id) => PAYMENTS.find((p) => p.id === id)).filter(Boolean);
-    const sum = items.reduce((s, p) => s + p.amount, 0);
+    const items = [...selected].map((id) => WITHDRAWALS.find((w) => w.id === id)).filter(Boolean);
+    const sum = items.reduce((s, w) => s + w.netAmount, 0);
     document.getElementById('batch-count').textContent = items.length;
     document.getElementById('batch-amount').textContent = '$' + fmt(sum);
   }
@@ -617,11 +940,16 @@
     }
     const now = new Date().toLocaleString('zh-TW');
     ids.forEach((id) => {
-      const p = PAYMENTS.find(x => x.id === id);
-      if (!p || !isBatchSelectable(p)) return;
-      if (newStatus) p.status = newStatus;
-      if (note) p.note = note;
-      // 寫入歷程
+      const w = WITHDRAWALS.find((x) => x.id === id);
+      if (!w || !isBatchSelectable(w)) return;
+      if (newStatus) {
+        w.status = newStatus;
+        w.paymentIds.forEach((pid) => {
+          const p = PAYMENTS.find((x) => x.id === pid);
+          if (p) p.status = newStatus;
+        });
+      }
+      if (note) w.note = note;
       if (!HISTORY[id]) HISTORY[id] = [];
       HISTORY[id].unshift({
         time: now,
@@ -640,14 +968,14 @@
   function bindBatchActions() {
     document.getElementById('btn-batch-transferred').addEventListener('click', () => {
       if (selected.size === 0) return;
-      if (confirm(`將 ${selected.size} 筆款項標記為「已撥款」？\n備註內容也會一併寫入。`)) {
+      if (confirm(`將 ${selected.size} 筆提領編號標記為「已撥款」？\n備註內容也會一併寫入。`)) {
         applyBatchNote('transferred', '已撥款', 'transferred');
       }
     });
 
     document.getElementById('btn-batch-completed').addEventListener('click', () => {
       if (selected.size === 0) return;
-      if (confirm(`將 ${selected.size} 筆款項標記為「已領取」？`)) {
+      if (confirm(`將 ${selected.size} 筆提領編號標記為「已領取」？`)) {
         applyBatchNote('completed', '已領取', 'completed');
       }
     });
@@ -656,7 +984,6 @@
       selected.clear();
       render();
     });
-
   }
 
   function applyFiltersFromUI() {
@@ -704,15 +1031,17 @@
     });
   }
 
-  // ==================== 匯出對帳檔（CSV） ====================
-  // 加 UTF-8 BOM 讓 Excel 開啟不亂碼
+  // ==================== 匯出查詢結果（CSV 兩段：提領摘要 + 款項明細） ====================
   function csvEscape(v) {
     if (v == null) return '';
     const s = String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   }
   function downloadCsv(filename, rows) {
-    const csv = rows.map((r) => r.map(csvEscape).join(',')).join('\r\n');
+    const csv = rows.map((r) => {
+      if (r.length === 0) return '';
+      return r.map(csvEscape).join(',');
+    }).join('\r\n');
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -727,42 +1056,57 @@
     const btn = document.getElementById('btn-export-recon');
     if (!btn) return;
     btn.addEventListener('click', () => {
-      const rows = getFiltered();
-      if (rows.length === 0) { alert('目前無資料可匯出，請調整篩選條件。'); return; }
-      const header = [
-        '款項編號','案號','會員編號','推薦人','真實姓名','身分證號碼',
-        '標籤','稅務資訊','產品','金額(NT$)',
-        '撥款方式','帳號戶名','完整帳號','銀行/門市',
-        '撥款時間','領取時間','狀態','備註',
+      const wdRows = getFilteredWithdrawals();
+      if (wdRows.length === 0) { alert('目前無資料可匯出，請調整篩選條件。'); return; }
+
+      // 段一：提領摘要（每行一筆提領）
+      const summaryHeader = [
+        '提領編號','會員編號','推薦人','標籤','金額(NT$)','匯款手續費(NT$)','應付金額(NT$)',
+        '撥款方式','銀行/門市','申請時間','狀態','備註',
       ];
-      const data = rows.map((p) => {
-        const m = getDemoMemberData(p.id);
-        const methodDetail = p.method === 'transfer' ? `${p.bank || ''} *${p.bankLast4 || ''}` : (p.branch || '');
+      const summaryData = wdRows.map((w) => {
+        const methodDetail = w.method === 'transfer'
+          ? `${w.bank || ''} *${w.bankLast4 || ''}`
+          : (w.branch || '');
         return [
-          p.id, p.caseId, p.memberId || '', p.referrer,
-          m.realName || '', m.idNumber || '',
-          p.tag, getTaxInfoByTag(p.tag), p.product, p.amount,
-          (p.method === 'transfer' ? '匯款' : '現場領取'),
-          m.bankHolder || '', m.bankAccount || '',
+          w.id, w.memberId || '', w.memberName, w.tag,
+          w.totalAmount, w.fee, w.netAmount,
+          w.method === 'transfer' ? '匯款' : '現場領取',
           methodDetail,
-          p.transferredAt || '', p.pickedUpAt || '',
-          STATUS_META[p.status]?.label || p.status,
-          p.note || (p.failReason || ''),
+          w.appliedAt,
+          STATUS_META[w.status]?.label || w.status,
+          w.note || '',
         ];
       });
-      const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
-      downloadCsv(`reconciliation_${stamp}.csv`, [header, ...data]);
-      toast(`已匯出 ${rows.length} 筆對帳資料`);
+
+      // 段二：款項明細（每行一筆 payment）
+      const detailHeader = ['所屬提領編號','款項編號','案號','產品','金額(NT$)','狀態'];
+      const detailData = wdRows.flatMap((w) =>
+        w.paymentIds.map((pid) => {
+          const p = PAYMENTS.find((x) => x.id === pid);
+          if (!p) return null;
+          return [
+            w.id, p.id, p.caseId, p.product || '—', p.amount,
+            STATUS_META[p.status]?.label || p.status,
+          ];
+        }).filter(Boolean)
+      );
+
+      const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      downloadCsv(`reconciliation_${stamp}.csv`, [
+        summaryHeader, ...summaryData, [], detailHeader, ...detailData,
+      ]);
+      toast(`已匯出 ${wdRows.length} 筆提領資料（含明細 ${detailData.length} 筆）`);
     });
   }
 
-  // ==================== 匯出匯款檔（銀行批次轉帳格式） ====================
+  // ==================== 匯出匯款檔（銀行批次轉帳格式，以提領編號為單位） ====================
   function bindExportTransfer() {
     const btn = document.getElementById('btn-export-transfer');
     if (!btn) return;
     btn.addEventListener('click', () => {
-      const rows = getFiltered().filter((p) => p.method === 'transfer' && (p.status === 'pending' || p.status === 'approved'));
-      if (rows.length === 0) { alert('目前無「待匯款」或「已核准」的匯款項目可匯出。'); return; }
+      const rows = getFilteredWithdrawals().filter((w) => w.method === 'transfer' && (w.status === 'pending' || w.status === 'approved'));
+      if (rows.length === 0) { alert('目前無「待匯款」的匯款提領可匯出。'); return; }
 
       const escHtml = (s) => String(s == null ? '' : s)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -777,21 +1121,21 @@
         [['','t'],['1.請於紅框範圍內輸入資料，每批限制 800 筆以內','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t']],
         [['','t'],['2.粉紅底欄位為必須輸入欄位','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t']],
         [['','t'],['3.查詢解款行及分行代號：http://www.fisc.com.tw','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t']],
-        [['','t'],['4.本轉檔程式適用Microsoft Excel 97 - Excel 2003規格，若非此規格請先於Excel轉檔為Microsoft Excel 97 - Excel 2003格式','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t']],
+        [['','t'],['4.本轉檔程式適用Microsoft Excel 97 - Excel 2003規格','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t'],['','t']],
       ];
 
-      const dataRows = rows.map((p) => {
-        const m = getDemoMemberData(p.id);
+      const dataRows = rows.map((w) => {
+        const m = getDemoMemberData(w.id);
         const acct = String(m.bankAccount || '').replace(/[-\s]/g, '');
         return [
           ['0','t'],
           [m.bankCode || '', 't'],
           [m.bankBranch || '', 't'],
-          [p.amount, 'n'],
+          [w.netAmount, 'n'],
           [acct, 't'],
           [m.bankHolder || '', 't'],
           ['', 't'],
-          [p.id, 't'],
+          [w.id, 't'],
           ['', 't'],
           ['', 't'],
         ];
@@ -835,13 +1179,11 @@
     });
   }
 
-  // ==================== 月結報表 ====================
+  // ==================== 月結報表（仍以 PAYMENTS 個別款項計算） ====================
   function getMonthKey(d) {
-    // YYYY-MM
     return d.toISOString().slice(0, 7);
   }
   function parseAppliedMonth(p) {
-    // p.appliedAt 格式 '2026/05/22 10:30' → '2026-05'
     const m = String(p.appliedAt).match(/^(\d{4})\/(\d{2})/);
     return m ? `${m[1]}-${m[2]}` : '';
   }
@@ -910,7 +1252,6 @@
     const modal = document.getElementById('monthly-modal');
     if (!btnOpen || !modal) return;
 
-    // 預設為目前月份
     const now = new Date();
     monthInput.value = getMonthKey(now);
 
@@ -931,7 +1272,6 @@
     btnDl.addEventListener('click', () => {
       const data = calcMonthly(monthInput.value);
       if (data.total === 0) { alert('本月份無資料可下載'); return; }
-      // 多工作表概念以多區塊輸出（CSV 不支援工作表，採分區段）
       const rows = [
         [`月結報表 ${data.yyyymm}`],
         ['總筆數', data.total, '合計金額(NT$)', data.sumAmount],
@@ -945,10 +1285,10 @@
         ['【依產品】'], ['產品','筆數','金額(NT$)'],
         ...Object.entries(data.byProduct).map(([k,v]) => [k, v.count, v.amount]),
         [],
-        ['【明細】'],
-        ['款項編號','案號','會員編號','推薦人','標籤','稅務資訊','產品','金額','方式','申請日期','狀態'],
+        ['【款項明細】'],
+        ['款項編號','所屬提領編號','案號','產品','金額','方式','申請日期','狀態'],
         ...data.rows.map((p) => [
-          p.id, p.caseId, p.memberId || '', p.referrer, p.tag, getTaxInfoByTag(p.tag), p.product,
+          p.id, p.withdrawalId || '—', p.caseId, p.product,
           p.amount, p.method === 'transfer' ? '匯款' : '現場領取',
           p.appliedAt, STATUS_META[p.status]?.label || p.status,
         ]),
@@ -958,70 +1298,38 @@
     });
   }
 
-  // 異動歷程
-  // 從付款欄位自動生成基本事件，與手動 HISTORY 合併後依時間排序
-  function buildHistoryTimeline(p) {
-    const manual = HISTORY[p.id] || [];
+  // ==================== 提領明細 Modal（表格格式） ====================
+  function openWithdrawalDetail(wdId) {
+    const w = WITHDRAWALS.find((x) => x.id === wdId);
+    if (!w) return;
 
-    // 基本事件：從付款資料欄位衍生
-    const baseline = [];
+    document.getElementById('history-payid').textContent = w.id;
+    document.getElementById('wd-detail-ref').textContent = w.memberName + ' / ' + w.tag;
+    document.getElementById('wd-detail-total').textContent = '$' + fmt(w.totalAmount);
+    document.getElementById('wd-detail-fee').textContent = '-$' + fmt(w.fee);
+    document.getElementById('wd-detail-net').textContent = '$' + fmt(w.netAmount);
+    document.getElementById('wd-detail-method').textContent =
+      w.method === 'transfer'
+        ? `匯款（${w.bank || '—'} *${w.bankLast4 || '—'}）`
+        : `現場領取${w.branch ? '（' + w.branch + '）' : ''}`;
+    const s = STATUS_META[w.status] || {};
+    document.getElementById('wd-detail-status').innerHTML =
+      `<span class="pay-status ${s.cls}"><i class="fa-solid ${s.icon}"></i>${s.label}</span>`;
 
-    if (p.appliedAt) {
-      const desc = p.method === 'transfer'
-        ? `銀行匯款（${p.bank || '—'} 末四碼 *${p.bankLast4 || '—'}）`
-        : `現場領取${p.branch ? '（' + p.branch + '）' : ''}${p.expectedPickupDate ? '，預計 ' + p.expectedPickupDate : ''}`;
-      baseline.push({ time: p.appliedAt, actor: `推薦人 - ${p.referrer}`, action: '建立提領申請', desc, cls: 'done' });
-    }
-
-    if (p.pickedUpAt) {
-      baseline.push({ time: p.pickedUpAt, actor: '門市作業', action: '現場領取完成', desc: `已於【${p.branch || '—'}】完成簽收領取`, cls: 'done' });
-    }
-
-    if (manual.length === 0) {
-      // 無手動歷程時，追加其他里程碑事件
-      if (p.transferredAt && p.status === 'transferred') {
-        baseline.push({ time: p.transferredAt, actor: '財務後台', action: '完成匯款', desc: `已匯款至 ${p.bank || '—'} *${p.bankLast4 || '—'}`, cls: 'done' });
-      }
-      if (p.status === 'failed' && p.failReason) {
-        baseline.push({ time: p.transferredAt || p.appliedAt, actor: '系統', action: '銀行退匯', desc: `退匯原因：${p.failReason}`, cls: 'failed' });
-      }
-      return baseline.sort((a, b) =>
-        String(a.time || '').replace(/\//g, '-').localeCompare(String(b.time || '').replace(/\//g, '-'))
-      );
-    }
-
-    // 手動歷程已存在：只補入 baseline 中尚未被手動條目覆蓋的事件（依 action 比對）
-    const coveredActions = new Set(manual.map((m) => m.action));
-    const extra = baseline.filter((b) => !coveredActions.has(b.action));
-    return [...manual, ...extra].sort((a, b) =>
-      String(a.time || '').replace(/\//g, '-').localeCompare(String(b.time || '').replace(/\//g, '-'))
-    );
-  }
-
-  function openHistory(payId) {
-    const p = PAYMENTS.find((x) => x.id === payId);
-    if (!p) return;
-    document.getElementById('history-payid').textContent = p.id;
-    document.getElementById('history-ref').textContent = p.referrer + ' / ' + p.tag;
-    document.getElementById('history-tax').textContent = getTaxInfoByTag(p.tag);
-    document.getElementById('history-amount').textContent = '$' + fmt(p.amount);
-    document.getElementById('history-method').textContent = fmtMethod(p);
-    document.getElementById('history-status').innerHTML =
-      `<span class="pay-status ${STATUS_META[p.status].cls}">${STATUS_META[p.status].label}</span>`;
-
-    const list = buildHistoryTimeline(p);
-    const wrap = document.getElementById('history-timeline');
-    wrap.innerHTML = list
-      .map(
-        (h) => `
-      <div class="timeline-entry ${h.cls || ''}">
-        <div class="timeline-time">${h.time}</div>
-        <div class="timeline-title">${h.action}</div>
-        <div class="timeline-desc">${h.desc}</div>
-        <div class="timeline-actor"><i class="fa-regular fa-user"></i> ${h.actor}</div>
-      </div>`
-      )
-      .join('');
+    const pays = w.paymentIds.map((pid) => PAYMENTS.find((p) => p.id === pid)).filter(Boolean);
+    const tbody = document.getElementById('wd-detail-tbody');
+    tbody.innerHTML = pays.length
+      ? pays.map((p) => {
+          const ps = STATUS_META[p.status] || {};
+          return `
+            <tr>
+              <td class="cell-mono"><span class="mono-strong">${p.caseId}</span></td>
+              <td>${p.product || '—'}</td>
+              <td class="cell-amount">$${fmt(p.amount)}</td>
+              <td><span class="pay-status ${ps.cls}"><i class="fa-solid ${ps.icon}"></i>${ps.label}</span></td>
+            </tr>`;
+        }).join('')
+      : '<tr><td colspan="4" style="text-align:center;color:var(--color-text-muted);padding:16px;">無關聯款項資料</td></tr>';
 
     document.getElementById('history-modal').classList.add('show');
   }
@@ -1036,28 +1344,28 @@
     setTimeout(() => t.remove(), 2400);
   }
 
-  // ==================== 編輯匯款資訊 ====================
-  function openEditPay(payId) {
-    const p = PAYMENTS.find((x) => x.id === payId);
-    if (!p) return;
+  // ==================== 編輯提領資訊 ====================
+  function openEditPay(wdId) {
+    const w = WITHDRAWALS.find((x) => x.id === wdId);
+    if (!w) return;
     if (!canEditPayment()) {
       alert('您沒有「編輯匯款資訊」權限，請聯繫管理員開啟。');
       return;
     }
 
-    document.getElementById('edit-pay-id').textContent = p.id;
-    document.getElementById('edit-pay-ref').value = `${p.referrer} (${p.tag})`;
-    document.getElementById('edit-pay-method').value = p.method || 'transfer';
-    document.getElementById('edit-pay-status').value = p.status || 'pending';
-    document.getElementById('edit-pay-bank').value = p.bank || '';
-    document.getElementById('edit-pay-last4').value = p.bankLast4 || '';
-    document.getElementById('edit-pay-branch').value = p.branch || '';
-    document.getElementById('edit-pay-expected-pickup').value = p.expectedPickupDate || '';
+    document.getElementById('edit-pay-id').textContent = w.id;
+    document.getElementById('edit-pay-ref').value = `${w.memberName} (${w.tag})`;
+    document.getElementById('edit-pay-method').value = w.method || 'transfer';
+    document.getElementById('edit-pay-status').value = w.status || 'pending';
+    document.getElementById('edit-pay-bank').value = w.bank || '';
+    document.getElementById('edit-pay-last4').value = w.bankLast4 || '';
+    document.getElementById('edit-pay-branch').value = w.branch || '';
+    document.getElementById('edit-pay-expected-pickup').value = w.expectedPickupDate || '';
     document.getElementById('edit-pay-reason').value = '';
-    toggleEditFields(p.method || 'transfer');
+    toggleEditFields(w.method || 'transfer');
 
     document.getElementById('edit-pay-modal').classList.add('show');
-    document.getElementById('edit-pay-modal').dataset.editing = payId;
+    document.getElementById('edit-pay-modal').dataset.editing = wdId;
   }
 
   function toggleEditFields(method) {
@@ -1069,19 +1377,26 @@
     });
   }
 
+  function getWdCaseIds(w) {
+    return w.paymentIds.map((pid) => {
+      const p = PAYMENTS.find((x) => x.id === pid);
+      return p ? p.caseId : null;
+    }).filter(Boolean);
+  }
+
   function saveEditPay() {
     const modal = document.getElementById('edit-pay-modal');
     const id = modal.dataset.editing;
-    const p = PAYMENTS.find((x) => x.id === id);
-    if (!p) return;
+    const w = WITHDRAWALS.find((x) => x.id === id);
+    if (!w) return;
 
     const method = document.getElementById('edit-pay-method').value;
     const nextStatus = document.getElementById('edit-pay-status').value;
     const reason = document.getElementById('edit-pay-reason').value.trim();
     if (!reason) { alert('請填寫變更原因（必填，將寫入異動歷程）'); return; }
 
-    const oldMethod = p.method;
-    const oldStatus = p.status;
+    const oldMethod = w.method;
+    const oldStatus = w.status;
 
     if (method === 'transfer') {
       const bank = document.getElementById('edit-pay-bank').value.trim();
@@ -1090,66 +1405,86 @@
         alert('請填寫銀行名稱與帳號末四碼（4 位數字）');
         return;
       }
-      p.method = 'transfer';
-      p.bank = bank;
-      p.bankLast4 = last4;
-      delete p.branch;
+      w.method = 'transfer'; w.bank = bank; w.bankLast4 = last4;
+      delete w.branch; delete w.expectedPickupDate;
+      w.paymentIds.forEach((pid) => {
+        const p = PAYMENTS.find((x) => x.id === pid);
+        if (p) { p.method = 'transfer'; p.bank = bank; p.bankLast4 = last4; delete p.branch; }
+      });
     } else if (method === 'cash') {
       const branch = document.getElementById('edit-pay-branch').value.trim();
       if (!branch) { alert('請填寫領取門市'); return; }
-      p.method = 'cash';
-      p.branch = branch;
-      p.expectedPickupDate = document.getElementById('edit-pay-expected-pickup').value || '';
-      delete p.bank;
-      delete p.bankLast4;
+      w.method = 'cash'; w.branch = branch;
+      w.expectedPickupDate = document.getElementById('edit-pay-expected-pickup').value || '';
+      delete w.bank; delete w.bankLast4;
+      w.paymentIds.forEach((pid) => {
+        const p = PAYMENTS.find((x) => x.id === pid);
+        if (p) { p.method = 'cash'; p.branch = branch; delete p.bank; delete p.bankLast4; }
+      });
     }
 
-    p.status = nextStatus;
-
+    w.status = nextStatus;
     const nowText = new Date().toLocaleString('zh-TW');
+
     if (nextStatus === 'transferred') {
-      p.transferredAt = nowText;
-      delete p.pickedUpAt;
+      w.transferredAt = nowText;
+      delete w.pickedUpAt;
+      w.paymentIds.forEach((pid) => {
+        const p = PAYMENTS.find((x) => x.id === pid);
+        if (p) { p.status = 'transferred'; p.transferredAt = nowText; delete p.pickedUpAt; }
+      });
     } else if (nextStatus === 'completed') {
-      p.pickedUpAt = nowText;
+      w.pickedUpAt = nowText;
+      w.paymentIds.forEach((pid) => {
+        const p = PAYMENTS.find((x) => x.id === pid);
+        if (p) { p.status = 'completed'; p.pickedUpAt = nowText; }
+      });
+    } else {
+      w.paymentIds.forEach((pid) => {
+        const p = PAYMENTS.find((x) => x.id === pid);
+        if (p) p.status = nextStatus;
+      });
     }
+
+    const caseIds = getWdCaseIds(w);
     if (nextStatus === 'failed') {
-      p.failReason = reason;
+      w.failReason = reason;
       try {
         const failedList = JSON.parse(localStorage.getItem('mgm_failed_withdrawals') || '[]');
-        const idx = failedList.findIndex((f) => f.caseId === p.caseId);
-        const entry = { caseId: p.caseId, failReason: reason, failedAt: nowText };
-        if (idx >= 0) failedList[idx] = entry; else failedList.push(entry);
+        caseIds.forEach((caseId) => {
+          const idx = failedList.findIndex((f) => f.caseId === caseId);
+          const entry = { caseId, failReason: reason, failedAt: nowText };
+          if (idx >= 0) failedList[idx] = entry; else failedList.push(entry);
+        });
         localStorage.setItem('mgm_failed_withdrawals', JSON.stringify(failedList));
       } catch {}
-    } else if (p.failReason) {
-      delete p.failReason;
+    } else if (w.failReason) {
+      delete w.failReason;
       try {
         const failedList = JSON.parse(localStorage.getItem('mgm_failed_withdrawals') || '[]');
         localStorage.setItem('mgm_failed_withdrawals',
-          JSON.stringify(failedList.filter((f) => f.caseId !== p.caseId)));
+          JSON.stringify(failedList.filter((f) => !caseIds.includes(f.caseId))));
       } catch {}
     }
 
-    // Append-only：寫入歷程
-    if (!HISTORY[p.id]) HISTORY[p.id] = [];
+    if (!HISTORY[id]) HISTORY[id] = [];
     const statusDiff = oldStatus !== nextStatus
-      ? `狀態：${STATUS_META[oldStatus]?.label || oldStatus} -> ${STATUS_META[nextStatus]?.label || nextStatus}`
+      ? `狀態：${STATUS_META[oldStatus]?.label || oldStatus} → ${STATUS_META[nextStatus]?.label || nextStatus}`
       : `狀態：${STATUS_META[nextStatus]?.label || nextStatus}`;
-    const methodDiff = oldMethod !== p.method
-      ? `方式：${oldMethod === 'cash' ? '現場' : '匯款'} -> ${fmtMethod(p)}`
-      : `方式：${fmtMethod(p)}`;
-    HISTORY[p.id].push({
+    const methodDiff = oldMethod !== w.method
+      ? `方式：${oldMethod === 'cash' ? '現場' : '匯款'} → ${fmtMethod(w)}`
+      : `方式：${fmtMethod(w)}`;
+    HISTORY[id].push({
       time: nowText,
       actor: '財務後台 - 編輯權限使用',
-      action: '修改匯款資訊',
+      action: '修改提領資訊',
       desc: `${statusDiff}；${methodDiff}；原因：${reason}`,
       cls: '',
     });
 
     closeEditPay();
     render();
-    toast('已更新匯款資訊，異動已寫入歷程');
+    toast('已更新提領資訊，異動已寫入歷程');
   }
 
   function closeEditPay() {
@@ -1165,14 +1500,14 @@
     });
   }
 
-  // ==================== 編輯備註（單筆） ====================
+  // ==================== 編輯備註（單筆提領） ====================
   let notePayId = null;
   function openNotePay(id) {
-    const p = PAYMENTS.find(x => x.id === id);
-    if (!p) return;
+    const w = WITHDRAWALS.find((x) => x.id === id);
+    if (!w) return;
     notePayId = id;
     document.getElementById('note-pay-id').textContent = id;
-    document.getElementById('note-pay-text').value = p.note || '';
+    document.getElementById('note-pay-text').value = w.note || '';
     document.getElementById('note-pay-modal').classList.add('show');
   }
   function closeNotePay() {
@@ -1181,12 +1516,12 @@
   }
   function saveNotePay() {
     if (!notePayId) return;
-    const p = PAYMENTS.find(x => x.id === notePayId);
-    if (!p) return;
+    const w = WITHDRAWALS.find((x) => x.id === notePayId);
+    if (!w) return;
     const note = document.getElementById('note-pay-text').value.trim();
-    p.note = note;
-    if (!HISTORY[p.id]) HISTORY[p.id] = [];
-    HISTORY[p.id].unshift({
+    w.note = note;
+    if (!HISTORY[notePayId]) HISTORY[notePayId] = [];
+    HISTORY[notePayId].unshift({
       time: new Date().toLocaleString('zh-TW'),
       actor: 'Admin User',
       action: '更新備註',
@@ -1206,22 +1541,22 @@
   // ==================== 單筆更新匯款狀態 ====================
   let markStatusId = null;
 
-  function openMarkStatus(payId) {
-    const p = PAYMENTS.find((x) => x.id === payId);
-    if (!p) return;
-    markStatusId = payId;
+  function openMarkStatus(wdId) {
+    const w = WITHDRAWALS.find((x) => x.id === wdId);
+    if (!w) return;
+    markStatusId = wdId;
 
-    document.getElementById('ms-payid').textContent = payId;
-    document.getElementById('ms-ref').textContent = p.referrer + '（' + p.tag + '）';
-    document.getElementById('ms-amount').textContent = '$' + fmt(p.amount);
+    document.getElementById('ms-payid').textContent = wdId;
+    document.getElementById('ms-ref').textContent = w.memberName + '（' + w.tag + '）';
+    document.getElementById('ms-amount').textContent = '$' + fmt(w.netAmount);
     document.getElementById('ms-bank').textContent =
-      p.bank ? `${p.bank} 末四碼 *${p.bankLast4 || '—'}` : '—';
+      w.bank ? `${w.bank} 末四碼 *${w.bankLast4 || '—'}` : '—';
 
-    const curMeta = STATUS_META[p.status] || {};
+    const curMeta = STATUS_META[w.status] || {};
     const curEl = document.getElementById('ms-current-status');
     if (curEl) {
       curEl.innerHTML = `<span class="pay-status ${curMeta.cls || ''}">
-        <i class="fa-solid ${curMeta.icon || 'fa-circle'}"></i>${curMeta.label || p.status}
+        <i class="fa-solid ${curMeta.icon || 'fa-circle'}"></i>${curMeta.label || w.status}
       </span>`;
     }
 
@@ -1235,8 +1570,8 @@
     document.getElementById('ms-note').value = '';
 
     let preSelect = null;
-    if (p.status === 'transferred') preSelect = 'failed';
-    else if (p.status === 'failed') preSelect = 'transferred';
+    if (w.status === 'transferred') preSelect = 'failed';
+    else if (w.status === 'failed') preSelect = 'transferred';
 
     if (preSelect) {
       const radio = document.querySelector(`input[name="ms-status-pick"][value="${preSelect}"]`);
@@ -1278,8 +1613,8 @@
 
   function saveMarkStatus() {
     if (!markStatusId) return;
-    const p = PAYMENTS.find((x) => x.id === markStatusId);
-    if (!p) return;
+    const w = WITHDRAWALS.find((x) => x.id === markStatusId);
+    if (!w) return;
 
     const picked = document.querySelector('input[name="ms-status-pick"]:checked');
     if (!picked) { alert('請選擇新狀態'); return; }
@@ -1287,42 +1622,53 @@
 
     const nowText = new Date().toLocaleString('zh-TW');
     const note = document.getElementById('ms-note').value.trim();
+    const caseIds = getWdCaseIds(w);
 
     if (nextStatus === 'transferred') {
-      p.status = 'transferred';
-      p.transferredAt = nowText;
-      if (p.failReason) delete p.failReason;
+      w.status = 'transferred';
+      w.transferredAt = nowText;
+      if (w.failReason) delete w.failReason;
+      w.paymentIds.forEach((pid) => {
+        const p = PAYMENTS.find((x) => x.id === pid);
+        if (p) { p.status = 'transferred'; p.transferredAt = nowText; if (p.failReason) delete p.failReason; }
+      });
       try {
         const fl = JSON.parse(localStorage.getItem('mgm_failed_withdrawals') || '[]');
         localStorage.setItem('mgm_failed_withdrawals',
-          JSON.stringify(fl.filter((f) => f.caseId !== p.caseId)));
+          JSON.stringify(fl.filter((f) => !caseIds.includes(f.caseId))));
       } catch {}
     } else if (nextStatus === 'failed') {
       const reason = getMarkStatusFailReason();
       if (!reason) { alert('請填寫退匯原因（必填）'); return; }
-      p.status = 'failed';
-      p.failReason = reason;
+      w.status = 'failed';
+      w.failReason = reason;
+      w.paymentIds.forEach((pid) => {
+        const p = PAYMENTS.find((x) => x.id === pid);
+        if (p) { p.status = 'failed'; p.failReason = reason; }
+      });
       try {
         const fl = JSON.parse(localStorage.getItem('mgm_failed_withdrawals') || '[]');
-        const idx = fl.findIndex((f) => f.caseId === p.caseId);
-        const entry = { caseId: p.caseId, failReason: reason, failedAt: nowText };
-        if (idx >= 0) fl[idx] = entry; else fl.push(entry);
+        caseIds.forEach((caseId) => {
+          const idx = fl.findIndex((f) => f.caseId === caseId);
+          const entry = { caseId, failReason: reason, failedAt: nowText };
+          if (idx >= 0) fl[idx] = entry; else fl.push(entry);
+        });
         localStorage.setItem('mgm_failed_withdrawals', JSON.stringify(fl));
       } catch {}
     }
 
-    if (!HISTORY[p.id]) HISTORY[p.id] = [];
+    if (!HISTORY[markStatusId]) HISTORY[markStatusId] = [];
     const statusLabel = STATUS_META[nextStatus]?.label || nextStatus;
-    HISTORY[p.id].push({
+    HISTORY[markStatusId].push({
       time: nowText,
       actor: '財務後台',
       action: `標記為「${statusLabel}」`,
       desc: nextStatus === 'failed'
-        ? `退匯原因：${p.failReason}${note ? '；備註：' + note : ''}`
+        ? `退匯原因：${w.failReason}${note ? '；備註：' + note : ''}`
         : `已確認匯款完成${note ? '；備註：' + note : ''}`,
       cls: nextStatus === 'transferred' ? 'done' : 'failed',
     });
-    if (note && nextStatus !== 'failed') p.note = (p.note ? p.note + '；' : '') + note;
+    if (note && nextStatus !== 'failed') w.note = (w.note ? w.note + '；' : '') + note;
 
     publishCampaignAgg();
     closeMarkStatus();
@@ -1375,25 +1721,21 @@
     canvas.height = H;
     const ctx = canvas.getContext('2d');
 
-    // 背景漸層
     const grad = ctx.createLinearGradient(0, 0, W, H);
     grad.addColorStop(0, '#edf2f7');
     grad.addColorStop(1, '#e2e8f0');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
 
-    // 外框
     ctx.strokeStyle = '#c7d2e0';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(0.75, 0.75, W - 1.5, H - 1.5);
 
-    // 主標題
     ctx.fillStyle = '#475569';
     ctx.font = 'bold 15px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(typeLabel, W / 2, H / 2 - 12);
 
-    // 副標題
     if (subLabel) {
       ctx.fillStyle = '#7c8fa8';
       ctx.font = '12px sans-serif';
@@ -1404,7 +1746,6 @@
     ctx.font = '10px sans-serif';
     ctx.fillText('（上傳後顯示於此）', W / 2, H / 2 + 28);
 
-    // 浮水印：斜向平鋪
     ctx.save();
     ctx.globalAlpha = 0.2;
     ctx.fillStyle = '#1e3a5f';
@@ -1420,13 +1761,13 @@
     ctx.restore();
   }
 
-  function openAttachments(payId) {
-    const p = PAYMENTS.find((x) => x.id === payId);
-    if (!p) return;
-    const m = getDemoMemberData(payId);
+  function openAttachments(wdId) {
+    const w = WITHDRAWALS.find((x) => x.id === wdId);
+    if (!w) return;
+    const m = getDemoMemberData(wdId);
 
-    document.getElementById('attach-payid').textContent = p.id;
-    document.getElementById('attach-referrer').textContent = p.referrer;
+    document.getElementById('attach-payid').textContent = w.id;
+    document.getElementById('attach-referrer').textContent = w.memberName;
     document.getElementById('attach-real-name').textContent = m.realName || '—';
     document.getElementById('attach-id-number').textContent = m.idNumber || '—';
     document.getElementById('attach-bank-holder').textContent = m.bankHolder || '（現場領取）';
@@ -1440,22 +1781,23 @@
     }
 
     const bankItem = document.getElementById('attach-bank-item');
-    if (bankItem) bankItem.hidden = p.method !== 'transfer';
+    if (bankItem) bankItem.hidden = w.method !== 'transfer';
 
     const bankCodeRow = document.getElementById('attach-bank-code-row');
-    if (bankCodeRow) bankCodeRow.style.display = p.method !== 'transfer' ? 'none' : '';
+    if (bankCodeRow) bankCodeRow.style.display = w.method !== 'transfer' ? 'none' : '';
 
     requestAnimationFrame(() => {
-      drawAttachCanvas('attach-canvas-id-front', '身分證正面', p.referrer);
+      drawAttachCanvas('attach-canvas-id-front', '身分證正面', w.memberName);
       drawAttachCanvas('attach-canvas-id-back', '身分證反面', '');
-      if (p.method === 'transfer') {
-        const bankLabel = m.bankCode ? `代碼 ${m.bankCode} / 分行 ${m.bankBranch || '—'} ＊末四碼 ${(m.bankAccount || p.bankLast4 || '—').slice(-4)}` : `${p.bank || ''} *${p.bankLast4 || '—'}`;
+      if (w.method === 'transfer') {
+        const bankLabel = m.bankCode
+          ? `代碼 ${m.bankCode} / 分行 ${m.bankBranch || '—'} ＊末四碼 ${(m.bankAccount || w.bankLast4 || '—').slice(-4)}`
+          : `${w.bank || ''} *${w.bankLast4 || '—'}`;
         drawAttachCanvas('attach-canvas-bank', '匯款帳號憑證', bankLabel);
       }
-      // 綁定點擊放大
       bindCanvasZoom('attach-canvas-id-front', '身分證正面');
       bindCanvasZoom('attach-canvas-id-back',  '身分證反面');
-      if (p.method === 'transfer') {
+      if (w.method === 'transfer') {
         bindCanvasZoom('attach-canvas-bank', '匯款帳號憑證');
       }
     });
@@ -1500,11 +1842,9 @@
 
   function bindLightbox() {
     document.getElementById('btn-lightbox-close').addEventListener('click', closeLightbox);
-    // 點擊黑色背景（非圖片區域）關閉
     document.getElementById('img-lightbox').addEventListener('click', (e) => {
       if (e.target === e.currentTarget || e.target.id === 'img-lightbox-body') closeLightbox();
     });
-    // ESC 關閉（燈箱優先於下層附件 modal）
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
       const lb = document.getElementById('img-lightbox');
@@ -1522,20 +1862,18 @@
     cb.checked = canEditPayment();
     cb.addEventListener('change', () => {
       setCanEditPayment(cb.checked);
-      render(); // 重新繪製，控制「編輯」按鈕顯示
+      render();
       toast(cb.checked ? '已開啟「編輯匯款資訊」權限' : '已關閉「編輯匯款資訊」權限');
     });
   }
 
   // ==================== B4：把活動 → 案件/已發放 聚合寫入 sessionStorage ====================
-  // admin-campaigns 載入時可讀取此快取，把列表中的 cases / payout 與帳務對齊
   function publishCampaignAgg() {
     const agg = {};
     PAYMENTS.forEach((p) => {
       if (!p.campaignId) return;
       if (!agg[p.campaignId]) agg[p.campaignId] = { cases: 0, payout: 0 };
       agg[p.campaignId].cases += 1;
-      // payout 統計：已完成（transferred / completed）才計入「已發放金額」
       if (p.status === 'transferred' || p.status === 'completed') {
         agg[p.campaignId].payout += p.amount;
       }
@@ -1556,7 +1894,6 @@
     bindMarkStatus();
     bindExportRecon();
     bindExportTransfer();
-    // 篩選收合 / 清除
     (function () {
       const btnToggle = document.getElementById('btn-toggle-advanced');
       const filterGrid = document.getElementById('filter-grid');

@@ -22,6 +22,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/05/22 16:00',
       status: 'pickup',
+      withdrawalId: 'WD-2026052203',
     },
     {
       id: 'PAY-26052006',
@@ -37,6 +38,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/05/20 11:20',
       status: 'pickup',
+      withdrawalId: 'WD-2026052005',
     },
     {
       id: 'PAY-26032808',
@@ -53,6 +55,7 @@
       appliedAt: '2026/03/25 14:00',
       pickedUpAt: '2026/03/28 11:30',
       status: 'completed',
+      withdrawalId: 'WD-2026032801',
     },
     {
       id: 'PAY-26060301',
@@ -68,6 +71,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/01 09:30',
       status: 'pickup',
+      withdrawalId: 'WD-2026060101',
     },
     {
       id: 'PAY-26060302',
@@ -83,6 +87,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/01 14:00',
       status: 'pending',
+      withdrawalId: 'WD-2026060201',
     },
     {
       id: 'PAY-26060303',
@@ -98,6 +103,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/02 10:15',
       status: 'pending',
+      withdrawalId: 'WD-2026060202',
     },
     {
       id: 'PAY-26060304',
@@ -113,6 +119,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/02 15:30',
       status: 'pending',
+      withdrawalId: 'WD-2026060203',
     },
     {
       id: 'PAY-26060305',
@@ -128,6 +135,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/02 16:45',
       status: 'pending',
+      withdrawalId: 'WD-2026060204',
     },
     // ── 近兩週 demo 資料（2026/06/08 ~ 2026/06/21）────────────
     {
@@ -144,6 +152,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/03 09:00',
       status: 'pickup',
+      withdrawalId: 'WD-2026060801',
     },
     {
       id: 'PAY-26060802',
@@ -159,6 +168,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/03 10:00',
       status: 'pickup',
+      withdrawalId: 'WD-2026060802',
     },
     {
       id: 'PAY-26060901',
@@ -174,6 +184,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/04 09:30',
       status: 'pending',
+      withdrawalId: 'WD-2026060901',
     },
     {
       id: 'PAY-26060902',
@@ -189,6 +200,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/04 10:00',
       status: 'pending',
+      withdrawalId: 'WD-2026060902',
     },
     {
       id: 'PAY-26061101',
@@ -204,6 +216,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/05 09:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061101',
     },
     {
       id: 'PAY-26061102',
@@ -219,6 +232,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/05 10:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061102',
     },
     {
       id: 'PAY-26061103',
@@ -234,6 +248,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/05 11:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061103',
     },
     {
       id: 'PAY-26061201',
@@ -249,6 +264,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/05 14:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061201',
     },
     {
       id: 'PAY-26061501',
@@ -264,6 +280,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/06 09:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061501',
     },
     {
       id: 'PAY-26061502',
@@ -279,6 +296,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/06 10:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061502',
     },
     {
       id: 'PAY-26061503',
@@ -294,6 +312,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/06 11:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061503',
     },
     {
       id: 'PAY-26061601',
@@ -309,6 +328,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/07 09:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061601',
     },
     {
       id: 'PAY-26061701',
@@ -324,6 +344,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/07 09:30',
       status: 'pending',
+      withdrawalId: 'WD-2026061701',
     },
     {
       id: 'PAY-26061702',
@@ -339,6 +360,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/07 10:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061702',
     },
     {
       id: 'PAY-26061703',
@@ -354,6 +376,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/07 11:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061703',
     },
     {
       id: 'PAY-26061801',
@@ -369,6 +392,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/08 09:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061801',
     },
     {
       id: 'PAY-26061802',
@@ -384,6 +408,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/08 10:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061802',
     },
     {
       id: 'PAY-26061901',
@@ -399,6 +424,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/08 10:30',
       status: 'pending',
+      withdrawalId: 'WD-2026061901',
     },
     {
       id: 'PAY-26061902',
@@ -414,6 +440,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/08 11:00',
       status: 'pending',
+      withdrawalId: 'WD-2026061902',
     },
     {
       id: 'PAY-26062101',
@@ -429,6 +456,7 @@
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/08 14:00',
       status: 'pending',
+      withdrawalId: 'WD-2026062101',
     },
     {
       id: 'PAY-26062102',
@@ -444,6 +472,7 @@
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/08 15:00',
       status: 'pending',
+      withdrawalId: 'WD-2026062102',
     },
   ];
 
@@ -640,7 +669,7 @@
       if (rnKw  && !(p.referrer  || '').toLowerCase().includes(rnKw))  return false;
       if (ridKw && !(p.memberId  || '').toLowerCase().includes(ridKw)) return false;
       if (kw) {
-        const hay = [p.id, p.caseId, p.memberId, p.referrer, p.tag, p.product, p.branch]
+        const hay = [p.id, p.withdrawalId, p.caseId, p.memberId, p.referrer, p.tag, p.product, p.branch]
           .filter(Boolean).join(' ').toLowerCase();
         if (!hay.includes(kw)) return false;
       }
@@ -679,8 +708,7 @@
     return `
       <tr>
         <td>${canCheck ? `<input type="checkbox" class="row-check" data-id="${p.id}" ${checked ? 'checked' : ''}>` : ''}</td>
-        <td class="cell-mono"><span class="mono-strong">${p.id}</span></td>
-        <td class="cell-mono">${p.caseId}</td>
+        <td class="cell-mono"><span class="mono-strong">${p.withdrawalId || '—'}</span></td>
         <td class="cell-mono" style="font-size:12px;">${p.memberId || '—'}</td>
         <td><strong>${p.referrer}</strong></td>
         <td>${p.tag}</td>
@@ -689,6 +717,9 @@
         <td class="cell-applied">${pickupDate}</td>
         <td><span class="pay-status ${s.cls}"><i class="fa-solid ${s.icon}"></i>${s.label}</span></td>
         <td>
+          <button type="button" class="action-btn" data-action="detail" data-wdid="${p.withdrawalId || ''}">
+            <i class="fa-solid fa-list-ul"></i>明細
+          </button>
           <button type="button" class="action-btn" data-action="attach" data-id="${p.id}">
             <i class="fa-solid fa-paperclip"></i>提領資料
           </button>
@@ -760,6 +791,36 @@
     });
   }
 
+  // ==================== 提領明細 Modal ====================
+  function openCashWithdrawalDetail(wdId) {
+    if (!wdId) return;
+    const pays = PAYMENTS.filter((p) => p.withdrawalId === wdId);
+    if (!pays.length) return;
+    const first = pays[0];
+    const s = STATUS_META[first.status] || { label: first.status, cls: 'pending' };
+    const totalAmount = pays.reduce((sum, p) => sum + (p.amount || 0), 0);
+    const pickupText = first.expectedPickupDate
+      ? (first.appointmentHours ? `${first.expectedPickupDate}　${first.appointmentHours}` : first.expectedPickupDate)
+      : '—';
+    document.getElementById('cash-wd-detail-id').textContent = wdId;
+    document.getElementById('cash-wd-detail-ref').textContent = `${first.referrer} (${first.tag})`;
+    document.getElementById('cash-wd-detail-total').textContent = '$' + fmt(totalAmount);
+    document.getElementById('cash-wd-detail-branch').textContent = first.branch || '—';
+    document.getElementById('cash-wd-detail-pickup').textContent = pickupText;
+    document.getElementById('cash-wd-detail-status').innerHTML =
+      `<span class="pay-status ${s.cls}">${s.label}</span>`;
+    document.getElementById('cash-wd-detail-tbody').innerHTML = pays.map((p) => {
+      const ps = STATUS_META[p.status] || { label: p.status, cls: 'pending' };
+      return `<tr>
+        <td class="cell-mono"><span class="mono-strong">${p.caseId}</span></td>
+        <td>${p.product || '—'}</td>
+        <td class="cell-amount">$${fmt(p.amount)}</td>
+        <td><span class="pay-status ${ps.cls}">${ps.label}</span></td>
+      </tr>`;
+    }).join('');
+    document.getElementById('cash-wd-detail-modal').classList.add('show');
+  }
+
   function bindRowActions() {
     document.querySelectorAll('.row-check').forEach((cb) => {
       cb.addEventListener('change', () => {
@@ -771,6 +832,9 @@
         updateBatchBar();
       });
     });
+    document.querySelectorAll('[data-action="detail"]').forEach((b) =>
+      b.addEventListener('click', () => openCashWithdrawalDetail(b.dataset.wdid))
+    );
     document.querySelectorAll('[data-action="attach"]').forEach((b) =>
       b.addEventListener('click', () => openAttachments(b.dataset.id))
     );
@@ -1043,9 +1107,9 @@
     btn.addEventListener('click', () => {
       const rows = getCashFiltered();
       if (!rows.length) { alert('目前無資料可匯出'); return; }
-      const header = ['款項編號','案號','推薦人編號','推薦人','標籤','金額(NT$)','門市','城市','預計領取日','預約時段','狀態','備註'];
+      const header = ['提領編號','款項編號','案號','推薦人編號','推薦人','標籤','金額(NT$)','門市','城市','預計領取日','預約時段','狀態','備註'];
       const data = rows.map((p) => [
-        p.id, p.caseId, p.memberId || '', p.referrer, p.tag, p.amount,
+        p.withdrawalId || '', p.id, p.caseId, p.memberId || '', p.referrer, p.tag, p.amount,
         p.branch || '', branchCity(p.branch),
         p.expectedPickupDate || '', p.appointmentHours || '',
         STATUS_META[p.status]?.label || p.status, p.note || '',
@@ -1160,6 +1224,20 @@
     document.getElementById('btn-history-close').addEventListener('click', () =>
       document.getElementById('history-modal').classList.remove('show')
     );
+
+    // 提領明細 Modal
+    const cashWdDetailClose = document.getElementById('btn-cash-wd-detail-close');
+    if (cashWdDetailClose) {
+      cashWdDetailClose.addEventListener('click', () =>
+        document.getElementById('cash-wd-detail-modal').classList.remove('show')
+      );
+    }
+    const cashWdDetailBg = document.getElementById('cash-wd-detail-modal');
+    if (cashWdDetailBg) {
+      cashWdDetailBg.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) cashWdDetailBg.classList.remove('show');
+      });
+    }
 
     // 附件 Modal & 燈箱
     bindAttachModal();

@@ -1,10 +1,14 @@
 /* ==========================================================
    admin-employees.js - 員工帳號管理
-   功能：員工清單、啟/停用、設為離職員工、同步推薦人頁標籤
+   功能：員工清單、啟/停用、同步推薦人頁標籤
+   離職判定：每日排程比對人員主檔，比對不到者自動標記為離職
    ========================================================== */
 
 (function () {
   'use strict';
+
+  // 最後一次排程同步時間（demo）
+  const LAST_SYNC_AT = '2026/06/11 02:00:17';
 
   // 員工主檔 demo
   // mgmJoined: 是否已透過前台完成身分綁定並出現在推薦人清單
@@ -136,11 +140,6 @@
         ? `<button type="button" class="action-btn" data-action="set-inactive" data-id="${emp.id}">停用</button>`
         : `<button type="button" class="action-btn success" data-action="set-active" data-id="${emp.id}">啟用</button>`;
 
-    const resignBtn = isResigned
-      ? ''
-      : `<button type="button" class="action-btn danger" data-action="set-resigned"
-           data-id="${emp.id}" data-name="${emp.name}">設為離職員工</button>`;
-
     const mgmBadge = emp.mgmJoined
       ? `<span class="emp-badge emp-badge-joined">已加入推薦</span>`
       : `<span class="emp-badge emp-badge-none">未加入</span>`;
@@ -157,7 +156,7 @@
         <td><span class="status-text ${statusCls}">${STATUS_TEXT[emp.status] || emp.status}</span></td>
         <td class="mono dim">${emp.resignedAt || '—'}</td>
         <td>${mgmBadge}</td>
-        <td>${toggleBtn}${resignBtn}</td>
+        <td>${toggleBtn}</td>
       </tr>`;
   }
 
@@ -196,31 +195,6 @@
       });
     });
 
-    document.querySelectorAll('[data-action="set-resigned"]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const emp = EMPLOYEES.find((e) => e.id === btn.dataset.id);
-        if (!emp) return;
-        if (
-          !confirm(
-            `確定要將「${btn.dataset.name}」設為離職員工？\n` +
-            `設定後，若該員工已取得推薦資格，其推薦人清單標籤將同步更新為「離職員工」。\n` +
-            `此操作無法在本頁還原。`
-          )
-        ) return;
-
-        const today = new Date();
-        const resignedAt = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
-        emp.status = 'resigned';
-        emp.resignedAt = resignedAt;
-        saveState();
-        render();
-
-        const hint = emp.mgmJoined
-          ? `（推薦人清單中「${btn.dataset.name}」的身分標籤已同步更新）`
-          : '（該員工尚未加入 MGM 推薦，待前台完成身分綁定後自動歸入）';
-        toast(`已將「${btn.dataset.name}」設為離職員工 ${hint}`);
-      });
-    });
   }
 
   // ── 篩選綁定 ────────────────────────────────────────────
@@ -266,5 +240,7 @@
     loadState();
     bindFilters();
     render();
+    const syncEl = document.getElementById('last-sync-time');
+    if (syncEl) syncEl.textContent = LAST_SYNC_AT;
   });
 })();

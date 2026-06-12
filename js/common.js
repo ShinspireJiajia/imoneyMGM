@@ -471,6 +471,7 @@
       idNumber: 'A123456789',
       address: '台北市信義區松仁路100號5樓',
       status: 'transferring',
+      withdrawalId: 'WD-2026052104',
     },
     {
       id: 'M2026042214',
@@ -485,6 +486,7 @@
       bankLast4: '1234',
       transferredAt: '2026/04/30',
       status: 'transferred',
+      withdrawalId: 'WD-2026043001',
     },
     {
       id: 'M2026060310',
@@ -502,6 +504,7 @@
       idNumber: 'A123456789',
       address: '台北市信義區松仁路100號5樓',
       status: 'pending_pickup',
+      withdrawalId: 'WD-2026060101',
     },
     {
       id: 'M2026050415',
@@ -519,6 +522,7 @@
       idNumber: 'A123456789',
       address: '台北市信義區松仁路100號5樓',
       status: 'pending_pickup',
+      withdrawalId: 'WD-2026052005',
     },
     {
       id: 'M2026031816',
@@ -532,6 +536,7 @@
       branch: '現場',
       pickedUpAt: '2026/03/28',
       status: 'picked_up',
+      withdrawalId: 'WD-2026032801',
     },
     {
       id: 'M2026042920',
@@ -547,6 +552,7 @@
       failReason: '帳號錯誤，銀行退匯',
       failedAt: '2026/05/05 13:00',
       status: 'transfer_failed',
+      withdrawalId: 'WD-2026050301',
     },
   ];
 

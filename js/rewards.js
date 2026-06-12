@@ -148,6 +148,79 @@
     return r.status === 'transfer_failed';
   }
 
+  const TRANSFER_FEE = 30;
+
+  function getWithdrawalFee(rewards) {
+    const first = rewards && rewards[0];
+    return (first && first.method === 'transfer') ? TRANSFER_FEE : 0;
+  }
+
+  function groupRewardsByWithdrawal(rewards) {
+    const groups = {};
+    const ungrouped = [];
+    rewards.forEach((r) => {
+      if (r.withdrawalId) {
+        if (!groups[r.withdrawalId]) groups[r.withdrawalId] = [];
+        groups[r.withdrawalId].push(r);
+      } else {
+        ungrouped.push(r);
+      }
+    });
+    return { groups, ungrouped };
+  }
+
+  function renderWithdrawalGroup(wdId, rewards) {
+    if (!rewards || rewards.length === 0) return '';
+    const first = rewards[0];
+    const meta = STATUS_META[first.status];
+    const fee = getWithdrawalFee(rewards);
+    const totalAmount = rewards.reduce((s, r) => s + (r.amount || 0), 0);
+    const netAmount = totalAmount - fee;
+
+    const statusBadge = `<span class="badge ${meta.cls}"><i class="fa-solid ${meta.icon}"></i> ${meta.label}</span>`;
+
+    const methodLine = first.method === 'transfer'
+      ? (first.bankName ? `匯款 — ${first.bankName}（末四碼 ${first.bankLast4 || '—'}）` : '銀行匯款')
+      : (first.branch ? `現場領取 —【${first.branch}】` : '現場領取');
+
+    const itemLines = rewards.map((r) => `
+      <div class="wd-group-item">
+        <span class="wd-group-item-name">${r.name}</span>
+        <span class="wd-group-item-amount">$${fmt(r.amount)}</span>
+      </div>`).join('');
+
+    let editBtnHtml = '';
+    const canEdit = rewards.some((r) => isApplying(r));
+    if (canEdit) {
+      if (first.status === 'pending_pickup' && rewards.every((r) => !canModifyPickup(r))) {
+        editBtnHtml = `<div class="reward-contact-hint">
+          <i class="fa-solid fa-headset"></i>預約日期即將到來，如需變更請聯繫專員協助
+        </div>`;
+      } else {
+        const urgent = rewards.some(isTransferFailed);
+        const label = urgent ? '重新填寫提領資料' : '修改提領資料';
+        editBtnHtml = `<button type="button" class="reward-edit-btn${urgent ? ' reward-edit-btn-urgent' : ''}" data-edit-id="${first.id}">
+          <i class="fa-solid fa-pen-to-square"></i>${label}
+        </button>`;
+      }
+    }
+
+    return `
+      <article class="reward-item reward-item-group status-${first.status}" data-wd="${wdId}">
+        <div class="wd-group-id"><i class="fa-solid fa-layer-group"></i> ${wdId} ${statusBadge}</div>
+        <div class="wd-group-items">${itemLines}</div>
+        ${fee > 0 ? `
+        <div class="wd-group-fee-row">
+          <span>匯款手續費</span><span class="wd-group-fee">-$${fmt(fee)}</span>
+        </div>` : ''}
+        <div class="wd-group-net-row">
+          <span>${fee > 0 ? '實際撥款金額' : '撥款金額'}</span><span class="wd-group-net">$${fmt(netAmount)}</span>
+        </div>
+        <div class="wd-group-method">${methodLine}</div>
+        ${editBtnHtml}
+      </article>`;
+  }
+
   // 取得撥款日期（已撥款的紀錄）
   function getPayoutDate(r) {
     if (r.status === 'transferred') return r.transferredAt;
@@ -366,26 +439,36 @@
       html += rewardable.map(renderItem).join('');
     }
     if (processing.length) {
-      const pickupUpcoming  = processing.filter((r) => r.status === 'pending_pickup' && !canModifyPickup(r));
+      const pickupUpcoming   = processing.filter((r) => r.status === 'pending_pickup' && !canModifyPickup(r));
       const pickupModifiable = processing.filter((r) => r.status === 'pending_pickup' && canModifyPickup(r));
-      const transferring    = processing.filter((r) => r.status === 'transferring');
+      const transferring     = processing.filter((r) => r.status === 'transferring');
+
+      const renderGroupedSection = (items) => {
+        const { groups, ungrouped } = groupRewardsByWithdrawal(items);
+        let s = '';
+        Object.entries(groups).forEach(([wdId, rs]) => { s += renderWithdrawalGroup(wdId, rs); });
+        ungrouped.forEach((r) => { s += renderItem(r); });
+        return s;
+      };
 
       if (pickupUpcoming.length) {
         html += '<h4 class="reward-section-heading reward-section-processing"><i class="fa-solid fa-calendar-check"></i>處理中 — 即將到來的現場預約</h4>';
-        html += pickupUpcoming.map(renderItem).join('');
+        html += renderGroupedSection(pickupUpcoming);
       }
       if (pickupModifiable.length) {
         html += '<h4 class="reward-section-heading reward-section-processing"><i class="fa-solid fa-calendar-pen"></i>處理中 — 可以變更的現場預約</h4>';
-        html += pickupModifiable.map(renderItem).join('');
+        html += renderGroupedSection(pickupModifiable);
       }
       if (transferring.length) {
         html += '<h4 class="reward-section-heading reward-section-processing"><i class="fa-solid fa-paper-plane"></i>處理中 — 待匯款</h4>';
-        html += transferring.map(renderItem).join('');
+        html += renderGroupedSection(transferring);
       }
     }
     if (completed.length) {
       html += '<h4 class="reward-section-heading">已完成</h4>';
-      html += completed.map(renderItem).join('');
+      const { groups: cmpGroups, ungrouped: cmpUngrouped } = groupRewardsByWithdrawal(completed);
+      Object.entries(cmpGroups).forEach(([wdId, rs]) => { html += renderWithdrawalGroup(wdId, rs); });
+      cmpUngrouped.forEach((r) => { html += renderItem(r); });
     }
     list.innerHTML = html;
 
@@ -472,16 +555,20 @@
 
   function updateOverview() {
     const total = selectableTotal();
-    const completed = REWARDS.filter(isCompleted).reduce(
-      (s, r) => s + r.amount,
-      0
-    );
+    const completedRewards = REWARDS.filter(isCompleted);
+    const { groups: cmpGroups, ungrouped: cmpUngrouped } = groupRewardsByWithdrawal(completedRewards);
+    let completedNet = 0;
+    Object.values(cmpGroups).forEach((rs) => {
+      completedNet += rs.reduce((s, r) => s + r.amount, 0) - getWithdrawalFee(rs);
+    });
+    cmpUngrouped.forEach((r) => { completedNet += r.amount; });
+
     // HTML 已含 <span class="cur">$</span>，這裡只給數字
     document.getElementById('ov-available').textContent = fmt(total);
     document.getElementById('ov-pending-count').textContent = REWARDS.filter(
       isSelectable
     ).length;
-    document.getElementById('ov-withdrawn').textContent = '$' + fmt(completed);
+    document.getElementById('ov-withdrawn').textContent = '$' + fmt(completedNet);
   }
 
   // C2：本月提領進度（依曆月計算「申請日」落在本月者，以 applying + completed 視為「已申請」）

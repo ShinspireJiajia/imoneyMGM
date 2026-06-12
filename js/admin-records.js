@@ -473,6 +473,18 @@
     }
     set('rv-amount', r.amount == null ? '計算中' : fmt(r.amount));
 
+    // 警示代碼說明：invalid / pending_review 且有 invalidReason 時顯示
+    const reasonSec = document.getElementById('rv-section-reason');
+    const reasonEl  = document.getElementById('rv-reason-text');
+    if (reasonSec && reasonEl) {
+      const hasReason = (r.status === 'invalid' || r.status === 'pending_review') && r.invalidReason;
+      reasonSec.hidden = !hasReason;
+      if (hasReason) {
+        reasonEl.textContent = r.invalidReason;
+        reasonEl.className = 'rv-reason ' + (r.status === 'invalid' ? 'tone-danger' : 'tone-warning');
+      }
+    }
+
     renderConditionFlags(r);
     renderCalcSection(r);
 
