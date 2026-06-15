@@ -60,6 +60,16 @@
             <span class="label">合計金額</span>
             <span class="amount" id="summary-total">$0</span>
           </div>
+          <div id="transfer-fee-section" class="transfer-fee-section" hidden>
+            <div class="transfer-fee-row">
+              <span class="label">匯款手續費</span>
+              <span class="fee-amount">-$30</span>
+            </div>
+            <div class="transfer-net-row">
+              <span class="label">實領金額</span>
+              <span class="net-amount" id="summary-net">$0</span>
+            </div>
+          </div>
         </div>
 
         <div class="method-card">
@@ -80,19 +90,37 @@
           </div>
         </div>
 
-        <div class="info-box warning">
+        <!-- <div class="info-box warning">
           <i class="fa-solid fa-file-invoice"></i>
           <div>
             本筆提領將計入您本年度「執行業務所得」或「其他所得」申報。本平台於每年 2 月底前完成國稅局申報，您可於 5 月報稅季透過「財政部電子申報繳稅服務網」下載電子扣繳憑單，本平台不另寄送紙本。<br /><br />
             此外，依據衛生福利部中央健康保險署法規，若同月合併領取之總金額超過 20,000 元（即 20,001 元起），本平台將依法代扣 2.11% 的個人補充保費。計算公式為「當月領取總金額 × 2.11%」（按給付當月總額計算）。舉例說明：若您當月合併發放之總額為 20,001 元，系統將依法代扣 422 元（20,001 元 × 2.11% = 422 元，小數點後四捨五入）。
           </div>
-        </div>
+        </div> -->
       </section>
 
       <!-- ====================================================== -->
       <!-- 步驟 2：稅務與匯款資料（首次嚴格 / 二次沿用） -->
       <!-- ====================================================== -->
       <section class="step-panel" data-step="2">
+
+        <!-- 匯款方式：金額摘要（僅 transfer 顯示） -->
+        <div id="step2-amount-summary" class="step2-amount-summary" hidden>
+          <div class="s2as-title"><i class="fa-solid fa-receipt"></i>本次提領金額摘要</div>
+          <div class="s2as-row">
+            <span class="s2as-label">提領金額</span>
+            <span class="s2as-value" id="s2as-gross">$0</span>
+          </div>
+          <div class="s2as-row">
+            <span class="s2as-label">匯款手續費</span>
+            <span class="s2as-value s2as-fee">-$30</span>
+          </div>
+          <div class="s2as-divider"></div>
+          <div class="s2as-row s2as-net-row">
+            <span class="s2as-label">實際可提領</span>
+            <span class="s2as-value s2as-net" id="s2as-net">$0</span>
+          </div>
+        </div>
 
         <!-- 帶入個人設定資料（每次提領固定顯示） -->
         <div id="import-profile-strip" class="import-profile-strip">
@@ -128,7 +156,7 @@
             <select class="field-input" id="inp-cash-date">
               <option value="">請先選擇日期</option>
             </select>
-            <span class="field-hint" id="cash-date-hint">僅可預約下三週的週一或週三</span>
+            <span class="field-hint" id="cash-date-hint"></span>
           </div>
           <div class="field">
             <label class="field-label field-required" for="inp-cash-time">預約時段</label>
@@ -222,12 +250,14 @@
               <div class="field">
                 <label class="field-label field-required" for="inp-bank-code">銀行代碼</label>
                 <input class="field-input" id="inp-bank-code" type="text" inputmode="numeric" maxlength="3" placeholder="例如 808" autocomplete="off" />
-                <span class="field-hint">3 碼數字，如 808（玉山）、004（臺銀）、013（國泰世華）</span>
+                <span class="field-hint">3 碼半形數字，如 808（玉山）、004（臺銀）</span>
+                <span class="field-error" id="err-bank-code"></span>
               </div>
               <div class="field">
                 <label class="field-label field-required" for="inp-bank-branch">分行代號</label>
                 <input class="field-input" id="inp-bank-branch" type="text" inputmode="numeric" maxlength="4" placeholder="例如 0001" autocomplete="off" />
-                <span class="field-hint">4 碼數字，可查看存摺封面</span>
+                <span class="field-hint">4 碼半形數字，可查看存摺封面</span>
+                <span class="field-error" id="err-bank-branch"></span>
               </div>
             </div>
             <div class="field">

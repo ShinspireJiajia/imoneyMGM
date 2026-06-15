@@ -232,31 +232,6 @@
       </div>
     </div>
 
-    <!-- ============== 編輯備註 Modal ============== -->
-    <div id="note-pay-modal" class="history-modal-bg">
-      <div class="history-modal" style="max-width: 480px;">
-        <div class="history-modal-head">
-          <h3>
-            <i class="fa-regular fa-note-sticky"></i>編輯備註
-            <span style="font-size:13px;margin-left:8px;font-family:'Courier New',monospace;color:var(--color-primary-dark);" id="note-pay-id">—</span>
-          </h3>
-          <span id="btn-note-pay-close" class="history-modal-close" role="button" tabindex="0"><i class="fa-solid fa-xmark"></i></span>
-        </div>
-        <div class="history-modal-body" style="padding: 18px 22px;">
-          <div class="field">
-            <label class="field-label">備註內容（將寫入該筆款項並追加至異動歷程）</label>
-            <textarea id="note-pay-text" class="field-input" rows="4" placeholder="例：銀行帳號已補正、推薦人改現場領取、退款待補件…"></textarea>
-          </div>
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
-            <button id="btn-note-pay-cancel" type="button" class="btn btn-outline">取消</button>
-            <button id="btn-note-pay-save" type="button" class="btn btn-primary">
-              <i class="fa-solid fa-check"></i>儲存備註
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- ============== 編輯匯款資訊 Modal ============== -->
     <div id="edit-pay-modal" class="history-modal-bg">
       <div class="history-modal" style="max-width: 480px;">
@@ -323,7 +298,7 @@
 
     <!-- 提領明細 Modal -->
     <div id="history-modal" class="history-modal-bg">
-      <div class="history-modal" style="max-width: 680px;">
+      <div class="history-modal" style="max-width: 760px;">
         <div class="history-modal-head">
           <h3>
             <i class="fa-solid fa-list-ul"></i>提領明細
@@ -345,7 +320,10 @@
           </div>
 
           <!-- 款項明細表 -->
-          <div style="overflow-x:auto; margin-top: 16px;">
+          <div class="wd-detail-section-head" style="margin-top: 20px;">
+            <i class="fa-solid fa-receipt"></i>款項明細
+          </div>
+          <div style="overflow-x:auto; margin-top: 10px;">
             <table class="data-table data-table-sm">
               <thead>
                 <tr>
@@ -358,6 +336,30 @@
               <tbody id="wd-detail-tbody"></tbody>
             </table>
           </div>
+
+          <!-- 異動歷程 -->
+          <div class="wd-detail-section-head" style="margin-top: 24px;">
+            <i class="fa-solid fa-clock-rotate-left"></i>異動歷程
+          </div>
+          <div id="wd-detail-history" class="timeline-vertical" style="margin-top: 10px;"></div>
+
+          <!-- 新增備註 -->
+          <div class="wd-detail-section-head" style="margin-top: 24px;">
+            <i class="fa-regular fa-note-sticky"></i>新增備註
+          </div>
+          <div class="wd-note-form">
+            <textarea id="wd-detail-note-text" class="field-input" rows="3"
+              placeholder="例：銀行帳號已補正、推薦人改現場領取、退款待補件…"
+              style="resize:vertical;"></textarea>
+            <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+              <button id="btn-wd-detail-note-save" type="button" class="btn btn-primary" style="font-size:13px;padding:7px 16px;">
+                <i class="fa-solid fa-check"></i>儲存備註
+              </button>
+            </div>
+          </div>
+          <p class="wd-note-append-hint">
+            <i class="fa-solid fa-lock"></i>備註寫入後不可刪除，將追加至異動歷程
+          </p>
         </div>
       </div>
     </div>

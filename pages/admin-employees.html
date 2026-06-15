@@ -93,6 +93,56 @@
       </section>
     </main>
 
+    <!-- ============== 檢視員工詳情 Modal ============== -->
+    <div id="emp-view-modal" class="note-modal-bg">
+      <div class="note-modal" style="max-width: 720px;">
+        <h3>
+          <i class="fa-solid fa-id-badge" style="color: var(--color-primary);"></i>員工詳情
+          <span class="note-target-wrap">
+            <span id="emp-view-target">—</span>
+          </span>
+        </h3>
+
+        <div class="view-tabs">
+          <button type="button" class="view-tab active" data-evtab="info">基本資訊</button>
+          <button type="button" class="view-tab" data-evtab="links" id="ev-tab-links">專屬推薦碼</button>
+          <button type="button" class="view-tab" data-evtab="cases" id="ev-tab-cases">對應案件</button>
+        </div>
+
+        <!-- 基本資訊 -->
+        <div class="view-pane" data-evpane="info">
+          <div class="view-info-grid">
+            <div class="view-info-row"><span class="view-info-label">員工編號</span><span class="view-info-value" id="ev-id">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">登入帳號</span><span class="view-info-value" id="ev-account">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">姓名</span><span class="view-info-value" id="ev-name">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">綁定手機</span><span class="view-info-value" id="ev-phone">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">帳號狀態</span><span class="view-info-value" id="ev-status">—</span></div>
+            <div class="view-info-row" id="ev-resigned-row" hidden><span class="view-info-label">離職時間</span><span class="view-info-value" id="ev-resigned-at">—</span></div>
+            <div class="view-info-row"><span class="view-info-label">MGM 推薦資格</span><span class="view-info-value" id="ev-mgm-joined">—</span></div>
+            <div class="view-info-row" id="ev-uid-row" hidden><span class="view-info-label">對應推薦人編號</span><span class="view-info-value" id="ev-uid">—</span></div>
+          </div>
+        </div>
+
+        <!-- 專屬推薦碼 -->
+        <div class="view-pane" data-evpane="links" hidden>
+          <div class="view-links-list" id="ev-links-list"></div>
+        </div>
+
+        <!-- 對應案件 -->
+        <div class="view-pane" data-evpane="cases" hidden>
+          <div class="view-cases-list" id="ev-cases-list"></div>
+          <p class="view-cases-hint">
+            <i class="fa-solid fa-circle-info"></i>
+            僅顯示案件申請進度與被推薦人資訊
+          </p>
+        </div>
+
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top: 14px;">
+          <button id="btn-emp-view-close" type="button" class="btn btn-outline">關閉</button>
+        </div>
+      </div>
+    </div>
+
     <script src="../js/admin-employees.js"></script>
   </body>
 </html>

@@ -177,31 +177,6 @@
 
     </main>
 
-    <!-- 編輯備註 Modal -->
-    <div id="note-pay-modal" class="history-modal-bg">
-      <div class="history-modal" style="max-width:480px;">
-        <div class="history-modal-head">
-          <h3>
-            <i class="fa-regular fa-note-sticky"></i>編輯備註
-            <span style="font-size:13px;margin-left:8px;font-family:'Courier New',monospace;color:var(--color-primary-dark);" id="note-pay-id">—</span>
-          </h3>
-          <span id="btn-note-pay-close" class="history-modal-close" role="button" tabindex="0"><i class="fa-solid fa-xmark"></i></span>
-        </div>
-        <div class="history-modal-body" style="padding:18px 22px;">
-          <div class="field">
-            <label class="field-label">備註內容（將寫入該筆款項並追加至異動歷程）</label>
-            <textarea id="note-pay-text" class="field-input" rows="4" placeholder="例：已通知推薦人攜帶身分證…"></textarea>
-          </div>
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
-            <button id="btn-note-pay-cancel" type="button" class="btn btn-outline">取消</button>
-            <button id="btn-note-pay-save" type="button" class="btn btn-primary">
-              <i class="fa-solid fa-check"></i>儲存備註
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- 編輯現場提領 Modal -->
     <div id="edit-pay-modal" class="history-modal-bg">
       <div class="history-modal" style="max-width:480px;">
@@ -262,7 +237,7 @@
 
     <!-- 提領明細 Modal -->
     <div id="cash-wd-detail-modal" class="history-modal-bg">
-      <div class="history-modal" style="max-width:680px;">
+      <div class="history-modal" style="max-width:760px;">
         <div class="history-modal-head">
           <h3>
             <i class="fa-solid fa-list-ul"></i>提領明細
@@ -273,6 +248,7 @@
           </span>
         </div>
         <div class="history-modal-body" style="padding:18px 22px;">
+          <!-- 提領摘要 -->
           <div class="wd-detail-summary">
             <div class="item"><span>推薦人</span><strong id="cash-wd-detail-ref">—</strong></div>
             <div class="item"><span>金額</span><strong id="cash-wd-detail-total">—</strong></div>
@@ -280,8 +256,12 @@
             <div class="item"><span>預計領取日</span><strong id="cash-wd-detail-pickup">—</strong></div>
             <div class="item"><span>狀態</span><strong id="cash-wd-detail-status">—</strong></div>
           </div>
-          <p style="font-size:12px;color:var(--color-text-muted);margin:12px 0 4px;">點擊「明細」可查看提領單內包含的款項</p>
-          <div style="overflow-x:auto;margin-top:8px;">
+
+          <!-- 款項明細 -->
+          <div class="wd-detail-section-head" style="margin-top:20px;">
+            <i class="fa-solid fa-receipt"></i>款項明細
+          </div>
+          <div style="overflow-x:auto;margin-top:10px;">
             <table class="data-table data-table-sm">
               <thead><tr>
                 <th>案號</th><th>產品</th><th>金額</th><th>狀態</th>
@@ -289,31 +269,30 @@
               <tbody id="cash-wd-detail-tbody"></tbody>
             </table>
           </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- 異動歷程 Modal -->
-    <div id="history-modal" class="history-modal-bg">
-      <div class="history-modal">
-        <div class="history-modal-head">
-          <h3>
-            <i class="fa-solid fa-clock-rotate-left"></i>款項異動歷程
-            <span style="font-size:13px;margin-left:8px;font-family:'Courier New',monospace;color:var(--color-primary-dark);" id="history-payid">—</span>
-          </h3>
-          <span id="btn-history-close" class="history-modal-close" role="button" tabindex="0">
-            <i class="fa-solid fa-xmark"></i>
-          </span>
-        </div>
-        <div class="history-modal-body">
-          <div class="history-payment-summary">
-            <div class="item">推薦人 <strong id="history-ref">—</strong></div>
-            <div class="item">金額 <strong id="history-amount">—</strong></div>
-            <div class="item">門市 <strong id="history-branch">—</strong></div>
-            <div class="item">預計領取日 <strong id="history-pickup">—</strong></div>
-            <div class="item">目前狀態 <strong id="history-status">—</strong></div>
+          <!-- 異動歷程 -->
+          <div class="wd-detail-section-head" style="margin-top:24px;">
+            <i class="fa-solid fa-clock-rotate-left"></i>異動歷程
           </div>
-          <div id="history-timeline" class="timeline-vertical"></div>
+          <div id="cash-wd-detail-history" class="timeline-vertical" style="margin-top:10px;"></div>
+
+          <!-- 新增備註 -->
+          <div class="wd-detail-section-head" style="margin-top:24px;">
+            <i class="fa-regular fa-note-sticky"></i>新增備註
+          </div>
+          <div class="wd-note-form">
+            <textarea id="cash-wd-detail-note-text" class="field-input" rows="3"
+              placeholder="例：已通知推薦人攜帶身分證、確認預約時段…"
+              style="resize:vertical;"></textarea>
+            <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+              <button id="btn-cash-wd-detail-note-save" type="button" class="btn btn-primary" style="font-size:13px;padding:7px 16px;">
+                <i class="fa-solid fa-check"></i>儲存備註
+              </button>
+            </div>
+          </div>
+          <p class="wd-note-append-hint">
+            <i class="fa-solid fa-lock"></i>備註寫入後不可刪除，將追加至異動歷程
+          </p>
         </div>
       </div>
     </div>
