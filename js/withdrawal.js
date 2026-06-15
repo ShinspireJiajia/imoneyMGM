@@ -177,27 +177,26 @@
     ).padStart(2, '0')}（週${weekdayMap[date.getDay()]}）`;
   }
 
-  function getNextThreeWeeksMonWed() {
+  function getAppointmentDates() {
     const today = toDateOnly(new Date());
-    const day = today.getDay();
-    // 下一個週一（若今天是週一則跳到下週一）
-    const daysUntilNextMonday = ((8 - day) % 7) || 7;
-    const nextMonday = new Date(today);
-    nextMonday.setDate(today.getDate() + daysUntilNextMonday);
+    // 申請月往後推兩個月的第一天為預約窗口起點
+    let targetMonth = today.getMonth() + 2;
+    let targetYear = today.getFullYear();
+    if (targetMonth > 11) { targetMonth -= 12; targetYear += 1; }
+    const windowStart = new Date(targetYear, targetMonth, 1);
+    const windowEnd = new Date(windowStart);
+    windowEnd.setDate(windowStart.getDate() + 28); // 四週內
 
     const dates = [];
-    for (let week = 0; week < 3; week += 1) {
-      const baseMonday = new Date(nextMonday);
-      baseMonday.setDate(nextMonday.getDate() + week * 7);
-
-      const monday = new Date(baseMonday);
-      const wednesday = new Date(baseMonday);
-      wednesday.setDate(baseMonday.getDate() + 2);
-
-      dates.push(monday, wednesday);
+    const cursor = new Date(windowStart);
+    while (cursor < windowEnd) {
+      const dow = cursor.getDay();
+      if (dow === 1 || dow === 3) { // 週一或週三
+        dates.push(new Date(cursor));
+      }
+      cursor.setDate(cursor.getDate() + 1);
     }
-
-    return dates.filter((d) => d >= today);
+    return dates;
   }
 
   function getCashTimeLabel(timeVal) {
@@ -210,7 +209,7 @@
     const select = document.getElementById('inp-cash-date');
     if (!select) return;
 
-    const options = getNextThreeWeeksMonWed();
+    const options = getAppointmentDates();
     select.innerHTML = '<option value="">請先選擇日期</option>';
     options.forEach((d) => {
       const value = fmtDateYmd(d);
@@ -220,6 +219,13 @@
       opt.textContent = text;
       select.appendChild(opt);
     });
+
+    const hint = document.getElementById('cash-date-hint');
+    if (hint) {
+      const today = new Date();
+      const targetMonth = ((today.getMonth() + 2) % 12) + 1;
+      hint.textContent = `可選日期：${targetMonth} 月份首四週的週一或週三`;
+    }
   }
 
   function updateCashSummaryCard() {
@@ -322,6 +328,66 @@
     return '';
   }
 
+  function bindBankCodeValidation() {
+    function toHalfWidth(str) {
+      return str.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+    }
+    function sanitize(val) {
+      return toHalfWidth(val).replace(/\D/g, '');
+    }
+    function validate(input, requiredLen, errorId) {
+      const val = input.value;
+      const errEl = document.getElementById(errorId);
+      if (!errEl) return;
+      if (val.length === 0) {
+        input.classList.remove('is-error', 'is-valid');
+        errEl.textContent = '';
+      } else if (val.length === requiredLen) {
+        input.classList.remove('is-error');
+        input.classList.add('is-valid');
+        errEl.textContent = '';
+      } else {
+        input.classList.add('is-error');
+        input.classList.remove('is-valid');
+        errEl.textContent = `需填寫 ${requiredLen} 碼半形數字（目前 ${val.length} 碼）`;
+      }
+    }
+
+    const codeInput = document.getElementById('inp-bank-code');
+    const branchInput = document.getElementById('inp-bank-branch');
+
+    if (codeInput) {
+      codeInput.addEventListener('input', () => {
+        codeInput.value = sanitize(codeInput.value).slice(0, 3);
+        validate(codeInput, 3, 'err-bank-code');
+      });
+      codeInput.addEventListener('blur', () => validate(codeInput, 3, 'err-bank-code'));
+    }
+    if (branchInput) {
+      branchInput.addEventListener('input', () => {
+        branchInput.value = sanitize(branchInput.value).slice(0, 4);
+        validate(branchInput, 4, 'err-bank-branch');
+      });
+      branchInput.addEventListener('blur', () => validate(branchInput, 4, 'err-bank-branch'));
+    }
+  }
+
+  function renderStep2AmountSummary() {
+    const card = document.getElementById('step2-amount-summary');
+    if (!card) return;
+    const isTransfer = state.method === 'transfer';
+    card.hidden = !isTransfer;
+    if (!isTransfer) return;
+    const items = getSelectedItems();
+    const gross = items.length > 0
+      ? items.reduce((s, r) => s + r.amount, 0)
+      : (state.editTargetAmount || 0);
+    const grossEl = document.getElementById('s2as-gross');
+    const netEl = document.getElementById('s2as-net');
+    if (grossEl) grossEl.textContent = '$' + fmt(gross);
+    if (netEl) netEl.textContent = '$' + fmt(Math.max(0, gross - 30));
+  }
+
   function renderSummary() {
     const items = getSelectedItems();
     const total = items.length > 0
@@ -331,6 +397,15 @@
     const listEl = document.getElementById('summary-list');
 
     if (totalEl) totalEl.textContent = '$' + fmt(total);
+
+    const feeSection = document.getElementById('transfer-fee-section');
+    const netEl = document.getElementById('summary-net');
+    if (feeSection && netEl) {
+      const isTransfer = state.method === 'transfer';
+      feeSection.hidden = !isTransfer;
+      if (isTransfer) netEl.textContent = '$' + fmt(Math.max(0, total - 30));
+    }
+
     if (listEl)
       listEl.innerHTML = items
       .map(
@@ -381,6 +456,7 @@
     updateCashSummaryCard();
     updateNextBtnText();
     updateStep2Label();
+    renderSummary();
     document.getElementById('btn-next-1').disabled = false;
   }
 
@@ -446,6 +522,7 @@
       renderPrefillBanner(getLastSubmissionData());
     }
 
+    renderStep2AmountSummary();
     showStep(2);
   }
 
@@ -559,18 +636,16 @@
           return;
         }
         if (!state.cashDate) {
-          alert('請先選擇現場預約日期（僅可選下三週的週一或週三）');
+          alert('請先選擇現場預約日期（申請月次兩個月後四週內的週一或週三）');
           return;
         }
         if (!state.cashTime) {
           alert('請選擇預約時段（上午 10:00-12:00 或 下午 14:00-16:00）');
           return;
         }
-        const allowedDates = getNextThreeWeeksMonWed().map(fmtDateYmd);
-        const today = toDateOnly(new Date());
-        const chosen = toDateOnly(new Date(state.cashDate));
-        if (!allowedDates.includes(state.cashDate) || chosen < today) {
-          alert('預約日期無效，僅可選擇下三週的週一或週三');
+        const allowedDates = getAppointmentDates().map(fmtDateYmd);
+        if (!allowedDates.includes(state.cashDate)) {
+          alert('預約日期無效，僅可選擇申請月次兩個月後四週內的週一或週三');
           return;
         }
       } else {
@@ -685,18 +760,16 @@
         return;
       }
       if (!state.cashDate) {
-        alert('請先選擇現場預約日期（僅可選下三週的週一或週三）');
+        alert('請先選擇現場預約日期（申請月次兩個月後四週內的週一或週三）');
         return;
       }
       if (!state.cashTime) {
         alert('請選擇預約時段（上午 10:00-12:00 或 下午 14:00-16:00）');
         return;
       }
-      const allowedDates = getNextThreeWeeksMonWed().map(fmtDateYmd);
-      const today = toDateOnly(new Date());
-      const chosen = toDateOnly(new Date(state.cashDate));
-      if (!allowedDates.includes(state.cashDate) || chosen < today) {
-        alert('預約日期無效，僅可選擇下三週的週一或週三');
+      const allowedDates = getAppointmentDates().map(fmtDateYmd);
+      if (!allowedDates.includes(state.cashDate)) {
+        alert('預約日期無效，僅可選擇申請月次兩個月後四週內的週一或週三');
         return;
       }
     }
@@ -928,6 +1001,7 @@
     bindCashDatePicker();
     bindCashTimePicker();
     updateCashSummaryCard();
+    bindBankCodeValidation();
     bindUpload();
 
     if (editTarget) {

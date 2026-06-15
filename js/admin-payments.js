@@ -760,9 +760,6 @@
           <button type="button" class="action-btn" data-action="detail" data-id="${w.id}">
             <i class="fa-solid fa-list-ul"></i>明細
           </button>
-          <button type="button" class="action-btn note" data-action="note-pay" data-id="${w.id}" title="${w.note ? '已有備註：' + w.note : '新增備註'}">
-            <i class="fa-regular fa-note-sticky"></i>${w.note ? '備註•' : '備註'}
-          </button>
           ${canMarkStatus(w) ? `<button type="button" class="action-btn mark-status" data-action="mark-status" data-id="${w.id}">
             <i class="fa-solid fa-pen-to-square"></i>更新狀態
           </button>` : ''}
@@ -904,9 +901,6 @@
     );
     document.querySelectorAll('[data-action="edit-pay"]').forEach((b) =>
       b.addEventListener('click', () => openEditPay(b.dataset.id))
-    );
-    document.querySelectorAll('[data-action="note-pay"]').forEach((b) =>
-      b.addEventListener('click', () => openNotePay(b.dataset.id))
     );
     document.querySelectorAll('[data-action="mark-status"]').forEach((b) =>
       b.addEventListener('click', () => openMarkStatus(b.dataset.id))
@@ -1298,10 +1292,53 @@
     });
   }
 
-  // ==================== 提領明細 Modal（表格格式） ====================
+  // ==================== 提領明細 Modal（表格 + 歷程 + 備註） ====================
+  let detailWdId = null;
+
+  function renderDetailHistory(wdId) {
+    const container = document.getElementById('wd-detail-history');
+    if (!container) return;
+    const entries = HISTORY[wdId] || [];
+    if (!entries.length) {
+      container.innerHTML =
+        '<div style="color:var(--color-text-muted);font-size:var(--font-xs);padding:8px 0 4px;">（尚無歷程記錄）</div>';
+      return;
+    }
+    container.innerHTML = entries.map((e) => `
+      <div class="timeline-entry ${e.cls || ''}">
+        <div class="timeline-time">${e.time}</div>
+        <div class="timeline-title">${e.action}</div>
+        <div class="timeline-actor">${e.actor}</div>
+        ${e.desc ? `<div class="timeline-desc">${e.desc}</div>` : ''}
+      </div>`).join('');
+  }
+
+  function saveDetailNote() {
+    if (!detailWdId) return;
+    const w = WITHDRAWALS.find((x) => x.id === detailWdId);
+    if (!w) return;
+    const note = (document.getElementById('wd-detail-note-text').value || '').trim();
+    if (!note) { toast('請輸入備註內容', '#f59e0b'); return; }
+    const nowText = new Date().toLocaleString('zh-TW');
+    if (!HISTORY[detailWdId]) HISTORY[detailWdId] = [];
+    HISTORY[detailWdId].push({
+      time: nowText,
+      actor: 'Admin User',
+      action: '新增備註',
+      desc: note,
+      cls: '',
+    });
+    w.note = note;
+    document.getElementById('wd-detail-note-text').value = '';
+    renderDetailHistory(detailWdId);
+    render();
+    toast('備註已儲存');
+  }
+
   function openWithdrawalDetail(wdId) {
     const w = WITHDRAWALS.find((x) => x.id === wdId);
     if (!w) return;
+    detailWdId = wdId;
 
     document.getElementById('history-payid').textContent = w.id;
     document.getElementById('wd-detail-ref').textContent = w.memberName + ' / ' + w.tag;
@@ -1331,6 +1368,10 @@
         }).join('')
       : '<tr><td colspan="4" style="text-align:center;color:var(--color-text-muted);padding:16px;">無關聯款項資料</td></tr>';
 
+    const noteEl = document.getElementById('wd-detail-note-text');
+    if (noteEl) noteEl.value = '';
+
+    renderDetailHistory(wdId);
     document.getElementById('history-modal').classList.add('show');
   }
 
@@ -1498,44 +1539,6 @@
     document.getElementById('edit-pay-method').addEventListener('change', (e) => {
       toggleEditFields(e.target.value);
     });
-  }
-
-  // ==================== 編輯備註（單筆提領） ====================
-  let notePayId = null;
-  function openNotePay(id) {
-    const w = WITHDRAWALS.find((x) => x.id === id);
-    if (!w) return;
-    notePayId = id;
-    document.getElementById('note-pay-id').textContent = id;
-    document.getElementById('note-pay-text').value = w.note || '';
-    document.getElementById('note-pay-modal').classList.add('show');
-  }
-  function closeNotePay() {
-    document.getElementById('note-pay-modal').classList.remove('show');
-    notePayId = null;
-  }
-  function saveNotePay() {
-    if (!notePayId) return;
-    const w = WITHDRAWALS.find((x) => x.id === notePayId);
-    if (!w) return;
-    const note = document.getElementById('note-pay-text').value.trim();
-    w.note = note;
-    if (!HISTORY[notePayId]) HISTORY[notePayId] = [];
-    HISTORY[notePayId].unshift({
-      time: new Date().toLocaleString('zh-TW'),
-      actor: 'Admin User',
-      action: '更新備註',
-      desc: note || '（清除備註）',
-      cls: '',
-    });
-    closeNotePay();
-    render();
-    toast('已儲存備註');
-  }
-  function bindNotePay() {
-    document.getElementById('btn-note-pay-close').addEventListener('click', closeNotePay);
-    document.getElementById('btn-note-pay-cancel').addEventListener('click', closeNotePay);
-    document.getElementById('btn-note-pay-save').addEventListener('click', saveNotePay);
   }
 
   // ==================== 單筆更新匯款狀態 ====================
@@ -1890,8 +1893,8 @@
     applyFiltersFromUI();
     bindBatchActions();
     bindEditPay();
-    bindNotePay();
     bindMarkStatus();
+    document.getElementById('btn-wd-detail-note-save').addEventListener('click', saveDetailNote);
     bindExportRecon();
     bindExportTransfer();
     (function () {

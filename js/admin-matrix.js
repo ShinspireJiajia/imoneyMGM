@@ -333,7 +333,6 @@
           ${buildProjectOptionsHtml(key)}
         </select>
       </td>
-      <td><select class="inline-input trigger-input" disabled>${TRIGGER_OPTIONS.map((t) => `<option value="${t}"${t === (rule.trigger != null ? rule.trigger : defaultTrigger) ? ' selected' : ''}>${t}</option>`).join('')}</select></td>
       <td><span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input bonus-input" type="number" value="${rule.bonus != null ? rule.bonus : defaultBonus}" disabled /></span></td>
       <td class="status-label"><label class="switch"><input type="checkbox" ${rule.enabled !== false ? 'checked' : ''} disabled /><span class="switch-slider"></span></label></td>
       <td class="row-actions">
@@ -375,7 +374,6 @@
           </select>
         </div>
       </td>
-      <td><select class="inline-input trigger-input" disabled>${TRIGGER_OPTIONS.map((t) => `<option value="${t}">${t}</option>`).join('')}</select></td>
       <td><span class="cell-input"><span class="inline-prefix">$</span><input class="inline-input bonus-input" type="number" value="0" disabled /></span></td>
       <td class="status-label"><label class="switch"><input type="checkbox" checked disabled /><span class="switch-slider"></span></label></td>
       <td class="row-actions">
@@ -411,10 +409,8 @@
       const key = projSel.value;
       const opt = PROJECT_OPTIONS.find((p) => p.key === key);
       if (!opt) return;
-      const triggerEl = tr.querySelector('.trigger-input');
-      const bonusEl   = tr.querySelector('.bonus-input');
-      if (triggerEl) triggerEl.value = opt.defaultTrigger;
-      if (bonusEl)   bonusEl.value   = opt.defaultBonus;
+      const bonusEl = tr.querySelector('.bonus-input');
+      if (bonusEl) bonusEl.value = opt.defaultBonus;
     });
 
     return tr;
@@ -511,14 +507,12 @@
     const tbody = document.getElementById('matrix-tbody');
     if (!tbody) return [];
     return Array.from(tbody.querySelectorAll('tr')).map((row) => {
-      const triggerEl = row.querySelector('.trigger-input');
       const bonusEl   = row.querySelector('.bonus-input');
       const enabledEl = row.querySelector('.status-label input[type="checkbox"]');
       const projectKey = getRowProjectKey(row);
       return {
         projectKey,
         label:   getProjectLabel(projectKey),
-        trigger: triggerEl ? triggerEl.value : '',
         bonus:   Number(bonusEl ? bonusEl.value : 0) || 0,
         enabled: !!(enabledEl && enabledEl.checked),
       };
@@ -541,16 +535,13 @@
   }
 
   function formatProjectRule(rule) {
-    return `${getProjectLabel(rule.projectKey)}：獎金 $${Number(rule.bonus || 0).toLocaleString()} / 觸發：${rule.trigger || '—'} / ${rule.enabled ? '啟用' : '停用'}`;
+    return `${getProjectLabel(rule.projectKey)}：獎金 $${Number(rule.bonus || 0).toLocaleString()} / ${rule.enabled ? '啟用' : '停用'}`;
   }
 
   function diffProjectRule(prev, next) {
     const changes = [];
     if (Number(prev.bonus || 0) !== Number(next.bonus || 0)) {
       changes.push(`獎金 $${Number(prev.bonus || 0).toLocaleString()} → $${Number(next.bonus || 0).toLocaleString()}`);
-    }
-    if ((prev.trigger || '') !== (next.trigger || '')) {
-      changes.push(`觸發條件「${prev.trigger || '—'}」→「${next.trigger || '—'}」`);
     }
     if (!!prev.enabled !== !!next.enabled) {
       changes.push(`狀態 ${prev.enabled ? '啟用' : '停用'} → ${next.enabled ? '啟用' : '停用'}`);
@@ -616,10 +607,8 @@
   }
 
   function applyProjectRuleToRow(row, rule) {
-    const triggerEl = row.querySelector('.trigger-input');
     const bonusEl   = row.querySelector('.bonus-input');
     const enabledEl = row.querySelector('.status-label input[type="checkbox"]');
-    if (triggerEl) triggerEl.value = rule.trigger != null ? rule.trigger : '';
     if (bonusEl)   bonusEl.value   = rule.bonus   != null ? rule.bonus   : 0;
     if (enabledEl) enabledEl.checked = rule.enabled !== false;
     const select = row.querySelector('.project-select');

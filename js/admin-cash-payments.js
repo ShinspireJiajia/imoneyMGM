@@ -723,12 +723,6 @@
           <button type="button" class="action-btn" data-action="attach" data-id="${p.id}">
             <i class="fa-solid fa-paperclip"></i>提領資料
           </button>
-          <button type="button" class="action-btn" data-action="history" data-id="${p.id}">
-            <i class="fa-solid fa-clock-rotate-left"></i>歷程
-          </button>
-          <button type="button" class="action-btn note" data-action="note" data-id="${p.id}" title="${p.note ? '已有備註' : '新增備註'}">
-            <i class="fa-regular fa-note-sticky"></i>${p.note ? '備註•' : '備註'}
-          </button>
           ${canEditCash() ? `<button type="button" class="action-btn" data-action="edit" data-id="${p.id}">
             <i class="fa-solid fa-pen-to-square"></i>編輯
           </button>` : ''}
@@ -791,11 +785,57 @@
     });
   }
 
-  // ==================== 提領明細 Modal ====================
+  // ==================== 提領明細 Modal（摘要 + 款項 + 歷程 + 備註） ====================
+  let cashDetailWdId = null;
+
+  function renderCashDetailHistory(wdId) {
+    const container = document.getElementById('cash-wd-detail-history');
+    if (!container) return;
+    const pays = PAYMENTS.filter((p) => p.withdrawalId === wdId);
+    const entries = pays.flatMap((p) => HISTORY[p.id] || []);
+    entries.sort((a, b) => String(a.time).localeCompare(String(b.time)));
+    if (!entries.length) {
+      container.innerHTML =
+        '<div style="color:var(--color-text-muted);font-size:var(--font-xs);padding:8px 0 4px;">（尚無歷程記錄）</div>';
+      return;
+    }
+    container.innerHTML = entries.map((e) => `
+      <div class="timeline-entry ${e.cls || ''}">
+        <div class="timeline-time">${e.time}</div>
+        <div class="timeline-title">${e.action}</div>
+        <div class="timeline-actor">${e.actor}</div>
+        ${e.desc ? `<div class="timeline-desc">${e.desc}</div>` : ''}
+      </div>`).join('');
+  }
+
+  function saveCashDetailNote() {
+    if (!cashDetailWdId) return;
+    const pays = PAYMENTS.filter((p) => p.withdrawalId === cashDetailWdId);
+    if (!pays.length) return;
+    const note = (document.getElementById('cash-wd-detail-note-text').value || '').trim();
+    if (!note) { toast('請輸入備註內容', '#f59e0b'); return; }
+    const nowText = new Date().toLocaleString('zh-TW');
+    const firstId = pays[0].id;
+    if (!HISTORY[firstId]) HISTORY[firstId] = [];
+    HISTORY[firstId].push({
+      time: nowText,
+      actor: 'Admin User',
+      action: '新增備註',
+      desc: note,
+      cls: '',
+    });
+    pays[0].note = note;
+    document.getElementById('cash-wd-detail-note-text').value = '';
+    renderCashDetailHistory(cashDetailWdId);
+    render();
+    toast('備註已儲存');
+  }
+
   function openCashWithdrawalDetail(wdId) {
     if (!wdId) return;
     const pays = PAYMENTS.filter((p) => p.withdrawalId === wdId);
     if (!pays.length) return;
+    cashDetailWdId = wdId;
     const first = pays[0];
     const s = STATUS_META[first.status] || { label: first.status, cls: 'pending' };
     const totalAmount = pays.reduce((sum, p) => sum + (p.amount || 0), 0);
@@ -818,6 +858,9 @@
         <td><span class="pay-status ${ps.cls}">${ps.label}</span></td>
       </tr>`;
     }).join('');
+    const noteEl = document.getElementById('cash-wd-detail-note-text');
+    if (noteEl) noteEl.value = '';
+    renderCashDetailHistory(wdId);
     document.getElementById('cash-wd-detail-modal').classList.add('show');
   }
 
@@ -838,12 +881,6 @@
     document.querySelectorAll('[data-action="attach"]').forEach((b) =>
       b.addEventListener('click', () => openAttachments(b.dataset.id))
     );
-    document.querySelectorAll('[data-action="history"]').forEach((b) =>
-      b.addEventListener('click', () => openHistory(b.dataset.id))
-    );
-    document.querySelectorAll('[data-action="note"]').forEach((b) =>
-      b.addEventListener('click', () => openNote(b.dataset.id))
-    );
     document.querySelectorAll('[data-action="edit"]').forEach((b) =>
       b.addEventListener('click', () => openEdit(b.dataset.id))
     );
@@ -858,69 +895,6 @@
     const items = [...cashSelected].map((id) => PAYMENTS.find((p) => p.id === id)).filter(Boolean);
     document.getElementById('cash-batch-count').textContent = items.length;
     document.getElementById('cash-batch-amount').textContent = '$' + fmt(items.reduce((s, p) => s + p.amount, 0));
-  }
-
-  // ==================== 歷程 Modal ====================
-  function openHistory(payId) {
-    const p = PAYMENTS.find((x) => x.id === payId);
-    if (!p) return;
-    document.getElementById('history-payid').textContent = p.id;
-    document.getElementById('history-ref').textContent = `${p.referrer} / ${p.tag}`;
-    document.getElementById('history-amount').textContent = '$' + fmt(p.amount);
-    document.getElementById('history-branch').textContent = p.branch || '—';
-    document.getElementById('history-pickup').textContent =
-      p.expectedPickupDate
-        ? (p.appointmentHours ? `${p.expectedPickupDate}　${p.appointmentHours}` : p.expectedPickupDate)
-        : '—';
-    const s = STATUS_META[p.status] || { label: p.status, cls: 'pending' };
-    document.getElementById('history-status').innerHTML =
-      `<span class="pay-status ${s.cls}">${s.label}</span>`;
-
-    const list = HISTORY[payId] || [];
-    const wrap = document.getElementById('history-timeline');
-    wrap.innerHTML = list.length
-      ? list.map((h) => `
-        <div class="timeline-entry ${h.cls || ''}">
-          <div class="timeline-time">${h.time}</div>
-          <div class="timeline-title">${h.action}</div>
-          <div class="timeline-desc">${h.desc}</div>
-          <div class="timeline-actor"><i class="fa-regular fa-user"></i> ${h.actor}</div>
-        </div>`).join('')
-      : `<div style="text-align:center;padding:30px;color:var(--color-text-muted);">尚無歷程紀錄</div>`;
-
-    document.getElementById('history-modal').classList.add('show');
-  }
-
-  // ==================== 備註 Modal ====================
-  let noteId = null;
-  function openNote(id) {
-    const p = PAYMENTS.find((x) => x.id === id);
-    if (!p) return;
-    noteId = id;
-    document.getElementById('note-pay-id').textContent = id;
-    document.getElementById('note-pay-text').value = p.note || '';
-    document.getElementById('note-pay-modal').classList.add('show');
-  }
-  function closeNote() {
-    document.getElementById('note-pay-modal').classList.remove('show');
-    noteId = null;
-  }
-  function saveNote() {
-    if (!noteId) return;
-    const p = PAYMENTS.find((x) => x.id === noteId);
-    if (!p) return;
-    p.note = document.getElementById('note-pay-text').value.trim();
-    if (!HISTORY[p.id]) HISTORY[p.id] = [];
-    HISTORY[p.id].unshift({
-      time: new Date().toLocaleString('zh-TW'),
-      actor: 'Admin User',
-      action: '更新備註',
-      desc: p.note || '（清除備註）',
-      cls: '',
-    });
-    closeNote();
-    render();
-    toast('已儲存備註');
   }
 
   // ==================== 編輯 Modal ====================
@@ -1210,20 +1184,13 @@
       });
     }
 
-    // 備註 Modal
-    document.getElementById('btn-note-pay-close').addEventListener('click', closeNote);
-    document.getElementById('btn-note-pay-cancel').addEventListener('click', closeNote);
-    document.getElementById('btn-note-pay-save').addEventListener('click', saveNote);
+    // 備註（整合至明細 Modal）
+    document.getElementById('btn-cash-wd-detail-note-save').addEventListener('click', saveCashDetailNote);
 
     // 編輯 Modal
     document.getElementById('btn-edit-pay-close').addEventListener('click', closeEdit);
     document.getElementById('btn-edit-pay-cancel').addEventListener('click', closeEdit);
     document.getElementById('btn-edit-pay-save').addEventListener('click', saveEdit);
-
-    // 歷程 Modal
-    document.getElementById('btn-history-close').addEventListener('click', () =>
-      document.getElementById('history-modal').classList.remove('show')
-    );
 
     // 提領明細 Modal
     const cashWdDetailClose = document.getElementById('btn-cash-wd-detail-close');
