@@ -152,6 +152,97 @@
   color: var(--color-primary-dark);
 }
 
+/* Step2 金額摘要卡（匯款方式） */
+.step2-amount-summary {
+  background: linear-gradient(135deg, var(--color-primary-50) 0%, #fdf4ff 100%);
+  border: 1px solid var(--color-primary-200);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.s2as-title {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.s2as-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: var(--font-sm);
+}
+
+.s2as-label {
+  color: var(--color-text-secondary);
+}
+
+.s2as-value {
+  font-weight: 600;
+}
+
+.s2as-fee {
+  color: #e53e3e;
+}
+
+.s2as-divider {
+  border-top: 1px dashed var(--color-primary-200);
+  margin: 8px 0;
+}
+
+.s2as-net-row .s2as-label {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.s2as-net {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.transfer-fee-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--color-primary-200);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.transfer-fee-row,
+.transfer-net-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-sm);
+}
+
+.transfer-fee-row .label {
+  color: var(--color-text-secondary);
+}
+
+.fee-amount {
+  font-weight: 600;
+  color: #e53e3e;
+}
+
+.transfer-net-row .label {
+  font-weight: 600;
+}
+
+.net-amount {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
 /* 提領方式選擇 */
 .method-card {
   background: #fff;

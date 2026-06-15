@@ -352,6 +352,24 @@ ol {
   color: var(--color-text-muted);
 }
 
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--font-xs);
+  color: var(--color-danger);
+  min-height: 1em;
+}
+
+.field-input.is-error {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.12);
+}
+
+.field-input.is-valid {
+  border-color: #38a169;
+  box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.12);
+}
+
 /* 通用提示 (Tooltip / Info) */
 .info-box {
   display: flex;

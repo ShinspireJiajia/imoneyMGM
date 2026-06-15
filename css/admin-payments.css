@@ -823,3 +823,44 @@
   padding: 8px 10px;
   font-size: var(--font-xs);
 }
+
+/* ===================== 明細 Modal 內的區塊標題 ===================== */
+.wd-detail-section-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.wd-detail-section-head i {
+  color: var(--color-primary);
+  font-size: 13px;
+}
+
+/* ===================== 明細 Modal 內的備註輸入區 ===================== */
+.wd-note-form {
+  margin-top: 10px;
+}
+
+.wd-note-form .field-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.wd-note-append-hint {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.wd-note-append-hint i {
+  font-size: 10px;
+  color: var(--color-warning);
+}
