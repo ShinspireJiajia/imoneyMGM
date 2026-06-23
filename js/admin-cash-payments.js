@@ -58,6 +58,24 @@
       withdrawalId: 'WD-2026032801',
     },
     {
+      id: 'PAY-26051501',
+      caseId: 'M2026051501',
+      memberId: 'U250515001',
+      referrer: '周俊義',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 2000,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/05/18',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/05/12 10:00',
+      failReason: '逾期未領取',
+      failedAt: '2026/05/20 17:00',
+      status: 'cash_failed',
+      withdrawalId: 'WD-2026051501',
+    },
+    {
       id: 'PAY-26060301',
       caseId: 'M2026052801',
       memberId: 'U250601011',
@@ -86,7 +104,7 @@
       expectedPickupDate: '2026/06/05',
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/01 14:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026060201',
     },
     {
@@ -102,7 +120,7 @@
       expectedPickupDate: '2026/06/06',
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/02 10:15',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026060202',
     },
     {
@@ -118,7 +136,7 @@
       expectedPickupDate: '2026/06/07',
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/02 15:30',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026060203',
     },
     {
@@ -134,7 +152,7 @@
       expectedPickupDate: '2026/06/07',
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/02 16:45',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026060204',
     },
     // ── 近兩週 demo 資料（2026/06/08 ~ 2026/06/21）────────────
@@ -183,7 +201,7 @@
       expectedPickupDate: '2026/06/09',
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/04 09:30',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026060901',
     },
     {
@@ -199,7 +217,7 @@
       expectedPickupDate: '2026/06/09',
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/04 10:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026060902',
     },
     {
@@ -215,7 +233,7 @@
       expectedPickupDate: '2026/06/11',
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/05 09:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061101',
     },
     {
@@ -231,7 +249,7 @@
       expectedPickupDate: '2026/06/11',
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/05 10:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061102',
     },
     {
@@ -247,7 +265,7 @@
       expectedPickupDate: '2026/06/11',
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/05 11:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061103',
     },
     {
@@ -263,7 +281,7 @@
       expectedPickupDate: '2026/06/12',
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/05 14:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061201',
     },
     {
@@ -279,7 +297,7 @@
       expectedPickupDate: '2026/06/15',
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/06 09:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061501',
     },
     {
@@ -295,7 +313,7 @@
       expectedPickupDate: '2026/06/15',
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/06 10:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061502',
     },
     {
@@ -311,7 +329,7 @@
       expectedPickupDate: '2026/06/15',
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/06 11:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061503',
     },
     {
@@ -327,7 +345,7 @@
       expectedPickupDate: '2026/06/16',
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/07 09:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061601',
     },
     {
@@ -343,7 +361,7 @@
       expectedPickupDate: '2026/06/17',
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/07 09:30',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061701',
     },
     {
@@ -359,7 +377,7 @@
       expectedPickupDate: '2026/06/17',
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/07 10:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061702',
     },
     {
@@ -375,7 +393,7 @@
       expectedPickupDate: '2026/06/17',
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/07 11:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061703',
     },
     {
@@ -391,7 +409,7 @@
       expectedPickupDate: '2026/06/18',
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/08 09:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061801',
     },
     {
@@ -407,7 +425,7 @@
       expectedPickupDate: '2026/06/18',
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/08 10:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061802',
     },
     {
@@ -423,7 +441,7 @@
       expectedPickupDate: '2026/06/19',
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/08 10:30',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061901',
     },
     {
@@ -439,7 +457,7 @@
       expectedPickupDate: '2026/06/19',
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/08 11:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026061902',
     },
     {
@@ -455,7 +473,7 @@
       expectedPickupDate: '2026/06/21',
       appointmentHours: '上午 10:00-12:00',
       appliedAt: '2026/06/08 14:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026062101',
     },
     {
@@ -471,8 +489,113 @@
       expectedPickupDate: '2026/06/21',
       appointmentHours: '下午 14:00-16:00',
       appliedAt: '2026/06/08 15:00',
-      status: 'pending',
+      status: 'pickup',
       withdrawalId: 'WD-2026062102',
+    },
+    // ── 週一・週三 demo 資料 ────────────────────────────────
+    // 2026/06/03 (Wed) 已完成
+    {
+      id: 'PAY-26060311',
+      caseId: 'M2026060311',
+      memberId: 'U250610001',
+      referrer: '江雅惠',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 1500,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/03',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/05/28 10:00',
+      pickedUpAt: '2026/06/03 11:10',
+      status: 'completed',
+      withdrawalId: 'WD-2026060311',
+    },
+    {
+      id: 'PAY-26060312',
+      caseId: 'M2026060312',
+      memberId: 'U250610002',
+      referrer: '孫明哲',
+      tag: '員工',
+      product: '房屋貸款',
+      amount: 4200,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/03',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/05/28 14:00',
+      pickedUpAt: '2026/06/03 15:20',
+      status: 'completed',
+      withdrawalId: 'WD-2026060312',
+    },
+    // 2026/06/10 (Wed) 已完成
+    {
+      id: 'PAY-26061011',
+      caseId: 'M2026061011',
+      memberId: 'U250610003',
+      referrer: '趙建勳',
+      tag: '會員',
+      product: '汽車貸款',
+      amount: 2800,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/10',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/06/03 09:30',
+      pickedUpAt: '2026/06/10 10:45',
+      status: 'completed',
+      withdrawalId: 'WD-2026061011',
+    },
+    {
+      id: 'PAY-26061012',
+      caseId: 'M2026061012',
+      memberId: 'U250610004',
+      referrer: '馮秀玲',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 1200,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/10',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/03 10:00',
+      pickedUpAt: '2026/06/10 15:00',
+      status: 'completed',
+      withdrawalId: 'WD-2026061012',
+    },
+    // 2026/06/22 (Mon) 已完成 + 待領取
+    {
+      id: 'PAY-26062201',
+      caseId: 'M2026062201',
+      memberId: 'U250615001',
+      referrer: '黎明志',
+      tag: '會員',
+      product: '信用貸款',
+      amount: 3600,
+      method: 'cash',
+      branch: '板橋分公司',
+      expectedPickupDate: '2026/06/22',
+      appointmentHours: '上午 10:00-12:00',
+      appliedAt: '2026/06/14 09:00',
+      pickedUpAt: '2026/06/22 11:05',
+      status: 'completed',
+      withdrawalId: 'WD-2026062201',
+    },
+    {
+      id: 'PAY-26062202',
+      caseId: 'M2026062202',
+      memberId: 'U250615002',
+      referrer: '梁佳君',
+      tag: '員工',
+      product: '汽車貸款',
+      amount: 2900,
+      method: 'cash',
+      branch: '中部總公司',
+      expectedPickupDate: '2026/06/22',
+      appointmentHours: '下午 14:00-16:00',
+      appliedAt: '2026/06/14 10:00',
+      status: 'pickup',
+      withdrawalId: 'WD-2026062202',
     },
   ];
 
@@ -483,6 +606,11 @@
     'PAY-26032808': [
       { time: '2026/03/25 14:00', actor: '推薦人 - 高志仁', action: '建立提領申請', desc: '現場領取 - 板橋分公司，預計 2026/03/28 上午 10:00-12:00', cls: 'done' },
       { time: '2026/03/28 11:30', actor: '財務 - Mary', action: '完成現場領取', desc: '推薦人已攜帶身分證至現場簽收', cls: 'done' },
+    ],
+    'PAY-26051501': [
+      { time: '2026/05/12 10:00', actor: '推薦人 - 周俊義', action: '建立提領申請', desc: '現場領取 - 板橋分公司，預計 2026/05/18 下午 14:00-16:00', cls: 'done' },
+      { time: '2026/05/18 16:01', actor: '系統', action: '逾期未領取', desc: '預計領取時間已過，推薦人未出現', cls: 'failed' },
+      { time: '2026/05/20 17:00', actor: 'Admin User', action: '標記提領失敗', desc: '原因：逾期未領取', cls: 'failed' },
     ],
   };
 
@@ -517,6 +645,13 @@
     'PAY-26061902': { realName: '陳宜玲',  idNumber: 'E02****89' },
     'PAY-26062101': { realName: '柯建志',  idNumber: 'F13****90' },
     'PAY-26062102': { realName: '羅雅文',  idNumber: 'G24****01' },
+    'PAY-26051501': { realName: '周俊義',  idNumber: 'H37****55' },
+    'PAY-26060311': { realName: '江雅惠',  idNumber: 'H24****11' },
+    'PAY-26060312': { realName: '孫明哲',  idNumber: 'I35****22' },
+    'PAY-26061011': { realName: '趙建勳',  idNumber: 'J46****33' },
+    'PAY-26061012': { realName: '馮秀玲',  idNumber: 'K57****44' },
+    'PAY-26062201': { realName: '黎明志',  idNumber: 'L68****55' },
+    'PAY-26062202': { realName: '梁佳君',  idNumber: 'M79****66' },
   };
 
   function getDemoMemberData(payId) {
@@ -524,9 +659,9 @@
   }
 
   const STATUS_META = {
-    pending:   { label: '待確認',   cls: 'pending',   icon: 'fa-hourglass-half' },
-    pickup:    { label: '待領取',   cls: 'pickup',    icon: 'fa-store' },
-    completed: { label: '已領取',   cls: 'completed', icon: 'fa-handshake' },
+    pickup:      { label: '待領取',   cls: 'pickup',    icon: 'fa-store' },
+    completed:   { label: '已領取',   cls: 'completed', icon: 'fa-handshake' },
+    cash_failed: { label: '提領失敗', cls: 'failed',    icon: 'fa-circle-xmark' },
   };
 
   const TAG_META = {
@@ -560,54 +695,129 @@
     return `${mm}/${dd}（週${weekdays[date.getDay()]}）`;
   }
 
-  // ==================== 每日刊版 ====================
-  let dailyBoardDays = 5;
+  // ==================== 資訊看板（週一・週三 / 時間查詢） ====================
+  let boardDateFrom = null;
+  let boardDateTo   = null;
+
+  function toDateInput(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function fromDateInput(s) {
+    if (!s) return null;
+    const [y, m, d] = s.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    dt.setHours(0, 0, 0, 0);
+    return dt;
+  }
+
+  function getDefaultBoardRange() {
+    const to = new Date();
+    to.setHours(0, 0, 0, 0);
+    const from = new Date(to);
+    from.setDate(to.getDate() - 27); // 近四週 = 28 天（含今日）
+    return { from, to };
+  }
+
+  function getBoardPayments(from, to) {
+    return PAYMENTS.filter((p) => {
+      const d = parsePickupDate(p.expectedPickupDate);
+      if (!d || d < from || d > to) return false;
+      return d.getDay() === 1 || d.getDay() === 3; // 僅週一・週三
+    });
+  }
+
+  function renderBoardStats(from, to) {
+    const el = document.getElementById('board-kpi-row');
+    if (!el) return;
+    const pays = getBoardPayments(from, to);
+    const completed = pays.filter((p) => p.status === 'completed');
+    const active    = pays.filter((p) => p.status === 'pickup');
+    const failed    = pays.filter((p) => p.status === 'cash_failed');
+    const cAmt = completed.reduce((s, p) => s + p.amount, 0);
+    const aAmt = active.reduce((s, p) => s + p.amount, 0);
+    const fAmt = failed.reduce((s, p) => s + p.amount, 0);
+
+    el.innerHTML = `
+      <div class="kpi-card kpi-card-completed">
+        <div class="kpi-label"><i class="fa-solid fa-handshake"></i>已提領金額</div>
+        <div class="kpi-value" style="color:#10b981;">$${fmt(cAmt)}</div>
+        <div class="kpi-count">${completed.length} 筆</div>
+      </div>
+      <div class="kpi-card kpi-card-pending">
+        <div class="kpi-label"><i class="fa-solid fa-store"></i>待領取金額</div>
+        <div class="kpi-value" style="color:#f59e0b;">$${fmt(aAmt)}</div>
+        <div class="kpi-count">${active.length} 筆</div>
+      </div>
+      ${fAmt > 0 ? `<div class="kpi-card kpi-card-failed">
+        <div class="kpi-label"><i class="fa-solid fa-circle-xmark"></i>提領失敗金額</div>
+        <div class="kpi-value" style="color:#ef4444;">$${fmt(fAmt)}</div>
+        <div class="kpi-count">${failed.length} 筆</div>
+      </div>` : ''}`;
+  }
 
   function renderDailyBoard() {
     const grid = document.getElementById('daily-board-grid');
     if (!grid) return;
+    if (!boardDateFrom || !boardDateTo) { grid.innerHTML = ''; return; }
+
+    renderBoardStats(boardDateFrom, boardDateTo);
+
+    // 取出範圍內所有週一(1)・週三(3)
+    const monWedDates = [];
+    const cur = new Date(boardDateFrom);
+    while (cur <= boardDateTo) {
+      if (cur.getDay() === 1 || cur.getDay() === 3) monWedDates.push(new Date(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const activeCash = PAYMENTS.filter((p) => p.status !== 'completed');
 
     const cards = [];
-    for (let i = 0; i < dailyBoardDays; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      const dateKey = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
-      const isToday = (i === 0);
+    monWedDates.forEach((date) => {
+      const dateKey = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+      const dayPayments = PAYMENTS.filter((p) => (p.expectedPickupDate || '').startsWith(dateKey));
+      if (!dayPayments.length) return; // 無預約資料就略過
 
-      const dayPayments = activeCash.filter((p) => (p.expectedPickupDate || '').startsWith(dateKey));
+      const isToday = (date.getTime() === today.getTime());
       const taipei   = dayPayments.filter((p) => branchCity(p.branch) === '台北');
       const taichung = dayPayments.filter((p) => branchCity(p.branch) === '台中');
 
       const branchBlock = (cls, label, items) => {
-        const isEmpty = items.length === 0;
-        let innerHtml;
-        if (isEmpty) {
-          innerHtml = '<span class="slot-empty">無預約</span>';
-        } else {
-          const am = items.filter((p) => (p.appointmentHours || '').startsWith('上午'));
-          const pm = items.filter((p) => (p.appointmentHours || '').startsWith('下午'));
-          const amAmt = am.reduce((s, p) => s + p.amount, 0);
-          const pmAmt = pm.reduce((s, p) => s + p.amount, 0);
-          const rows = [];
-          if (am.length) rows.push(`<div class="slot-stat-row"><span class="slot-badge slot-am">上午</span><span class="slot-count">${am.length}筆</span><strong class="slot-amt">$${fmt(amAmt)}</strong></div>`);
-          if (pm.length) rows.push(`<div class="slot-stat-row"><span class="slot-badge slot-pm">下午</span><span class="slot-count">${pm.length}筆</span><strong class="slot-amt">$${fmt(pmAmt)}</strong></div>`);
-          if (!rows.length) rows.push(`<div class="slot-stat-row">${items.length}筆 &nbsp;$${fmt(items.reduce((s, p) => s + p.amount, 0))}</div>`);
-          innerHtml = rows.join('');
+        if (!items.length) {
+          return `<div class="daily-branch ${cls} empty">
+            <span class="daily-branch-name">${label}</span>
+            <span class="slot-empty">無預約</span>
+          </div>`;
         }
-        return `<div class="daily-branch ${cls}${isEmpty ? ' empty' : ''}">
+        const am = items.filter((p) => (p.appointmentHours || '').startsWith('上午'));
+        const pm = items.filter((p) => (p.appointmentHours || '').startsWith('下午'));
+        const amAmt = am.reduce((s, p) => s + p.amount, 0);
+        const pmAmt = pm.reduce((s, p) => s + p.amount, 0);
+        const rows = [];
+        if (am.length) rows.push(`<div class="slot-stat-row"><span class="slot-badge slot-am">上午</span><span class="slot-count">${am.length}筆</span><strong class="slot-amt">$${fmt(amAmt)}</strong></div>`);
+        if (pm.length) rows.push(`<div class="slot-stat-row"><span class="slot-badge slot-pm">下午</span><span class="slot-count">${pm.length}筆</span><strong class="slot-amt">$${fmt(pmAmt)}</strong></div>`);
+        if (!rows.length) rows.push(`<div class="slot-stat-row">${items.length}筆 $${fmt(items.reduce((s, p) => s + p.amount, 0))}</div>`);
+        const doneN   = items.filter((p) => p.status === 'completed').length;
+        const pickupN = items.filter((p) => p.status === 'pickup').length;
+        const failN   = items.filter((p) => p.status === 'cash_failed').length;
+        const statusParts = [];
+        if (doneN)   statusParts.push(`<span style="color:#10b981;">已領 ${doneN}</span>`);
+        if (pickupN) statusParts.push(`<span style="color:#f59e0b;">待領 ${pickupN}</span>`);
+        if (failN) statusParts.push(`<span style="color:#ef4444;">失敗 ${failN}</span>`);
+        const statusRow = statusParts.length
+          ? `<div class="board-status-row">${statusParts.join('')}</div>` : '';
+        return `<div class="daily-branch ${cls}">
           <span class="daily-branch-name">${label}</span>
-          <div class="daily-slot-stats">${innerHtml}</div>
+          <div class="daily-slot-stats">${rows.join('')}${statusRow}</div>
         </div>`;
       };
 
       cards.push(`
-        <div class="daily-date-card${isToday ? ' is-today' : ''}${dailyBoardDays > 5 ? ' compact' : ''}">
+        <div class="daily-date-card${isToday ? ' is-today' : ''}">
           <div class="daily-date-header">
-            <span class="daily-date-label">${fmtDateLabel(d)}</span>
+            <span class="daily-date-label">${fmtDateLabel(date)}</span>
             ${isToday ? '<span class="daily-today-badge">今天</span>' : ''}
           </div>
           <div class="daily-branch-col">
@@ -615,30 +825,55 @@
             ${branchBlock('taichung', '台中 中部總公司', taichung)}
           </div>
         </div>`);
-    }
+    });
 
-    grid.innerHTML = cards.join('');
-    grid.dataset.days = dailyBoardDays;
+    grid.innerHTML = cards.length
+      ? cards.join('')
+      : '<div style="padding:24px;text-align:center;color:var(--color-text-muted);font-size:13px;">此期間無週一・週三預約資料</div>';
   }
 
-  function bindDailyRangeTabs() {
-    document.querySelectorAll('.daily-range-tab').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const days = Number(btn.dataset.range);
-        if (!days || days === dailyBoardDays) return;
-        dailyBoardDays = days;
-        document.querySelectorAll('.daily-range-tab').forEach((b) =>
-          b.classList.toggle('active', b === btn)
-        );
-        const label = document.getElementById('daily-board-range-label');
-        if (label) label.textContent = days === 5 ? '近五日' : '近兩週';
+  function initBoardDateRange() {
+    const { from, to } = getDefaultBoardRange();
+    boardDateFrom = from;
+    boardDateTo   = to;
+    const fromEl = document.getElementById('board-date-from');
+    const toEl   = document.getElementById('board-date-to');
+    if (fromEl) fromEl.value = toDateInput(from);
+    if (toEl)   toEl.value   = toDateInput(to);
+  }
+
+  function bindBoardDateRange() {
+    const fromEl   = document.getElementById('board-date-from');
+    const toEl     = document.getElementById('board-date-to');
+    const queryBtn = document.getElementById('btn-board-query');
+    const resetBtn = document.getElementById('btn-board-reset');
+
+    function applyBoardRange() {
+      const f = fromEl ? fromDateInput(fromEl.value) : null;
+      const t = toEl   ? fromDateInput(toEl.value)   : null;
+      if (!f || !t || f > t) return;
+      boardDateFrom = f;
+      boardDateTo   = t;
+      renderDailyBoard();
+    }
+
+    if (queryBtn) queryBtn.addEventListener('click', applyBoardRange);
+    if (fromEl)   fromEl.addEventListener('change', applyBoardRange);
+    if (toEl)     toEl.addEventListener('change',   applyBoardRange);
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        const { from, to } = getDefaultBoardRange();
+        boardDateFrom = from;
+        boardDateTo   = to;
+        if (fromEl) fromEl.value = toDateInput(from);
+        if (toEl)   toEl.value   = toDateInput(to);
         renderDailyBoard();
       });
-    });
+    }
   }
 
   // ==================== 清單 ====================
-  const cashFilters = { keyword: '', referrerName: '', referrerId: '', status: 'all', branch: 'all' };
+  const cashFilters = { keyword: '', referrerName: '', referrerId: '', status: 'pickup', branch: 'all' };
   let cashPgPage = 1, cashPgSize = 20;
   let cashSelected = new Set();
 
@@ -647,7 +882,7 @@
   function setCanEditCash(v) { try { localStorage.setItem(PERM_KEY, v ? '1' : '0'); } catch {} }
 
   function isBatchSelectable(p) {
-    return p.status === 'pending' || p.status === 'pickup';
+    return p.status === 'pickup';
   }
 
   function normalizeSelected() {
@@ -723,6 +958,9 @@
           <button type="button" class="action-btn" data-action="attach" data-id="${p.id}">
             <i class="fa-solid fa-paperclip"></i>提領資料
           </button>
+          ${p.status === 'pickup' ? `<button type="button" class="action-btn mark-status" data-action="mark-status" data-id="${p.id}">
+            <i class="fa-solid fa-pen-to-square"></i>更新狀態
+          </button>` : ''}
           ${canEditCash() ? `<button type="button" class="action-btn" data-action="edit" data-id="${p.id}">
             <i class="fa-solid fa-pen-to-square"></i>編輯
           </button>` : ''}
@@ -787,6 +1025,8 @@
 
   // ==================== 提領明細 Modal（摘要 + 款項 + 歷程 + 備註） ====================
   let cashDetailWdId = null;
+  let cashFailWdId = null;
+  let cashMarkStatusId = null;
 
   function renderCashDetailHistory(wdId) {
     const container = document.getElementById('cash-wd-detail-history');
@@ -806,29 +1046,6 @@
         <div class="timeline-actor">${e.actor}</div>
         ${e.desc ? `<div class="timeline-desc">${e.desc}</div>` : ''}
       </div>`).join('');
-  }
-
-  function saveCashDetailNote() {
-    if (!cashDetailWdId) return;
-    const pays = PAYMENTS.filter((p) => p.withdrawalId === cashDetailWdId);
-    if (!pays.length) return;
-    const note = (document.getElementById('cash-wd-detail-note-text').value || '').trim();
-    if (!note) { toast('請輸入備註內容', '#f59e0b'); return; }
-    const nowText = new Date().toLocaleString('zh-TW');
-    const firstId = pays[0].id;
-    if (!HISTORY[firstId]) HISTORY[firstId] = [];
-    HISTORY[firstId].push({
-      time: nowText,
-      actor: 'Admin User',
-      action: '新增備註',
-      desc: note,
-      cls: '',
-    });
-    pays[0].note = note;
-    document.getElementById('cash-wd-detail-note-text').value = '';
-    renderCashDetailHistory(cashDetailWdId);
-    render();
-    toast('備註已儲存');
   }
 
   function openCashWithdrawalDetail(wdId) {
@@ -858,10 +1075,61 @@
         <td><span class="pay-status ${ps.cls}">${ps.label}</span></td>
       </tr>`;
     }).join('');
-    const noteEl = document.getElementById('cash-wd-detail-note-text');
-    if (noteEl) noteEl.value = '';
     renderCashDetailHistory(wdId);
+
+    const memoContainer = document.getElementById('memo-container-cash');
+    if (memoContainer && typeof MemoManager !== 'undefined') {
+      MemoManager.renderWidget(memoContainer, 'cashpayment', wdId, 'Admin User');
+    }
+
+    const btnFail = document.getElementById('btn-cash-wd-mark-fail');
+    if (btnFail) {
+      btnFail.style.display = first.status === 'pickup' ? '' : 'none';
+    }
+
     document.getElementById('cash-wd-detail-modal').classList.add('show');
+  }
+
+  function openCashFail(wdId) {
+    if (!wdId) return;
+    cashFailWdId = wdId;
+    document.getElementById('cash-fail-wd-id').textContent = wdId;
+    document.getElementById('cash-fail-reason').value = 'not_present';
+    const otherRow = document.getElementById('cash-fail-other-row');
+    if (otherRow) otherRow.style.display = 'none';
+    document.getElementById('cash-fail-other-text').value = '';
+    document.getElementById('cash-fail-modal').classList.add('show');
+  }
+
+  function saveCashFail() {
+    if (!cashFailWdId) return;
+    const REASONS = {
+      not_present: '本人未到場',
+      id_mismatch: '身分證件不符',
+      expired:     '逾期未領取',
+      other:       '其他',
+    };
+    const reasonSel = document.getElementById('cash-fail-reason');
+    const otherText = document.getElementById('cash-fail-other-text');
+    const reasonKey = reasonSel ? reasonSel.value : 'other';
+    let reasonLabel = REASONS[reasonKey] || reasonKey;
+    if (reasonKey === 'other' && otherText && otherText.value.trim()) {
+      reasonLabel = `其他：${otherText.value.trim()}`;
+    }
+    const now = new Date().toLocaleString('zh-TW');
+    PAYMENTS.filter((p) => p.withdrawalId === cashFailWdId).forEach((p) => {
+      p.status = 'cash_failed';
+      p.failReason = reasonLabel;
+      p.failedAt = now;
+      if (!HISTORY[p.id]) HISTORY[p.id] = [];
+      HISTORY[p.id].push({ time: now, actor: 'Admin User', action: '標記提領失敗', desc: `原因：${reasonLabel}`, cls: 'failed' });
+    });
+    document.getElementById('cash-fail-modal').classList.remove('show');
+    openCashWithdrawalDetail(cashFailWdId);
+    cashFailWdId = null;
+    render();
+    renderDailyBoard();
+    toast('已標記提領失敗');
   }
 
   function bindRowActions() {
@@ -883,6 +1151,9 @@
     );
     document.querySelectorAll('[data-action="edit"]').forEach((b) =>
       b.addEventListener('click', () => openEdit(b.dataset.id))
+    );
+    document.querySelectorAll('[data-action="mark-status"]').forEach((b) =>
+      b.addEventListener('click', () => openCashMarkStatus(b.dataset.id))
     );
   }
 
@@ -906,7 +1177,7 @@
     editId = id;
     document.getElementById('edit-pay-id').textContent = id;
     document.getElementById('edit-pay-ref').value = `${p.referrer} (${p.tag})`;
-    document.getElementById('edit-pay-status').value = p.status || 'pending';
+    document.getElementById('edit-pay-status').value = p.status || 'pickup';
     document.getElementById('edit-pay-branch-select').value = p.branch || '板橋分公司';
     const pickup = (p.expectedPickupDate || '').replace(/\//g, '-');
     document.getElementById('edit-pay-expected-pickup').value = pickup;
@@ -932,20 +1203,114 @@
     const pickup = document.getElementById('edit-pay-expected-pickup').value;
     p.expectedPickupDate = pickup ? pickup.replace(/-/g, '/') : p.expectedPickupDate;
     p.appointmentHours = document.getElementById('edit-pay-time-slot').value || p.appointmentHours;
-    if (p.status === 'completed') p.pickedUpAt = new Date().toLocaleString('zh-TW');
+    const nowText = new Date().toLocaleString('zh-TW');
+    if (p.status === 'completed') {
+      p.pickedUpAt = nowText;
+    } else if (p.status === 'cash_failed') {
+      const FAIL_REASONS = { not_present: '本人未到場', id_mismatch: '身分證件不符', expired: '逾期未領取', other: '其他' };
+      const failSel = document.getElementById('edit-fail-reason-select');
+      p.failReason = failSel ? (FAIL_REASONS[failSel.value] || failSel.value) : reason;
+      p.failedAt = nowText;
+    }
     if (!HISTORY[p.id]) HISTORY[p.id] = [];
     const newTimeSlot = p.appointmentHours || '未設定';
     HISTORY[p.id].push({
-      time: new Date().toLocaleString('zh-TW'),
+      time: nowText,
       actor: '財務後台 - 編輯權限使用',
       action: '修改現場提領資訊',
       desc: `門市：${oldBranch} → ${p.branch}；時段：${oldTimeSlot} → ${newTimeSlot}；狀態：${STATUS_META[oldStatus]?.label || oldStatus} → ${STATUS_META[p.status]?.label || p.status}；原因：${reason}`,
-      cls: '',
+      cls: p.status === 'cash_failed' ? 'failed' : '',
     });
     closeEdit();
     render();
     renderDailyBoard();
     toast('已更新現場提領資訊');
+  }
+
+  // ==================== 更新狀態 Modal ====================
+  function openCashMarkStatus(payId) {
+    const p = PAYMENTS.find((x) => x.id === payId);
+    if (!p) return;
+    cashMarkStatusId = payId;
+
+    document.getElementById('cms-payid').textContent = p.withdrawalId || p.id;
+    document.getElementById('cms-ref').textContent = `${p.referrer} (${p.tag})`;
+    document.getElementById('cms-amount').textContent = '$' + fmt(p.amount);
+    document.getElementById('cms-branch').textContent = p.branch || '—';
+
+    const s = STATUS_META[p.status] || { label: p.status, cls: 'pending', icon: 'fa-question' };
+    document.getElementById('cms-current-status').innerHTML =
+      `<span class="pay-status ${s.cls}"><i class="fa-solid ${s.icon}"></i>${s.label}</span>`;
+
+    document.querySelectorAll('input[name="cms-status-pick"]').forEach((r) => { r.checked = false; });
+    document.querySelectorAll('#cash-mark-status-modal .ms-option').forEach((el) => el.classList.remove('selected'));
+    document.getElementById('cms-fail-wrap').hidden = true;
+    document.getElementById('cms-fail-reason-sel').value = '';
+    document.getElementById('cms-fail-reason-text').style.display = 'none';
+    document.getElementById('cms-fail-reason-text').value = '';
+    document.getElementById('cms-note').value = '';
+    document.getElementById('btn-cms-save').disabled = true;
+
+    document.getElementById('cash-mark-status-modal').classList.add('show');
+  }
+
+  function saveCashMarkStatus() {
+    if (!cashMarkStatusId) return;
+    const p = PAYMENTS.find((x) => x.id === cashMarkStatusId);
+    if (!p) return;
+
+    const picked = document.querySelector('input[name="cms-status-pick"]:checked');
+    if (!picked) return;
+    const newStatus = picked.value;
+
+    let failReason = '';
+    if (newStatus === 'cash_failed') {
+      const REASONS = { not_present: '本人未到場', id_mismatch: '身分證件不符', expired: '逾期未領取', other: '其他' };
+      const sel  = document.getElementById('cms-fail-reason-sel');
+      const text = document.getElementById('cms-fail-reason-text');
+      if (!sel || !sel.value) { alert('請選擇失敗原因'); return; }
+      failReason = REASONS[sel.value] || sel.value;
+      if (sel.value === 'other' && text && text.value.trim()) {
+        failReason = `其他：${text.value.trim()}`;
+      }
+    }
+
+    const note = (document.getElementById('cms-note').value || '').trim();
+    const now = new Date().toLocaleString('zh-TW');
+    const oldStatus = p.status;
+
+    p.status = newStatus;
+    if (newStatus === 'completed') {
+      p.pickedUpAt = now;
+    } else if (newStatus === 'cash_failed') {
+      p.failReason = failReason;
+      p.failedAt = now;
+    }
+
+    if (!HISTORY[p.id]) HISTORY[p.id] = [];
+    const oldLabel = STATUS_META[oldStatus]?.label || oldStatus;
+    const newLabel = STATUS_META[newStatus]?.label || newStatus;
+    const descParts = [];
+    if (failReason) descParts.push(`失敗原因：${failReason}`);
+    if (note) descParts.push(`備註：${note}`);
+    HISTORY[p.id].push({
+      time: now,
+      actor: 'Admin User',
+      action: `更新狀態：${oldLabel} → ${newLabel}`,
+      desc: descParts.join('；') || '（無備註）',
+      cls: newStatus === 'cash_failed' ? 'failed' : 'done',
+    });
+
+    document.getElementById('cash-mark-status-modal').classList.remove('show');
+    cashMarkStatusId = null;
+    render();
+    renderDailyBoard();
+    toast(newStatus === 'cash_failed' ? '已標記提領失敗' : '已更新為已領取');
+  }
+
+  function closeCashMarkStatus() {
+    document.getElementById('cash-mark-status-modal').classList.remove('show');
+    cashMarkStatusId = null;
   }
 
   // ==================== 檢視附件 Modal ====================
@@ -1122,6 +1487,8 @@
       btnClearFilter.addEventListener('click', () => {
         filterGrid.querySelectorAll('input').forEach((el) => (el.value = ''));
         filterGrid.querySelectorAll('select').forEach((el) => (el.selectedIndex = 0));
+        const statusSel = document.getElementById('cash-filter-status');
+        if (statusSel) statusSel.value = 'pickup';
         applyFilters();
       });
     }
@@ -1184,13 +1551,20 @@
       });
     }
 
-    // 備註（整合至明細 Modal）
-    document.getElementById('btn-cash-wd-detail-note-save').addEventListener('click', saveCashDetailNote);
 
     // 編輯 Modal
     document.getElementById('btn-edit-pay-close').addEventListener('click', closeEdit);
     document.getElementById('btn-edit-pay-cancel').addEventListener('click', closeEdit);
     document.getElementById('btn-edit-pay-save').addEventListener('click', saveEdit);
+
+    // 狀態切換時顯示/隱藏提領失敗原因欄
+    const editPayStatus = document.getElementById('edit-pay-status');
+    if (editPayStatus) {
+      editPayStatus.addEventListener('change', () => {
+        const failRow = document.getElementById('edit-fail-reason-row');
+        if (failRow) failRow.style.display = editPayStatus.value === 'cash_failed' ? '' : 'none';
+      });
+    }
 
     // 提領明細 Modal
     const cashWdDetailClose = document.getElementById('btn-cash-wd-detail-close');
@@ -1206,6 +1580,66 @@
       });
     }
 
+    // 標記提領失敗 – 開啟按鈕
+    const btnMarkFail = document.getElementById('btn-cash-wd-mark-fail');
+    if (btnMarkFail) {
+      btnMarkFail.addEventListener('click', () => openCashFail(cashDetailWdId));
+    }
+
+    // 標記提領失敗 Modal
+    const failClose = document.getElementById('btn-cash-fail-close');
+    if (failClose) failClose.addEventListener('click', () => document.getElementById('cash-fail-modal').classList.remove('show'));
+    const failCancel = document.getElementById('btn-cash-fail-cancel');
+    if (failCancel) failCancel.addEventListener('click', () => document.getElementById('cash-fail-modal').classList.remove('show'));
+    const failConfirm = document.getElementById('btn-cash-fail-confirm');
+    if (failConfirm) failConfirm.addEventListener('click', saveCashFail);
+    const failBg = document.getElementById('cash-fail-modal');
+    if (failBg) {
+      failBg.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) failBg.classList.remove('show');
+      });
+    }
+
+    // 失敗原因選單切換「其他」補充欄
+    const cashFailReasonSel = document.getElementById('cash-fail-reason');
+    if (cashFailReasonSel) {
+      cashFailReasonSel.addEventListener('change', () => {
+        const otherRow = document.getElementById('cash-fail-other-row');
+        if (otherRow) otherRow.style.display = cashFailReasonSel.value === 'other' ? '' : 'none';
+      });
+    }
+
+    // 更新狀態 Modal
+    const cmsSave   = document.getElementById('btn-cms-save');
+    const cmsCancel = document.getElementById('btn-cms-cancel');
+    const cmsClose  = document.getElementById('btn-cms-close');
+    const cmsBg     = document.getElementById('cash-mark-status-modal');
+    if (cmsSave)   cmsSave.addEventListener('click', saveCashMarkStatus);
+    if (cmsCancel) cmsCancel.addEventListener('click', closeCashMarkStatus);
+    if (cmsClose)  cmsClose.addEventListener('click', closeCashMarkStatus);
+    if (cmsBg)     cmsBg.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeCashMarkStatus(); });
+
+    // 更新狀態 Modal — 選擇卡 radio 變化
+    document.querySelectorAll('input[name="cms-status-pick"]').forEach((r) => {
+      r.addEventListener('change', () => {
+        document.querySelectorAll('#cash-mark-status-modal .ms-option').forEach((el) => el.classList.remove('selected'));
+        const lbl = r.closest('.ms-option');
+        if (lbl) lbl.classList.add('selected');
+        const failWrap = document.getElementById('cms-fail-wrap');
+        if (failWrap) failWrap.hidden = r.value !== 'cash_failed';
+        if (cmsSave) cmsSave.disabled = false;
+      });
+    });
+
+    // 更新狀態 Modal — 失敗原因「其他」補充欄
+    const cmsFailSel = document.getElementById('cms-fail-reason-sel');
+    if (cmsFailSel) {
+      cmsFailSel.addEventListener('change', () => {
+        const text = document.getElementById('cms-fail-reason-text');
+        if (text) text.style.display = cmsFailSel.value === 'other' ? '' : 'none';
+      });
+    }
+
     // 附件 Modal & 燈箱
     bindAttachModal();
     bindLightbox();
@@ -1213,8 +1647,9 @@
     // CSV 匯出
     bindExportCash();
 
-    // 看板日期範圍切換
-    bindDailyRangeTabs();
+    // 資訊看板 — 初始化日期區間 & 綁定查詢
+    initBoardDateRange();
+    bindBoardDateRange();
 
     // 初始渲染
     renderDailyBoard();

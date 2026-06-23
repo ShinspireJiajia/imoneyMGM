@@ -211,7 +211,7 @@
         <div class="wd-group-items">${itemLines}</div>
         ${fee > 0 ? `
         <div class="wd-group-fee-row">
-          <span>匯款手續費</span><span class="wd-group-fee">-$${fmt(fee)}</span>
+          <span>匯款作業費</span><span class="wd-group-fee">-$${fmt(fee)}</span>
         </div>` : ''}
         <div class="wd-group-net-row">
           <span>${fee > 0 ? '實際撥款金額' : '撥款金額'}</span><span class="wd-group-net">$${fmt(netAmount)}</span>

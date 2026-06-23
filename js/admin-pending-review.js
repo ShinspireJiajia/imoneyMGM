@@ -106,6 +106,7 @@
   const SOURCE_LABEL = {
     overrun: '超量送單',
     blacklist: '黑名單會員獎金',
+    payout_rejected: '核款拒絕待修正',
   };
 
   // 與推薦人管理頁保持同一份會員編號來源（UID）
@@ -172,9 +173,15 @@
     const isPending = q.status === 'pending';
     const checked = selected.has(q.caseId);
 
+    const isPayoutRejected = src === 'payout_rejected';
     // 黑名單來源：已是黑名單，操作只剩「放行 / 拒絕」（不再有「轉黑名單」）
+    // 核款拒絕來源：只顯示「提交維護人員」
     const actions = isPending
-      ? (isBlacklistSrc
+      ? (isPayoutRejected
+          ? `<button type="button" class="action-btn note" data-act="submit-maintenance" data-id="${q.caseId}">
+               <i class="fa-solid fa-wrench"></i>提交維護人員
+             </button>`
+          : isBlacklistSrc
           ? `<button type="button" class="action-btn success" data-act="approve" data-id="${q.caseId}">人工放行</button>
              <button type="button" class="action-btn danger" data-act="reject" data-id="${q.caseId}">拒絕</button>`
           : `<button type="button" class="action-btn success" data-act="approve" data-id="${q.caseId}">放行</button>
@@ -185,7 +192,7 @@
            <span class="handled-time">${q.handledAt || ''}</span>
          </span>`;
 
-    const rowExtra = isBlacklistSrc ? ' row-blacklist' : '';
+    const rowExtra = isBlacklistSrc ? ' row-blacklist' : isPayoutRejected ? ' row-payout-rejected' : '';
 
     return `
       <tr class="${isPending ? '' : 'handled'}${rowExtra}">
@@ -240,6 +247,7 @@
         if (act === 'approve') singleAct(id, 'approve');
         else if (act === 'reject') singleAct(id, 'reject');
         else if (act === 'blacklist') openBlacklist([id]);
+        else if (act === 'submit-maintenance') openSubmitMaintenance(id);
       });
     });
   }
@@ -361,6 +369,94 @@
     document.getElementById('btn-batch-cancel').addEventListener('click', () => {
       selected.clear();
       render();
+    });
+  }
+
+  // ==================== 從核款拒絕讀入待維護案件 ====================
+  function loadPayoutRejected() {
+    try {
+      const items = JSON.parse(localStorage.getItem('mgm_payout_rejected') || '[]');
+      items.forEach((item) => {
+        if (!QUEUE.find((q) => q.caseId === item.caseId)) {
+          QUEUE.push({
+            caseId: item.caseId,
+            customerId: item.referrerCid || '—',
+            referrer: item.referrerName || '—',
+            uid: item.referrerCid,
+            tag: item.referrerTag || '—',
+            product: '核款拒絕',
+            amount: item.amount || 0,
+            monthAcc: item.amount || 0,
+            monthCap: 50000,
+            appliedAt: item.rejectedAt || '',
+            status: 'pending',
+            source: 'payout_rejected',
+            rejectNote: item.rejectNote || '',
+            rejectedAt: item.rejectedAt || '',
+          });
+        }
+      });
+    } catch {}
+  }
+
+  // ==================== 提交維護人員 Modal ====================
+  let maintenanceCaseId = null;
+
+  function openSubmitMaintenance(id) {
+    const q = QUEUE.find((x) => x.caseId === id);
+    if (!q) return;
+    maintenanceCaseId = id;
+    const set = (elId, val) => { const el = document.getElementById(elId); if (el) el.textContent = val; };
+    set('sm-caseid',      q.caseId);
+    set('sm-referrer',    q.referrer + '（' + q.tag + '）');
+    set('sm-amount',      '$' + q.amount.toLocaleString());
+    set('sm-reject-note', q.rejectNote || '—');
+    const modal = document.getElementById('submit-maintenance-modal');
+    if (modal) modal.hidden = false;
+  }
+
+  function closeSubmitMaintenance() {
+    const modal = document.getElementById('submit-maintenance-modal');
+    if (modal) modal.hidden = true;
+    maintenanceCaseId = null;
+  }
+
+  function bindSubmitMaintenanceModal() {
+    const modal = document.getElementById('submit-maintenance-modal');
+    if (!modal) return;
+
+    document.getElementById('btn-sm-close').addEventListener('click', closeSubmitMaintenance);
+    document.getElementById('btn-sm-cancel').addEventListener('click', closeSubmitMaintenance);
+    document.getElementById('sm-backdrop').addEventListener('click', closeSubmitMaintenance);
+
+    document.getElementById('btn-sm-confirm').addEventListener('click', () => {
+      if (!maintenanceCaseId) return;
+      const q = QUEUE.find((x) => x.caseId === maintenanceCaseId);
+      if (q && q.status === 'pending') {
+        q.status = 'approved';
+        q.handledBy = 'Admin User';
+        q.handledAt = new Date().toLocaleString('zh-TW');
+        // 從 localStorage 移除已提交項目
+        try {
+          const key = 'mgm_payout_rejected';
+          const cur = JSON.parse(localStorage.getItem(key) || '[]');
+          localStorage.setItem(key, JSON.stringify(cur.filter((x) => x.caseId !== maintenanceCaseId)));
+        } catch {}
+        writeAudit({
+          time: new Date().toLocaleString('zh-TW'),
+          actor: 'Admin User',
+          action: '提交維護人員',
+          target: `${q.referrer}（${q.caseId}）[核款拒絕]`,
+          note: q.rejectNote || '',
+        });
+      }
+      closeSubmitMaintenance();
+      render();
+      toast('已確認通知維護人員，並寫入稽核軌跡。');
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal && !modal.hidden) closeSubmitMaintenance();
     });
   }
 
@@ -516,6 +612,7 @@
 
   // ==================== 初始化 ====================
   document.addEventListener('DOMContentLoaded', () => {
+    loadPayoutRejected();
     bindFilters();
     // 篩選收合 / 清除
     (function () {
@@ -541,6 +638,7 @@
     })();
     bindBatch();
     bindBlacklistModal();
+    bindSubmitMaintenanceModal();
     document.getElementById('btn-export-csv').addEventListener('click', exportCsv);
   });
 })();

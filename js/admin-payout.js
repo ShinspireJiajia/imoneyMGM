@@ -32,35 +32,10 @@
       amount: 6500,         // 5000 + 1500，未達疊加上限 $20,000
       payoutAmount: 4500000,
       status: 'pending_approval',
-      warningCodes: ['E-OLD', 'E-150'],
+      warningCodes: ['E-OLD', 'E-120'],
       customerId: '2605160003',
       referrerListId: '2401050002',
-      receipts: [{ suffix: 1, amount: 12000 }, { suffix: 2, amount: 8000 }, { suffix: 3, amount: 6000 }],
-    },
-    {
-      caseId: 'M2026052901',
-      agentName: '林美玲',
-      referrerName: '王小毅', referrerTag: '會員', referrerCid: 'U250310001',
-      refereeName: '方家豪', refereePhone: '0912345789',
-      caseType: 'negotiation',
-      loanTypes: ['前置協商'],
-      submitAt: '2026/05/29 10:00', payoutAt: '2026/05/30',
-      campaignId: 'CAMP-C-2026Q2',
-      snapshot: {
-        campaignId: 'CAMP-C-2026Q2',
-        overlapCapEnabled: true,
-        overlapCap: 20000,
-        items: [
-          { projectKey: 'pre_negotiation', label: '前置協商', trigger: '需繳滿第三期服務費（第一期 ≥ $6,000 起算）', bonus: 2000 },
-        ],
-      },
-      amount: 2000,
-      payoutAmount: 3500000,
-      status: 'pending_approval',
-      warningCodes: ['E-PAY'],
-      customerId: '2605290001',
-      referrerListId: '2503100001',
-      receipts: [{ amount: 18000 }],
+      receipts: [{ suffix: 1, amount: 12000, note: '客戶要求分批入帳，請確認撥款序號' }, { suffix: 2, amount: 8000 }, { suffix: 3, amount: 6000, note: '補件後補登，金額已重新確認' }],
     },
     {
       caseId: 'M2026053002',
@@ -111,7 +86,7 @@
       approveNote: '已核對撥款單據，金額無誤',
       customerId: '2605130004',
       referrerListId: '2503100001',
-      receipts: [{ suffix: 1, amount: 9000 }, { suffix: 2, amount: 8000 }],
+      receipts: [{ suffix: 1, amount: 9000, note: '第一期已核對，請查核第二期金額' }, { suffix: 2, amount: 8000 }],
     },
     {
       caseId: 'M2026042016',
@@ -167,18 +142,16 @@
   function initExpiryDependencies() {
     const { followupDays, unclaimedDays } = loadExpirySettings();
     WARN_CODES = {
-      'E-150': { label: `後續案件超過 ${followupDays} 天紅利效期` },
+      'E-120': { label: `後續案件超過 ${followupDays} 天紅利效期` },
       'E-180': { label: `獎金核發後超過 ${unclaimedDays} 天未提領` },
       'E-OLD': { label: '員工／離職員工推薦了「舊客戶」' },
       'E-BLK': { label: '帳號被列為黑名單' },
-      'E-PAY': { label: '未達成案件生效的基本繳款條件' },
     };
     REJECT_REASONS = [
-      { code: 'E-150', label: `後續案件超過 ${followupDays} 天紅利效期` },
+      { code: 'E-120', label: `後續案件超過 ${followupDays} 天紅利效期` },
       { code: 'E-180', label: `獎金核發後超過 ${unclaimedDays} 天未提領` },
       { code: 'E-OLD', label: '員工／離職員工推薦了「舊客戶」' },
       { code: 'E-BLK', label: '帳號被列為黑名單' },
-      { code: 'E-PAY', label: '未達成案件生效的基本繳款條件' },
       { code: 'OTHER', label: '其他（請輸入原因）' },
     ];
     const e150 = document.getElementById('legend-desc-e150');
@@ -219,6 +192,10 @@
     return `I${datePart.slice(2)}${seq4}`;
   }
 
+  function escAttr(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
   function buildReceiptListHtml(r) {
     const base = receiptNoOf(r);
     if (base === '—') return '—';
@@ -226,10 +203,14 @@
     return '<div class="receipt-link-list">' + items.map((item) => {
       // 有支號：base-1 / base-2；無支號（單筆）：直接顯示 base
       const no = item.suffix != null ? base + '-' + item.suffix : base;
+      const noteIcon = item.note
+        ? '<span class="receipt-note-icon" title="備註：' + escAttr(item.note) + '"><i class="fa-solid fa-note-sticky"></i></span>'
+        : '';
       return '<div class="receipt-link-item">' +
         '<a class="receipt-link" href="' + EXT_RECEIPT_BASE_URL + no + '" target="_blank" rel="noopener">' +
         '<i class="fa-solid fa-arrow-up-right-from-square" style="font-size:9px;"></i>' + no +
         '</a>' +
+        noteIcon +
         '</div>';
     }).join('') + '</div>';
   }
@@ -237,6 +218,14 @@
   function renderWarnChips(codes) {
     if (!codes || !codes.length) return '';
     return codes.map((c) => `<span class="warn-chip">${c}</span>`).join('');
+  }
+
+  // ─── memo check ───────────────────────────────────────────
+  function caseHasMemo(caseId) {
+    try {
+      const all = JSON.parse(localStorage.getItem('mgm_memos') || '{}');
+      return (all['case_' + caseId] || []).length > 0;
+    } catch { return false; }
   }
 
   // ─── filter ───────────────────────────────────────────────
@@ -331,6 +320,21 @@
     const rejEl = document.getElementById('kpi-rejected-count');
     if (rejEl) rejEl.textContent = rejected.length + ' 筆';
 
+    // 本月已擋下/拒絕金額
+    const now = new Date();
+    const curY = now.getFullYear(), curM = now.getMonth() + 1;
+    const thisMonthRejected = rejected.filter((r) => {
+      if (!r.rejectedAt) return false;
+      const m = String(r.rejectedAt).match(/^(\d{4})\/(\d{1,2})/);
+      return m && +m[1] === curY && +m[2] === curM;
+    });
+    const rejAmtEl = document.getElementById('kpi-rejected-amount');
+    if (rejAmtEl) rejAmtEl.textContent = '$' + thisMonthRejected.reduce((s, r) => s + (r.amount || 0), 0).toLocaleString();
+
+    // 累積待匯款總額（已核款但尚未實際匯出）
+    const unpaidEl = document.getElementById('kpi-unpaid-amount');
+    if (unpaidEl) unpaidEl.textContent = '$' + approved.reduce((s, r) => s + (r.amount || 0), 0).toLocaleString();
+
     bindRowActions();
     updateBatchBar();
   }
@@ -353,6 +357,23 @@
     r.rejectedAt = new Date().toLocaleString('zh-TW');
     r.rejectedBy = 'Admin User';
     r.rejectNote  = note || '';
+    // 寫入 localStorage，admin-pending-review 可讀取以顯示待維護案件
+    try {
+      const key = 'mgm_payout_rejected';
+      const cur = JSON.parse(localStorage.getItem(key) || '[]');
+      const idx = cur.findIndex((x) => x.caseId === caseId);
+      const entry = {
+        caseId: r.caseId,
+        referrerName: r.referrerName,
+        referrerTag: r.referrerTag,
+        referrerCid: r.referrerCid,
+        amount: r.amount,
+        rejectNote: note || '',
+        rejectedAt: r.rejectedAt,
+      };
+      if (idx >= 0) cur[idx] = entry; else cur.push(entry);
+      localStorage.setItem(key, JSON.stringify(cur));
+    } catch {}
   }
 
   function warnConfirmMsg(r) {
@@ -516,6 +537,11 @@
     const rejectBtn  = document.getElementById('btn-modal-reject');
     if (approveBtn) approveBtn.hidden = !isPending;
     if (rejectBtn)  rejectBtn.hidden  = !isPending;
+
+    const memoContainer = document.getElementById('memo-container-payout');
+    if (memoContainer && typeof MemoManager !== 'undefined') {
+      MemoManager.renderWidget(memoContainer, 'case', caseId, 'Admin User');
+    }
 
     document.getElementById('payout-modal').hidden = false;
   }

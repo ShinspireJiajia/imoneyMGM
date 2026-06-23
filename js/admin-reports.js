@@ -348,7 +348,7 @@
   const INVALID_REASON_WEIGHTS = [
     { key: 'E-OLD', label: '員工／離職員工推薦舊客戶',  weight: 0.28, color: '#252629' },
     { key: 'E-PAY', label: '未達成基本繳款條件',         weight: 0.24, color: '#A78BFA' },
-    { key: 'E-150', label: '超過 150 天紅利效期',        weight: 0.18, color: '#F59E0B' },
+    { key: 'E-120', label: '超過 150 天紅利效期',        weight: 0.18, color: '#F59E0B' },
     { key: 'E-180', label: '超過 180 天未提領',          weight: 0.14, color: '#EF4444' },
     { key: 'E-BLK', label: '帳號被列為黑名單',           weight: 0.08, color: '#252629' },
     { key: 'OTHER', label: '其他',                        weight: 0.08, color: '#CBD5E1' },

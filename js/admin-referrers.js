@@ -552,9 +552,9 @@
     return `
       <tr class="${rowCls}">
         <td>${tagLabel}</td>
-        <td class="mono">${r.uid}</td>
+        <td>${r.uid}</td>
         <td class="cell-name">${r.name}</td>
-        <td class="mono">${r.phone}</td>
+        <td>${r.phone}</td>
         <td class="num">${r.clicks}</td>
         <td class="num">${r.cases}</td>
         <td class="num money">$${fmt(r.pending)}</td>
@@ -612,17 +612,45 @@
     } catch {}
   }
 
+  let quickSearchKeyword = '';
+
   function render() {
     syncResignedFromEmployeePage();
     syncFrozenFromBlacklist();
     const tbody = document.getElementById('referrers-tbody');
-    const items = getFilteredReferrers();
+    let items = getFilteredReferrers();
+
+    // Quick search (name / UID / phone)
+    if (quickSearchKeyword) {
+      const kw = quickSearchKeyword.toLowerCase();
+      items = items.filter((r) =>
+        r.name.toLowerCase().includes(kw) ||
+        r.uid.toLowerCase().includes(kw) ||
+        r.phone.includes(kw)
+      );
+    }
+
     tbody.innerHTML = items.length
       ? items.map(renderRow).join('')
       : '<tr><td colspan="10" style="padding:30px;text-align:center;color:var(--color-text-muted);">沒有符合條件的推薦人</td></tr>';
 
     const pg = document.getElementById('ref-pg-total');
     if (pg) pg.textContent = items.length;
+
+    // Summary stats
+    const totalPending   = items.reduce((s, r) => s + (r.pending   || 0), 0);
+    const totalWithdrawn = items.reduce((s, r) => s + (r.withdrawn || 0), 0);
+    const el = document.getElementById('ref-summary-bar');
+    if (el) {
+      el.innerHTML = `
+        <span class="ref-sum-item"><span class="ref-sum-label">篩選結果</span><span class="ref-sum-val">${items.length} 人</span></span>
+        <span class="ref-sum-sep">|</span>
+        <span class="ref-sum-item"><span class="ref-sum-label">待提領合計</span><span class="ref-sum-val ref-sum-money">$${fmt(totalPending)}</span></span>
+        <span class="ref-sum-sep">|</span>
+        <span class="ref-sum-item"><span class="ref-sum-label">已提領合計</span><span class="ref-sum-val">$${fmt(totalWithdrawn)}</span></span>
+      `;
+    }
+
     bindRowActions();
   }
 
@@ -834,6 +862,16 @@
     })();
     render();
     bindViewModal();
+
+    // Quick search in list header
+    const qsInput = document.getElementById('ref-quick-search');
+    if (qsInput) {
+      qsInput.addEventListener('input', () => {
+        quickSearchKeyword = qsInput.value.trim();
+        render();
+      });
+    }
+
     document
       .getElementById('btn-note-close')
       .addEventListener('click', () =>

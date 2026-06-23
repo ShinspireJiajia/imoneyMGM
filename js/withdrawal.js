@@ -985,8 +985,8 @@
       document.querySelector('.withdrawal').innerHTML = `
         <div class="withdraw-blocked-notice">
           <i class="fa-solid fa-ban"></i>
-          <h3>您的帳號目前為封鎖身分</h3>
-          <p>被封鎖身分的用戶目前僅可查看此提示訊息，<br><strong>分享與獎金功能皆無法使用</strong>。<br>若需進一步了解，請聯繫客服。</p>
+          <h3>功能無法使用。 請洽管理人員。</h3>
+          <p><br><strong>分享與獎金功能皆無法使用</strong>。<br>若需進一步了解，請聯繫客服。</p>
         </div>`;
       const bars = document.querySelectorAll('.bottom-actions');
       bars.forEach((b) => { b.style.display = 'none'; });
