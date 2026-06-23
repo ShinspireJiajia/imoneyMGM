@@ -546,3 +546,65 @@
     grid-template-columns: repeat(2, minmax(140px, 1fr));
   }
 }
+
+/* ── 清單表頭：摘要資訊列 ── */
+.ref-summary-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+.ref-sum-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.ref-sum-label {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+.ref-sum-val {
+  font-weight: 700;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+.ref-sum-val.ref-sum-money {
+  color: var(--color-primary-dark);
+}
+.ref-sum-sep {
+  color: var(--color-border);
+  font-size: 12px;
+}
+
+/* ── 快速搜尋 ── */
+.ref-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ref-search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  pointer-events: none;
+}
+.ref-search-input {
+  padding: 6px 10px 6px 30px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Noto Sans TC', sans-serif;
+  outline: none;
+  width: 210px;
+  color: var(--color-text);
+  transition: border-color .15s;
+}
+.ref-search-input:focus {
+  border-color: var(--color-primary);
+}
+.ref-search-input::placeholder {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}

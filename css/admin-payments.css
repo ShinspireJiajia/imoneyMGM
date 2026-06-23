@@ -199,6 +199,37 @@
   flex: 1;
 }
 
+.history-modal-footer {
+  padding: 14px 24px;
+  border-top: 1px solid var(--color-border-light);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1.5px solid var(--color-border-light);
+}
+
+.btn-ghost:hover {
+  background: var(--color-bg);
+}
+
 .history-payment-summary {
   background: linear-gradient(
     135deg,
@@ -669,22 +700,15 @@
 
 .daily-board-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 10px;
 }
 
-/* 近兩週：更多格 + 卡片略小 */
-.daily-board-grid[data-days="14"] {
-  grid-template-columns: repeat(7, 1fr);
-  gap: 7px;
-}
-
-@media (max-width: 1200px) {
-  .daily-board-grid[data-days="14"] { grid-template-columns: repeat(5, 1fr); }
-}
-
-@media (max-width: 1100px) {
+@media (max-width: 900px) {
   .daily-board-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 600px) {
+  .daily-board-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 .daily-date-card.compact .daily-branch-name { font-size: var(--font-xs); }
@@ -864,3 +888,69 @@
   font-size: 10px;
   color: var(--color-warning);
 }
+
+/* ===================== KPI 日期篩選列 ===================== */
+.kpi-date-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #f8fafc;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  font-size: var(--font-sm);
+}
+
+.kpi-date-label {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+  margin-right: 4px;
+}
+
+.kpi-date-input {
+  max-width: 140px !important;
+  padding: 4px 8px !important;
+  font-size: var(--font-xs) !important;
+}
+
+.kpi-date-sep {
+  color: var(--color-text-muted);
+  font-size: var(--font-xs);
+}
+
+.kpi-date-reset-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: var(--font-xs);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s, background 0.15s;
+}
+
+.kpi-date-reset-btn:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-50);
+}
+
+/* ===================== 6 張卡片格線 ===================== */
+.kpi-grid-payments {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (min-width: 1400px) {
+  .kpi-grid-payments { grid-template-columns: repeat(6, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .kpi-grid-payments { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===================== 額外 KPI 圖示色彩 ===================== */
+.kpi-icon.blue   { background: #DBEAFE; color: #1D4ED8; }
+.kpi-icon.teal   { background: #CCFBF1; color: #0F766E; }
+.kpi-icon.orange { background: #FED7AA; color: #C2410C; }
