@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>理財通 MGM 行銷後台 — 系統功能需求訪談簡報</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600;700&family=Cormorant+Garamond:wght@300;400;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:    #0d2137;
+    --navy-md: #1a3a5c;
+    --navy-lt: #234e78;
+    --gold:    #c9a84c;
+    --gold-lt: #e8c97a;
+    --gold-dk: #9a7830;
+    --cream:   #f5f0e8;
+    --white:   #ffffff;
+    --text-dim:#a8bdd0;
+    --rule:    rgba(201,168,76,.25);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--navy);
+    overflow: hidden;
+    font-family: 'Noto Serif TC', serif;
+    cursor: default;
+  }
+
+  /* ── DECK CONTAINER ─────────────────────────────────── */
+  #deck {
+    width: 100%; height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── SLIDE BASE ──────────────────────────────────────── */
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    opacity: 0;
+    transform: translateX(60px);
+    pointer-events: none;
+    transition: opacity .55s cubic-bezier(.4,0,.2,1),
+                transform .55s cubic-bezier(.4,0,.2,1);
+  }
+  .slide.active {
+    opacity: 1; transform: translateX(0);
+    pointer-events: all;
+  }
+  .slide.exit {
+    opacity: 0; transform: translateX(-60px);
+    pointer-events: none;
+    transition: opacity .4s ease, transform .4s ease;
+  }
+
+  /* ── GEOMETRIC BACKGROUND PATTERN ───────────────────── */
+  .bg-pattern {
+    position: absolute; inset: 0; z-index: 0; overflow: hidden;
+  }
+  .bg-pattern::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(135deg, var(--navy) 0%, #0a1e30 60%, #07162230 100%);
+  }
+  .bg-pattern::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--rule) 1px, transparent 1px),
+      linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: .35;
+  }
+  .geo-accent {
+    position: absolute; z-index: 0;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  .geo-accent.a1 {
+    width: 420px; height: 420px;
+    background: radial-gradient(circle, rgba(201,168,76,.12) 0%, transparent 70%);
+    top: -80px; right: 80px;
+  }
+  .geo-accent.a2 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(26,58,92,.6) 0%, transparent 70%);
+    bottom: 40px; left: 40px;
+  }
+
+  /* ── SLIDE INNER ─────────────────────────────────────── */
+  .slide-inner {
+    position: relative; z-index: 1;
+    flex: 1; display: flex; flex-direction: column;
+    padding: 0;
+  }
+
+  /* ── HEADER BAR ──────────────────────────────────────── */
+  .slide-header {
+    display: flex; align-items: center;
+    padding: 18px 48px 14px;
+    border-bottom: 1px solid var(--rule);
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  .slide-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px; font-weight: 400;
+    letter-spacing: .12em;
+    color: var(--gold);
+    opacity: .85;
+    white-space: nowrap;
+  }
+  .slide-logo span { opacity: .5; margin: 0 8px; }
+  .slide-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: .15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    flex: 1;
+  }
+  .slide-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--gold-dk);
+    letter-spacing: .1em;
+  }
+
+  /* ── FOOTER BAR ──────────────────────────────────────── */
+  .slide-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 48px;
+    border-top: 1px solid var(--rule);
+    flex-shrink: 0;
+  }
+  .footer-brand {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--text-dim);
+    letter-spacing: .1em;
+  }
+  .footer-progress {
+    display: flex; gap: 4px; align-items: center;
+  }
+  .fp-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--navy-lt); transition: all .3s;
+  }
+  .fp-dot.active { background: var(--gold); width: 20px; border-radius: 2px; }
+
+  /* ── COVER SLIDE ─────────────────────────────────────── */
+  .cover-body {
+    flex: 1; display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 48px 96px;
+    gap: 0;
+  }
+  .cover-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: .25em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .cover-eyebrow::before {
+    content: ''; display: block;
+    width: 40px; height: 1px; background: var(--gold);
+  }
+  .cover-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: clamp(42px, 5vw, 68px);
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1.15;
+    letter-spacing: .04em;
+    margin-bottom: 16px;
+  }
+  .cover-title em {
+    color: var(--gold); font-style: normal;
+  }
+  .cover-sub {
+    font-size: 18px; font-weight: 300;
+    color: var(--text-dim); letter-spacing: .06em;
+    margin-bottom: 56px;
+    line-height: 1.7;
+  }
+  .cover-meta {
+    display: flex; gap: 40px;
+  }
+  .cover-meta-item {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .cover-meta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: .2em;
+    color: var(--gold-dk); text-transform: uppercase;
+  }
+  .cover-meta-value {
+    font-size: 14px; color: var(--cream); font-weight: 300;
+  }
+  .cover-divider {
+    width: 80px; height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    margin-bottom: 40px;
+  }
+  .cover-art {
+    position: absolute; right: 0; top: 0; bottom: 0;
+    width: 42%; z-index: 0; overflow: hidden;
+  }
+  .cover-art::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, var(--navy) 0%, transparent 40%),
+                linear-gradient(180deg, transparent 20%, var(--navy) 95%);
+    z-index: 2;
+  }
+  .cover-art-inner {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cover-hex {
+    position: absolute;
+    border: 1px solid var(--rule);
+    transform: rotate(30deg);
+    border-radius: 4px;
+  }
+
+  /* ── TOC SLIDE ───────────────────────────────────────── */
+  .toc-body {
+    flex: 1; display: flex; flex-direction: column;
+    padding: 32px 80px 20px;
+    gap: 0;
+  }
+  .toc-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px; letter-spacing: .3em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    flex: 1;
+    align-content: start;
+  }
+  .toc-item {
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--rule);
+    border-top: 2px solid var(--gold-dk);
+    padding: 22px 20px;
+    display: flex; flex-direction: column; gap: 10px;
+    cursor: pointer;
+    transition: all .25s;
+    position: relative; overflow: hidden;
+  }
+  .toc-item::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 0;
+    background: linear-gradient(0deg, rgba(201,168,76,.06), transparent);
+    transition: height .25s;
+  }
+  .toc-item:hover { border-color: rgba(201,168,76,.5); }
+  .toc-item:hover::after { height: 100%; }
+  .toc-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--gold);
+    letter-spacing: .1em;
+  }
+  .toc-item-title {
+    font-size: 15px; font-weight: 600;
+    color: var(--cream); line-height: 1.4;
+  }
+  .toc-item-sub {
+    font-size: 11px; color: var(--text-dim);
+    line-height: 1.6; font-weight: 300;
+  }
+  .toc-icon {
+    font-size: 22px; margin-bottom: 4px;
+    opacity: .7;
+  }
+
+  /* ── FEATURE SLIDE ───────────────────────────────────── */
+  .feature-body {
+    flex: 1; display: flex;
+    gap: 0;
+    overflow: hidden;
+  }
+  .feature-screenshot {
+    flex: 0 0 56%;
+    padding: 20px 0 20px 32px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-screenshot::after {
+    content: '';
+    position: absolute; right: 0; top: 0; bottom: 0;
+    width: 40px;
+    background: linear-gradient(90deg, transparent, var(--navy));
+    z-index: 2;
+    pointer-events: none;
+  }
+  .screenshot-frame {
+    position: relative;
+    width: 100%; height: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(201,168,76,.2);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.04),
+      0 24px 64px rgba(0,0,0,.6),
+      0 4px 16px rgba(0,0,0,.4);
+  }
+  .screenshot-frame img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: top left;
+    display: block;
+  }
+  .screenshot-label {
+    position: absolute; top: 12px; left: 12px;
+    background: rgba(13,33,55,.85);
+    border: 1px solid var(--rule);
+    padding: 4px 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; color: var(--gold);
+    letter-spacing: .12em; text-transform: uppercase;
+    border-radius: 3px;
+    backdrop-filter: blur(8px);
+    z-index: 3;
+  }
+
+  .feature-content {
+    flex: 1;
+    padding: 28px 40px 20px 32px;
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 0;
+    overflow: hidden;
+  }
+  .feature-category {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: .2em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .feature-category::before {
+    content: ''; display: block;
+    width: 24px; height: 1px; background: var(--gold); opacity: .6;
+  }
+  .feature-title {
+    font-size: clamp(20px, 2.2vw, 28px);
+    font-weight: 700; color: var(--cream);
+    line-height: 1.3; letter-spacing: .04em;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .feature-points {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .feature-points li {
+    display: flex; gap: 14px; align-items: flex-start;
+    color: var(--cream);
+    font-size: clamp(12px, 1.2vw, 15px);
+    font-weight: 300; line-height: 1.7;
+    letter-spacing: .02em;
+  }
+  .feature-points li::before {
+    content: '';
+    flex-shrink: 0;
+    width: 5px; height: 5px;
+    background: var(--gold);
+    border-radius: 50%;
+    margin-top: 8px;
+  }
+  .feature-badge {
+    display: inline-block;
+    background: rgba(201,168,76,.12);
+    border: 1px solid rgba(201,168,76,.3);
+    color: var(--gold-lt);
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: .1em;
+    padding: 2px 7px; border-radius: 3px;
+    vertical-align: middle; margin-left: 6px;
+  }
+
+  /* ── CHAPTER DIVIDER SLIDE ───────────────────────────── */
+  .chapter-body {
+    flex: 1; display: flex;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 20px;
+    position: relative;
+  }
+  .chapter-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 120px; font-weight: 300;
+    color: rgba(201,168,76,.08);
+    letter-spacing: -.02em;
+    position: absolute;
+    user-select: none;
+  }
+  .chapter-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: .3em;
+    color: var(--gold); text-transform: uppercase;
+    position: relative;
+  }
+  .chapter-title {
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 700; color: var(--cream);
+    letter-spacing: .06em; text-align: center;
+    position: relative;
+  }
+  .chapter-sub {
+    font-size: 14px; color: var(--text-dim); font-weight: 300;
+    letter-spacing: .06em; text-align: center;
+    position: relative;
+  }
+  .chapter-line {
+    width: 60px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    position: relative;
+  }
+
+  /* ── NAV BUTTONS ─────────────────────────────────────── */
+  #nav {
+    position: fixed; bottom: 40px; right: 48px;
+    display: flex; gap: 10px; z-index: 100;
+  }
+  .nav-btn {
+    width: 44px; height: 44px;
+    border: 1px solid var(--rule);
+    background: rgba(13,33,55,.7);
+    color: var(--cream);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 4px;
+    transition: all .2s;
+    backdrop-filter: blur(10px);
+  }
+  .nav-btn:hover {
+    background: rgba(201,168,76,.15);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .nav-btn:disabled {
+    opacity: .25; cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* ── SECTION LABEL ───────────────────────────────────── */
+  .section-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(201,168,76,.1);
+    border: 1px solid rgba(201,168,76,.25);
+    padding: 3px 10px 3px 8px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; color: var(--gold-lt);
+    letter-spacing: .1em; text-transform: uppercase;
+    margin-bottom: 6px;
+    width: fit-content;
+  }
+  .section-pill::before {
+    content: ''; width: 5px; height: 5px;
+    background: var(--gold); border-radius: 50%;
+  }
+
+  /* ── IFRAME PREVIEW ──────────────────────────────────── */
+  .iframe-scale-frame {
+    position: relative;
+    width: 100%; height: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(201,168,76,.2);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.04),
+      0 24px 64px rgba(0,0,0,.6),
+      0 4px 16px rgba(0,0,0,.4);
+    background: #fff;
+  }
+  .iframe-scale-frame iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1440px;
+    height: 900px;
+    border: none;
+    pointer-events: none;
+    transform-origin: top left;
+  }
+</style>
+</head>
+<body>
+
+<div id="deck"></div>
+
+<div id="nav">
+  <button class="nav-btn" id="btnPrev" onclick="navigate(-1)" title="上一頁 (←)">&#8592;</button>
+  <button class="nav-btn" id="btnNext" onclick="navigate(1)" title="下一頁 (→)">&#8594;</button>
+</div>
+
+<script>
+// ─── SLIDE DATA ────────────────────────────────────────────────────────────
+const slides = [
+  // 0 COVER
+  { type: 'cover' },
+
+  // 1 TOC
+  { type: 'toc' },
+
+  // 2 — SYSTEM OVERVIEW
+  {
+    type: 'feature',
+    category: '系統導覽',
+    tag: 'OVERVIEW',
+    title: '後台主畫面',
+    img: 'screenshots/admin-main.png',
+    points: [
+      'iframe 框架式版面：左側固定側欄導覽（Logo＋各模組連結），右側為動態內容區，切換頁面不重新載入整頁',
+      '側欄依功能分組展開：行銷設定、會員管理、推播管理、案件管理、財務管理、風控管理共 6 大模組',
+      '頂部工具列顯示目前登入的管理員資訊，並提供跨頁面快速導航入口',
+    ]
+  },
+
+  // 3 — CAMPAIGNS
+  {
+    type: 'feature',
+    category: '行銷設定',
+    tag: 'MARKETING',
+    title: '活動檔期管理',
+    img: 'screenshots/admin-campaigns.png',
+    points: [
+      '列表顯示所有活動的「編號、名稱、起訖日期、狀態、累積案件數、已發放獎金」，可依關鍵字、狀態（進行中 / 即將開始 / 已結束）、日期區間篩選',
+      '右上角「新增活動」按鈕進入建立流程；列表每筆提供「編輯」及「查看詳情」快捷操作',
+      '頁面底部提示：當無進行中活動時系統將自動套用「空窗期預設獎金」，提醒及早設定下一檔期',
+    ]
+  },
+
+  // 4 — MATRIX
+  {
+    type: 'feature',
+    category: '行銷設定',
+    tag: 'MARKETING',
+    title: '活動詳情 ／ 獎金矩陣',
+    iframeUrl: 'pages/admin-matrix.html?preview=1#matrix',
+    points: [
+      '「基本資訊」分頁：編輯活動名稱、起訖日期、狀態，並顯示活動 ID、剩餘天數與完整異動歷程時間軸',
+      '「獎金分級矩陣」分頁：針對機車 / 小額、銀行信貸、不動產、債務協商四大專案，逐筆設定觸發條件、獎金金額（TWD）與啟用狀態',
+      '矩陣下方另有「疊加制組合條件」表：可設定多專案組合上限，所有修改即時寫入異動歷程',
+    ]
+  },
+
+  // 6 — SHARE RULES
+  {
+    type: 'feature',
+    category: '行銷設定',
+    tag: 'MARKETING',
+    title: '分享制度說明維護',
+    img: 'screenshots/admin-share-rules.png',
+    points: [
+      '管理前台「分享制度」頁面的條款項次，支援拖曳排序、新增、編輯與刪除',
+      '每個項次可選擇四種呈現樣式：一般段落、警示框（橙色警告）、引用框（藍色說明）、流程步驟',
+      '編輯彈窗內建富文字工具列（標題、粗體、斜體、清單、超連結、圖片上傳），並支援直接切換 HTML 原始碼模式',
+    ]
+  },
+
+  // 7 — EMPLOYEES
+  {
+    type: 'feature',
+    category: '會員管理',
+    tag: 'MEMBERS',
+    title: '員工帳號管理',
+    img: 'screenshots/admin-employees.png',
+    points: [
+      '列表顯示員工「帳號、姓名、綁定手機、帳號狀態、離職日期、MGM 推薦資格」，可依帳號、姓名、狀態（全部 / 啟用 / 停用 / 離職）篩選',
+      '點擊操作列可檢視員工詳細資訊，並調整帳號狀態或推薦資格設定',
+      '離職員工完成前台身分綁定（Line 帳號連結）後，系統自動同步至推薦人清單，無需人工干預',
+    ]
+  },
+
+  // 8 — REFERRERS
+  {
+    type: 'feature',
+    category: '會員管理',
+    tag: 'MEMBERS',
+    title: '推薦人管理',
+    img: 'screenshots/admin-referrers.png',
+    points: [
+      '統一管理三類推薦人（一般會員 / 員工 / 離職員工），列表顯示「身分、會員編號、姓名、手機、點擊數、成功送單數、待提領、已提領、狀態」，支援多條件篩選與 CSV 匯出',
+      '「查看詳情」彈窗含基本資訊、推薦碼專屬連結及對應案件清單',
+      '「內部備註」功能供後台客服記錄個案溝通紀錄，備註僅後台人員可見',
+    ]
+  },
+
+  // 9 — NOTIFY
+  {
+    type: 'feature',
+    category: '推播管理',
+    tag: 'NOTIFICATION',
+    title: '推播通知管理',
+    img: 'screenshots/admin-notify.png',
+    points: [
+      '三個分頁：「發送」（即時發送）、「設定」（管理通知母版）、「發送紀錄」（查詢歷史）',
+      '「發送」頁面左側為收件人選擇器（可依 LINE / SMS 管道篩選、全選或逐筆勾選），右側為撰寫區：選擇管道、套用母版、輸入訊息內容並預覽後送出',
+      '「發送紀錄」列表記錄每次操作的發送時間、操作人員、收件人、管道、訊息摘要與發送狀態',
+    ]
+  },
+
+  // 9 — RECORDS
+  {
+    type: 'feature',
+    category: '案件管理',
+    tag: 'CASES',
+    title: '推薦案件管理',
+    iframeUrl: 'pages/admin-records.html',
+    points: [
+      '列表顯示「案件編號、專案類型、收件類型、標籤、會員編號、客戶姓名、被推薦人、申請日期、狀態、獎金金額」，支援依推薦人、被推薦人、案號、狀態、推薦人標籤、申請日期區間等多條件篩選',
+      '「查看詳情」彈窗涵蓋推薦關係圖、案件基本資料、警示代碼旗標及送單時快照參數（用於獎金計算依據的完整記錄）',
+      '右上角提供「匯出資料」（CSV）按鈕，方便外部系統串接或財務對帳',
+    ]
+  },
+
+  // 11 — REPORTS
+  {
+    type: 'feature',
+    category: '案件管理',
+    tag: 'CASES',
+    title: '推薦案件報表',
+    img: 'screenshots/admin-reports.png',
+    points: [
+      '上方篩選列可選年份、月份與方案類型（員工 / 會員）；四張 KPI 卡片呈現「新增案件數、成交案件數、本月獎金發放、累計獎金發放」',
+      '圖表區包含：獎金發放趨勢折線圖（月度＋累計）、案件結果分布長條圖（符合 / 不符合）、Top 推薦人績效排行（依獎金與案件數，可切換身分篩選）',
+      '下方月份明細表格彙整「新增 / 成交 / 停止 / 已發放獎金 / 已提領 / 待提領」，支援報表匯出與列印',
+    ]
+  },
+
+  // 12 — PAYOUT
+  {
+    type: 'feature',
+    category: '財務管理',
+    tag: 'FINANCE',
+    title: '推薦案件獎金核款',
+    img: 'screenshots/admin-payout.png',
+    points: [
+      '頂部五張 KPI 卡片：待核款件數 / 待核款金額 / 本月已核款件數 / 已核款金額 / 已拒絕件數，讓財務人員一眼掌握當日工作量',
+      '列表顯示「案件編號、推薦人、會員編號、身分、專案類型、計算獎金、狀態、警示代碼」，可依推薦人、案號、類型、狀態、警示代碼（E-120、E-180、E-OLD 等）篩選',
+      '支援單筆或批次核准 / 拒絕，核款後可觸發 SMS / LINE 通知推薦人，並可附加拒絕原因備註',
+    ]
+  },
+
+  // 13 — PAYMENTS
+  {
+    type: 'feature',
+    category: '財務管理',
+    tag: 'FINANCE',
+    title: '提領功能管理',
+    img: 'screenshots/admin-payments.png',
+    points: [
+      '三張 KPI 卡片顯示「待轉帳件數、待現場領取件數、本月已轉帳金額」；列表欄位包含「提領編號、案件編號、會員編號、推薦人、標籤、稅務資訊、金額、提領方式、申請日期、狀態」',
+      '支援批次標記「已轉帳 / 已完成」，並可開啟編輯模式修改提領方式、狀態與銀行帳號資訊；每筆完整記錄異動時間軸',
+      '右上角提供「匯出對帳檔」與「產生月結報表」（含各提領方式 / 專案的金額彙總），配合財務核帳作業',
+    ]
+  },
+
+  // 14 — PENDING REVIEW
+  {
+    type: 'feature',
+    category: '財務管理',
+    tag: 'FINANCE',
+    title: '超量待審佇列',
+    img: 'screenshots/admin-pending-review.png',
+    points: [
+      '頁面頂部即時統計「本月待審、已放行、已拒絕」件數；列表欄位含「來源（超量 / 黑名單）、案件編號、推薦人、會員編號、標籤、獎金金額、狀態」',
+      '可依關鍵字、來源、推薦人標籤、狀態篩選；勾選後出現批次操作列：批次放行、批次拒絕、批次轉黑名單',
+      '「轉黑名單」操作需填寫原因後確認，確保每筆處置均有留存說明；整頁支援 EXCEL 匯出',
+    ]
+  },
+
+  // 15 — PLAN SWITCH
+  {
+    type: 'feature',
+    category: '風控管理',
+    tag: 'RISK CONTROL',
+    title: '全站方案開關',
+    img: 'screenshots/admin-plan-switch.png',
+    points: [
+      '獨立控制「員工方案」與「會員方案」的啟用 / 暫停狀態，操作後即時生效；每個方案顯示目前狀態標籤（進行中 / 已暫停）',
+      '方案暫停後，前台使用者僅能進入「我的獎金」查詢頁，其餘頁面一律顯示「活動敬請期待」提示',
+      '右側稽核軌跡卡片呈現最近 10 筆操作紀錄（時間、操作人員、異動內容），所有切換操作可追溯',
+    ]
+  },
+
+  // 16 — LIMITS
+  {
+    type: 'feature',
+    category: '風控管理',
+    tag: 'RISK CONTROL',
+    title: '提領限制與時效管理',
+    img: 'screenshots/admin-limits.png',
+    points: [
+      '「獎金時效設定」區塊：分別設定「後續案件紅利效期天數」與「未提領獎金失效天數」，到期自動作廢',
+      '「月度提領上限設定」區塊：可設定每月最高提領總金額（支援勾選「不限制」）與每月最高成功推薦件數；超量案件一律進入「待審佇列」等待人工放行',
+      '所有儲存操作需輸入後台密碼二次確認；底部稽核軌跡表格記錄每次異動的時間、操作人員與變更明細',
+    ]
+  },
+
+  // 17 — DEFAULT
+  {
+    type: 'feature',
+    category: '風控管理',
+    tag: 'RISK CONTROL',
+    title: '活動空窗期獎金設定',
+    img: 'screenshots/admin-default.png',
+    points: [
+      '當無進行中活動檔期時，系統自動套用此頁設定的預設獎金標準；四大專案（機車 / 小額、銀行信貸、不動產、債務協商）各自設定觸發條件與獎金金額',
+      '每列可獨立編輯：選擇觸發條件、輸入金額、切換啟用狀態，儲存後立即生效（快照機制確保歷史案件不受影響）',
+      '儲存需通過後台密碼二次確認；頁面底部顯示最近 10 筆稽核紀錄，完整追蹤每次修改記錄',
+    ]
+  },
+
+  // 18 — BLACKLIST
+  {
+    type: 'feature',
+    category: '風控管理',
+    tag: 'RISK CONTROL',
+    title: '黑名單管理',
+    img: 'screenshots/admin-blacklist.png',
+    points: [
+      '列表顯示「事件編號、推薦人姓名、身分類型、狀態、觸發原因 / 最新備註」，支援依關鍵字、凍結狀態篩選；可調整每頁筆數',
+      '帳號凍結後：所有推薦連結即刻失效，尚未核款的案件自動標記為「未符合資格」',
+      '「查看詳情」彈窗顯示完整事件資訊（警示次數、黑名單次數、操作人員、原因）；支援解除凍結操作，所有異動均完整留存',
+    ]
+  },
+];
+
+// ─── RENDER ───────────────────────────────────────────────────────────────
+const deck = document.getElementById('deck');
+const totalSlides = slides.length;
+
+function makeDots() {
+  const f = document.createElement('div');
+  f.className = 'footer-progress';
+  for (let i = 0; i < totalSlides; i++) {
+    const d = document.createElement('div');
+    d.className = 'fp-dot'; d.id = `dot-${i}`;
+    f.appendChild(d);
+  }
+  return f;
+}
+
+function makeHeader(tag, num) {
+  const h = document.createElement('div');
+  h.className = 'slide-header';
+  h.innerHTML = `
+    <div class="slide-logo">理財通<span>|</span>MGM 行銷後台</div>
+    <div class="slide-tag">${tag || ''}</div>
+    <div class="slide-num">${String(num).padStart(2,'0')} / ${String(totalSlides-1).padStart(2,'0')}</div>
+  `;
+  return h;
+}
+
+function makeFooter() {
+  const f = document.createElement('div');
+  f.className = 'slide-footer';
+  f.innerHTML = `<div class="footer-brand">CONFIDENTIAL — 系統功能需求訪談</div>`;
+  f.appendChild(makeDots());
+  return f;
+}
+
+function renderCover() {
+  const s = document.createElement('div');
+  s.className = 'slide';
+  s.innerHTML = `
+    <div class="bg-pattern"></div>
+    <div class="geo-accent a1"></div>
+    <div class="geo-accent a2"></div>
+    <div class="cover-art">
+      <div class="cover-art-inner">
+        ${[200,160,120,80].map((sz,i)=>`<div class="cover-hex" style="width:${sz}px;height:${sz}px;opacity:${0.15-i*0.02};top:${30+i*20}px;right:${30+i*15}px"></div>`).join('')}
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,.06) 0%,transparent 60%)"></div>
+      </div>
+    </div>
+    <div class="slide-inner">
+      <div class="slide-header">
+        <div class="slide-logo">理財通<span>|</span>MGM 行銷後台</div>
+        <div class="slide-tag"></div>
+        <div class="slide-num">00 / ${String(totalSlides-1).padStart(2,'0')}</div>
+      </div>
+      <div class="cover-body">
+        <div class="cover-eyebrow">需求訪談簡報</div>
+        <h1 class="cover-title">理財通 <em>MGM</em><br>行銷後台系統</h1>
+        <div class="cover-divider"></div>
+        <p class="cover-sub">系統功能需求訪談簡報<br>涵蓋 16 個功能模組 · 7 大管理分類</p>
+        <div class="cover-meta">
+          <div class="cover-meta-item">
+            <div class="cover-meta-label">版本</div>
+            <div class="cover-meta-value">v1.0</div>
+          </div>
+          <div class="cover-meta-item">
+            <div class="cover-meta-label">日期</div>
+            <div class="cover-meta-value">2026 年 6 月</div>
+          </div>
+          <div class="cover-meta-item">
+            <div class="cover-meta-label">狀態</div>
+            <div class="cover-meta-value">v1.0</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <div class="footer-brand">CONFIDENTIAL — 系統功能需求訪談</div>
+        ${makeDots().outerHTML}
+      </div>
+    </div>
+  `;
+  return s;
+}
+
+function renderToc() {
+  const chapters = [
+    { n:'01', icon:'🎯', title:'行銷設定', sub:'活動管理 · 獎金矩陣 · 分享制度' },
+    { n:'02', icon:'👥', title:'會員管理', sub:'員工帳號 · 推薦人' },
+    { n:'03', icon:'📣', title:'推播管理', sub:'SMS · LINE · 發送紀錄' },
+    { n:'04', icon:'📋', title:'案件管理', sub:'案件查詢 · 績效報表' },
+    { n:'05', icon:'💰', title:'財務管理', sub:'獎金核款 · 提領 · 待審佇列' },
+    { n:'06', icon:'🛡️', title:'風控管理', sub:'方案開關 · 限制設定 · 黑名單' },
+    { n:'07', icon:'🖥️', title:'系統導覽', sub:'後台主畫面 · 架構說明' },
+  ];
+  const s = document.createElement('div');
+  s.className = 'slide';
+  s.innerHTML = `
+    <div class="bg-pattern"></div>
+    <div class="geo-accent a1"></div>
+    <div class="slide-inner">
+      ${makeHeader('TABLE OF CONTENTS', '目錄').outerHTML}
+      <div class="toc-body">
+        <div class="toc-title">目錄 — Contents</div>
+        <div class="toc-grid">
+          ${chapters.map(c=>`
+            <div class="toc-item">
+              <div class="toc-icon">${c.icon}</div>
+              <div class="toc-num">${c.n}</div>
+              <div class="toc-item-title">${c.title}</div>
+              <div class="toc-item-sub">${c.sub}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ${makeFooter().outerHTML}
+    </div>
+  `;
+  return s;
+}
+
+function renderFeature(data, idx) {
+  const screenInner = data.iframeUrl
+    ? `<div class="iframe-scale-frame" data-iframe-frame>
+         <iframe src="${data.iframeUrl}" title="${data.title}"></iframe>
+         <div class="screenshot-label">${data.tag}</div>
+       </div>`
+    : `<div class="screenshot-frame">
+         <img src="${data.img}" alt="${data.title}" loading="lazy">
+         <div class="screenshot-label">${data.tag}</div>
+       </div>`;
+
+  const s = document.createElement('div');
+  s.className = 'slide';
+  s.innerHTML = `
+    <div class="bg-pattern"></div>
+    <div class="geo-accent a2"></div>
+    <div class="slide-inner">
+      ${makeHeader(data.tag, idx).outerHTML}
+      <div class="feature-body">
+        <div class="feature-screenshot">
+          ${screenInner}
+        </div>
+        <div class="feature-content">
+          <div class="section-pill">${data.category}</div>
+          <div class="feature-category">${data.category}</div>
+          <h2 class="feature-title">${data.title}</h2>
+          <ul class="feature-points">
+            ${data.points.map(p=>`<li>${p}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+      ${makeFooter().outerHTML}
+    </div>
+  `;
+  return s;
+}
+
+// Build all slides
+slides.forEach((data, idx) => {
+  let el;
+  if (data.type === 'cover')   el = renderCover();
+  else if (data.type === 'toc') el = renderToc();
+  else el = renderFeature(data, idx);
+  el.dataset.idx = idx;
+  deck.appendChild(el);
+});
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────
+let current = 0;
+
+function updateDots(idx) {
+  document.querySelectorAll('.fp-dot').forEach((d,i) => {
+    d.classList.toggle('active', i === idx);
+  });
+}
+
+function goTo(idx) {
+  if (idx < 0 || idx >= totalSlides) return;
+  const prev = document.querySelector('.slide.active');
+  if (prev) {
+    prev.classList.remove('active');
+    prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 450);
+  }
+  current = idx;
+  const next = document.querySelector(`.slide[data-idx="${idx}"]`);
+  next.classList.add('active');
+  updateDots(idx);
+  document.getElementById('btnPrev').disabled = idx === 0;
+  document.getElementById('btnNext').disabled = idx === totalSlides - 1;
+  requestAnimationFrame(scaleIframeFrames);
+}
+
+function navigate(dir) { goTo(current + dir); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+    e.preventDefault(); navigate(1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault(); navigate(-1);
+  } else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+  else if (e.key === 'End')  { e.preventDefault(); goTo(totalSlides-1); }
+});
+
+// ── IFRAME SCALE ──────────────────────────────────────────────────────────
+function scaleIframeFrames() {
+  document.querySelectorAll('[data-iframe-frame]').forEach(frame => {
+    const iframe = frame.querySelector('iframe');
+    if (!iframe) return;
+    const scale = frame.offsetWidth / 1440;
+    iframe.style.transform = `scale(${scale})`;
+  });
+}
+window.addEventListener('resize', scaleIframeFrames);
+
+// Init
+goTo(0);
+requestAnimationFrame(scaleIframeFrames);
+</script>
+</body>
+</html>
