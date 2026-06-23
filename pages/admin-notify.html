@@ -8,547 +8,1312 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../css/common.css" />
     <style>
-      /* ── layout ── */
-      body { background: var(--color-bg, #f4f6fb); font-family: 'Noto Sans TC', sans-serif; margin: 0; }
-      .page-wrap { padding: 24px 28px; max-width: 1280px; margin: 0 auto; }
+      body { background: var(--color-bg,#f4f6fb); font-family:'Noto Sans TC',sans-serif; margin:0; }
+      .page-wrap { padding:24px 28px; max-width:1340px; margin:0 auto; }
+      .page-header { margin-bottom:22px; }
+      .ph-title h1 { font-size:20px; font-weight:700; margin:0 0 4px; color:#1f2937; }
 
-      .page-header { display: flex; align-items: flex-start; margin-bottom: 22px; }
-      .ph-title h1 { font-size: 20px; font-weight: 700; margin: 0 0 4px; color: #1f2937; }
-      .ph-title p  { margin: 0; font-size: 13px; color: #252629; }
+      /* ── Tabs ── */
+      .notify-tabs { display:flex; gap:2px; border-bottom:2px solid #e5e7eb; margin-bottom:22px; flex-wrap:wrap; }
+      .ntab { padding:10px 16px; border:none; background:none; cursor:pointer; font-size:13px; font-weight:500; color:#6b7280; border-bottom:2px solid transparent; margin-bottom:-2px; display:flex; align-items:center; gap:6px; transition:color .15s; font-family:'Noto Sans TC',sans-serif; white-space:nowrap; }
+      .ntab:hover { color:#6366f1; }
+      .ntab.active { color:#6366f1; border-bottom-color:#6366f1; font-weight:600; }
+      .ntab-panel { display:none; }
+      .ntab-panel.active { display:block; }
 
-      /* ── top tabs ── */
-      .notify-tabs { display: flex; gap: 2px; border-bottom: 2px solid #e5e7eb; margin-bottom: 22px; }
-      .ntab {
-        padding: 10px 22px; border: none; background: none; cursor: pointer;
-        font-size: 14px; font-weight: 500; color: #252629;
-        border-bottom: 2px solid transparent; margin-bottom: -2px;
-        display: flex; align-items: center; gap: 7px; transition: color .15s;
-        font-family: 'Noto Sans TC', sans-serif;
-      }
-      .ntab:hover { color: #6366f1; }
-      .ntab.active { color: #6366f1; border-bottom-color: #6366f1; font-weight: 600; }
-      .ntab-panel { display: none; }
-      .ntab-panel.active { display: block; }
+      /* ── Common buttons ── */
+      .btn-p { padding:7px 16px; background:#6366f1; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans TC',sans-serif; transition:background .15s; display:inline-flex; align-items:center; gap:6px; }
+      .btn-p:hover { background:#4f46e5; }
+      .btn-s { padding:6px 13px; background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; font-family:'Noto Sans TC',sans-serif; transition:all .15s; display:inline-flex; align-items:center; gap:5px; }
+      .btn-s:hover { background:#e5e7eb; }
+      .btn-icon { width:28px; height:28px; border-radius:7px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:12px; color:#6b7280; transition:all .12s; flex-shrink:0; }
+      .btn-icon:hover { background:#f3f4f6; color:#374151; }
+      .btn-icon.del:hover { background:#fee2e2; color:#dc2626; border-color:#fca5a5; }
 
-      /* ── send layout ── */
-      .send-layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
+      /* ── Common: search bar ── */
+      .search-bar { display:flex; align-items:center; gap:8px; padding:9px 14px; border-bottom:1px solid #f3f4f6; background:#fafafa; }
+      .search-bar i { color:#9ca3af; font-size:12px; }
+      .search-bar input { flex:1; border:none; background:transparent; font-size:13px; outline:none; color:#1f2937; font-family:'Noto Sans TC',sans-serif; }
+      .search-bar input::placeholder { color:#c0c4cc; }
 
-      /* ── recipient panel ── */
-      .rcpt-panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
-      .rcpt-header {
-        padding: 13px 16px; border-bottom: 1px solid #e5e7eb;
-        display: flex; align-items: center; justify-content: space-between;
-      }
-      .rcpt-header-title { font-weight: 600; font-size: 13px; color: #1f2937; }
-      .rcpt-sel-count { font-size: 12px; color: #6366f1; font-weight: 700; }
-      .rcpt-search {
-        display: flex; align-items: center; gap: 8px;
-        padding: 9px 14px; border-bottom: 1px solid #f3f4f6; background: #fafafa;
-      }
-      .rcpt-search-icon { color: #252629; font-size: 12px; }
-      .rcpt-search input {
-        flex: 1; border: none; background: transparent; font-size: 13px; outline: none;
-        color: #1f2937; font-family: 'Noto Sans TC', sans-serif;
-      }
-      .rcpt-search input::placeholder { color: #c0c4cc; }
-      .rcpt-filters {
-        display: flex; gap: 6px; padding: 8px 14px;
-        border-bottom: 1px solid #f3f4f6; background: #fafafa;
-      }
-      .rcpt-filter-btn {
-        padding: 3px 11px; border-radius: 20px; border: 1px solid #e5e7eb;
-        font-size: 12px; cursor: pointer; background: #fff; color: #374151;
-        font-family: 'Noto Sans TC', sans-serif; transition: all .15s;
-      }
-      .rcpt-filter-btn.active { background: #ede9fe; border-color: #6366f1; color: #6366f1; font-weight: 600; }
-      .rcpt-actions {
-        display: flex; gap: 6px; padding: 7px 14px; border-bottom: 1px solid #f3f4f6;
-        align-items: center;
-      }
-      .rcpt-act-btn {
-        font-size: 12px; padding: 3px 10px; border-radius: 6px; cursor: pointer;
-        border: 1px solid #e5e7eb; background: #fff; color: #374151;
-        font-family: 'Noto Sans TC', sans-serif; transition: background .12s;
-      }
-      .rcpt-act-btn:hover { background: #f3f4f6; }
-      .rcpt-act-btn--line { margin-left: auto; border-color: #bbf7d0; color: #15803d; background: #f0fdf4; }
-      .rcpt-list { max-height: 440px; overflow-y: auto; }
-      .rcpt-item {
-        display: flex; align-items: center; gap: 10px; padding: 10px 14px;
-        border-bottom: 1px solid #f9fafb; cursor: pointer; transition: background .1s;
-      }
-      .rcpt-item:last-child { border-bottom: none; }
-      .rcpt-item:hover { background: #fafafa; }
-      .rcpt-item.is-selected { background: #eef2ff; }
-      .rcpt-item.is-selected .rcpt-name { color: #4338ca; }
-      .rcpt-cb { width: 15px; height: 15px; cursor: pointer; accent-color: #6366f1; flex-shrink: 0; }
-      .rcpt-info { flex: 1; min-width: 0; }
-      .rcpt-name { font-size: 13px; font-weight: 600; color: #1f2937; }
-      .rcpt-id   { font-size: 10px; color: #252629; font-weight: 400; margin-left: 4px; }
-      .rcpt-sub  { font-size: 11px; color: #252629; margin-top: 2px; }
-      .rcpt-badges { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
-      .rbadge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
-      .rbadge--line { background: #dcfce7; color: #15803d; }
-      .rbadge--sms  { background: #dbeafe; color: #1d4ed8; }
-      .rbadge--no   { background: #f3f4f6; color: #252629; }
+      /* ── Common: filter chips ── */
+      .chip-row { display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding:8px 14px; border-bottom:1px solid #f3f4f6; background:#fafafa; }
+      .fchip { padding:3px 11px; border-radius:20px; border:1px solid #e5e7eb; font-size:12px; cursor:pointer; background:#fff; color:#374151; font-family:'Noto Sans TC',sans-serif; transition:all .15s; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; }
+      .fchip.active { background:#ede9fe; border-color:#6366f1; color:#6366f1; font-weight:600; }
 
-      /* ── compose panel ── */
-      .compose-panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 22px 24px; }
-      .cs { margin-bottom: 20px; }
-      .cs-label {
-        font-size: 11px; font-weight: 700; color: #252629; text-transform: uppercase;
-        letter-spacing: .6px; margin-bottom: 9px;
-      }
+      /* ── Identity badges ── */
+      .idbadge { display:inline-flex; align-items:center; font-size:10px; padding:2px 7px; border-radius:10px; font-weight:700; white-space:nowrap; }
+      .ib-員工     { background:#dbeafe; color:#1d4ed8; }
+      .ib-新客     { background:#dcfce7; color:#15803d; }
+      .ib-會員     { background:#f3e8ff; color:#7c3aed; }
+      .ib-離職員工 { background:#f3f4f6; color:#6b7280; }
+      .ib-訪客     { background:#fff7ed; color:#c2410c; }
 
-      /* channel row */
-      .ch-row { display: flex; gap: 10px; }
-      .ch-option {
-        display: flex; align-items: center; gap: 7px; padding: 9px 16px;
-        border: 2px solid #e5e7eb; border-radius: 9px; cursor: pointer;
-        font-size: 13px; font-weight: 500; color: #374151; transition: all .15s;
-        user-select: none;
-      }
-      .ch-option.is-on { border-color: #6366f1; background: #eef2ff; color: #4338ca; }
-      .ch-option input[type=checkbox] { display: none; }
-      .ch-icon { font-size: 17px; }
-      .no-line-warn {
-        display: none; margin-top: 8px; padding: 7px 12px;
-        background: #fffbeb; border: 1px solid #fde68a; border-radius: 7px;
-        font-size: 12px; color: #92400e;
-      }
+      /* ══════════ TAB 1 — 發送推播 ══════════ */
+      .send-layout { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
 
-      /* template select */
-      .tpl-select {
-        width: 100%; padding: 9px 12px; border: 1px solid #e5e7eb; border-radius: 8px;
-        font-size: 13px; background: #fff; color: #1f2937; outline: none;
-        font-family: 'Noto Sans TC', sans-serif; cursor: pointer;
-      }
-      .tpl-select:focus { border-color: #6366f1; }
+      .rcpt-panel { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
+      .rcpt-head { padding:12px 16px; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; justify-content:space-between; }
+      .rcpt-head-title { font-weight:600; font-size:13px; color:#1f2937; }
+      .rcpt-total-chip { font-size:12px; color:#6366f1; font-weight:700; }
+      .rcpt-add-row { padding:10px 12px; border-bottom:1px solid #f3f4f6; display:flex; gap:6px; flex-wrap:wrap; background:#fafafa; }
+      .rcpt-add-btn { padding:5px 10px; border:1.5px dashed #c7d2fe; background:#f5f3ff; color:#4f46e5; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans TC',sans-serif; transition:all .15s; display:inline-flex; align-items:center; gap:5px; }
+      .rcpt-add-btn:hover { background:#ede9fe; border-color:#6366f1; border-style:solid; }
+      .rcpt-chips-area { padding:12px 14px; min-height:80px; }
+      .rcpt-chips-empty { text-align:center; color:#c0c4cc; font-size:12px; padding:24px 0; }
+      .rcpt-section-row { margin-bottom:10px; }
+      .rcpt-section-lbl { font-size:10px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; }
+      .rcpt-chips-row { display:flex; flex-wrap:wrap; gap:5px; }
+      .rchip { display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:8px; font-size:12px; font-weight:600; }
+      .rchip--group  { background:#ede9fe; color:#4f46e5; border:1px solid #c4b5fd; }
+      .rchip--tag    { background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
+      .rchip--person { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+      .rchip-x { font-size:10px; cursor:pointer; opacity:.6; margin-left:2px; }
+      .rchip-x:hover { opacity:1; }
+      .rcpt-foot { padding:10px 14px; border-top:1px solid #f3f4f6; background:#fafafa; font-size:12px; color:#374151; display:flex; align-items:center; justify-content:space-between; }
+      .rcpt-foot strong { color:#1f2937; }
 
-      /* msg tab */
-      .msg-tabs { display: flex; gap: 2px; margin-bottom: 0; }
-      .msg-tab {
-        padding: 5px 14px; font-size: 12px; border-radius: 7px 7px 0 0;
-        border: 1px solid #e5e7eb; border-bottom: none; cursor: pointer;
-        background: #f9fafb; color: #252629; font-family: 'Noto Sans TC', sans-serif;
-        transition: all .15s;
-      }
-      .msg-tab.active { background: #fff; color: #6366f1; font-weight: 600; border-color: #e5e7eb; }
-      .msg-box {
-        border: 1px solid #e5e7eb; border-radius: 0 8px 8px 8px; padding: 1px;
-      }
-      .msg-textarea {
-        width: 100%; box-sizing: border-box; min-height: 96px; padding: 10px 12px;
-        border: none; border-radius: 7px; font-size: 13px; font-family: 'Noto Sans TC', sans-serif;
-        resize: vertical; outline: none; color: #1f2937;
-      }
-      .msg-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
-      .var-chips { display: flex; gap: 5px; flex-wrap: wrap; }
-      .var-chip {
-        font-size: 11px; padding: 2px 9px; background: #f3f4f6; border-radius: 10px;
-        color: #374151; cursor: pointer; border: 1px solid #e5e7eb; transition: all .1s;
-      }
-      .var-chip:hover { background: #ede9fe; border-color: #a5b4fc; color: #4338ca; }
-      .char-count { font-size: 11px; color: #252629; white-space: nowrap; }
-      .char-count.warn { color: #ef4444; font-weight: 700; }
+      /* compose */
+      .compose-panel { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:22px 24px; }
+      .cs { margin-bottom:20px; }
+      .cs-label { font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.6px; margin-bottom:9px; display:block; }
+      .ch-row { display:flex; gap:10px; }
+      .ch-option { display:flex; align-items:center; gap:7px; padding:9px 16px; border:2px solid #e5e7eb; border-radius:9px; cursor:pointer; font-size:13px; font-weight:500; color:#374151; transition:all .15s; user-select:none; }
+      .ch-option.is-on { border-color:#6366f1; background:#eef2ff; color:#4338ca; }
+      .ch-option input[type=checkbox] { display:none; }
+      .ch-icon { font-size:17px; }
+      .no-line-warn { display:none; margin-top:8px; padding:7px 12px; background:#fffbeb; border:1px solid #fde68a; border-radius:7px; font-size:12px; color:#92400e; }
+      .msg-tabs { display:flex; gap:2px; margin-bottom:0; }
+      .msg-tab { padding:5px 14px; font-size:12px; border-radius:7px 7px 0 0; border:1px solid #e5e7eb; border-bottom:none; cursor:pointer; background:#f9fafb; color:#6b7280; font-family:'Noto Sans TC',sans-serif; transition:all .15s; }
+      .msg-tab.active { background:#fff; color:#6366f1; font-weight:600; }
+      .msg-box { border:1px solid #e5e7eb; border-radius:0 8px 8px 8px; padding:1px; }
+      .msg-textarea { width:100%; box-sizing:border-box; min-height:88px; padding:10px 12px; border:none; border-radius:7px; font-size:13px; font-family:'Noto Sans TC',sans-serif; resize:vertical; outline:none; color:#1f2937; }
+      .char-count { font-size:11px; color:#6b7280; white-space:nowrap; }
+      .char-count.warn { color:#ef4444; font-weight:700; }
+      .sms-2nd-warn { display:none; font-size:11px; color:#d97706; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:4px 9px; margin-top:5px; }
+      .sms-2nd-warn.show { display:block; }
+      .msg-foot { display:flex; justify-content:space-between; align-items:center; margin-top:6px; flex-wrap:wrap; gap:6px; }
+      .var-chips { display:flex; gap:5px; flex-wrap:wrap; }
+      .var-chip { font-size:11px; padding:2px 9px; background:#f3f4f6; border-radius:10px; color:#374151; cursor:pointer; border:1px solid #e5e7eb; transition:all .1s; }
+      .var-chip:hover { background:#ede9fe; border-color:#a5b4fc; color:#4338ca; }
 
-      /* preview */
-      .preview-card {
-        background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 9px;
-        padding: 13px 15px; font-size: 13px; line-height: 1.7; color: #374151;
-        white-space: pre-wrap; min-height: 58px;
-      }
-      .preview-hint { font-size: 11px; color: #c0c4cc; margin-top: 5px; }
+      /* LINE message type */
+      .line-type-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+      .line-type-btn { padding:6px 14px; border:1.5px solid #e5e7eb; border-radius:8px; cursor:pointer; font-size:12px; color:#374151; font-weight:500; font-family:'Noto Sans TC',sans-serif; transition:all .15s; display:inline-flex; align-items:center; gap:5px; background:#fff; }
+      .line-type-btn.active { border-color:#22c55e; background:#f0fdf4; color:#15803d; font-weight:600; }
 
-      /* send bar */
-      .send-bar {
-        display: flex; align-items: center; justify-content: space-between;
-        padding-top: 16px; border-top: 1px solid #f3f4f6; gap: 12px;
-      }
-      .send-rcpt-info { font-size: 13px; color: #252629; flex: 1; min-width: 0; }
-      .send-rcpt-info strong { color: #1f2937; }
-      .btn-send {
-        padding: 10px 24px; background: #6366f1; color: #fff; border: none;
-        border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer;
-        display: flex; align-items: center; gap: 8px; white-space: nowrap;
-        font-family: 'Noto Sans TC', sans-serif; transition: background .15s; flex-shrink: 0;
-      }
-      .btn-send:hover:not(:disabled) { background: #4f46e5; }
-      .btn-send:disabled { background: #e5e7eb; color: #252629; cursor: not-allowed; }
+      /* card fields */
+      .card-fields { padding:14px; border:1px solid #e5e7eb; border-radius:8px; background:#fafbff; }
+      .cf-row { margin-bottom:11px; }
+      .cf-row:last-child { margin-bottom:0; }
+      .cf-label { font-size:11px; color:#6b7280; font-weight:600; margin-bottom:5px; display:block; }
+      .cf-input { width:100%; box-sizing:border-box; padding:8px 11px; border:1px solid #e5e7eb; border-radius:7px; font-size:13px; font-family:'Noto Sans TC',sans-serif; outline:none; color:#1f2937; }
+      .cf-input:focus { border-color:#6366f1; }
+      .cf-input::placeholder { color:#c0c4cc; }
+      .cf-textarea { width:100%; box-sizing:border-box; padding:8px 11px; border:1px solid #e5e7eb; border-radius:7px; font-size:13px; font-family:'Noto Sans TC',sans-serif; resize:vertical; min-height:64px; outline:none; color:#1f2937; }
+      .cf-textarea:focus { border-color:#6366f1; }
+      .cf-2col { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
-      /* ── settings tab ── */
-      .tpl-cards { display: flex; flex-direction: column; gap: 20px; }
-      .tpl-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
-      .tpl-card-head {
-        display: flex; align-items: flex-start; gap: 14px; padding: 16px 20px;
-        background: linear-gradient(135deg, #f8f8ff 0%, #eef2ff 100%);
-        border-bottom: 1px solid #e5e7eb;
-      }
-      .tpl-icon {
-        width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
-        display: flex; align-items: center; justify-content: center; font-size: 19px;
-      }
-      .tpl-icon--payout    { background: #dcfce7; color: #15803d; }
-      .tpl-icon--transfer  { background: #dbeafe; color: #1d4ed8; }
-      .tpl-card-title { font-weight: 700; font-size: 15px; color: #1f2937; margin-bottom: 5px; }
-      .tpl-trigger { font-size: 12px; color: #252629; display: flex; align-items: center; gap: 5px; }
-      .tpl-trigger-code {
-        background: #f3f4f6; border-radius: 4px; padding: 1px 7px;
-        font-family: monospace; font-size: 11px; color: #374151;
-      }
-      .tpl-body { padding: 20px; }
-      .tpl-ch-tabs { display: flex; gap: 5px; margin-bottom: 12px; }
-      .tpl-ch-tab {
-        padding: 4px 14px; font-size: 12px; border-radius: 20px; cursor: pointer;
-        border: 1px solid #e5e7eb; background: #f9fafb; color: #252629;
-        font-family: 'Noto Sans TC', sans-serif; transition: all .15s;
-      }
-      .tpl-ch-tab.active { background: #6366f1; color: #fff; border-color: #6366f1; }
-      .tpl-var-row { margin-bottom: 9px; }
-      .tpl-var-label { font-size: 11px; color: #252629; margin-bottom: 4px; }
-      .tpl-textarea {
-        width: 100%; box-sizing: border-box; min-height: 88px; padding: 10px 12px;
-        border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px;
-        font-family: 'Noto Sans TC', sans-serif; resize: vertical; outline: none;
-        color: #1f2937;
-      }
-      .tpl-textarea:focus { border-color: #6366f1; }
-      .tpl-save-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
-      .tpl-char-info { font-size: 11px; color: #252629; }
-      .tpl-char-info.warn { color: #ef4444; font-weight: 700; }
-      .btn-tpl-save {
-        padding: 7px 18px; background: #6366f1; color: #fff; border: none;
-        border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
-        font-family: 'Noto Sans TC', sans-serif; transition: background .15s;
-      }
-      .btn-tpl-save:hover { background: #4f46e5; }
+      /* LINE card preview */
+      .line-preview-wrap { margin-top:12px; background:#f0f0f5; border-radius:12px; padding:14px; }
+      .line-preview-hint { font-size:11px; color:#9ca3af; margin-bottom:8px; }
+      .line-bubble-box { max-width:260px; }
+      .line-img-ph { height:110px; background:linear-gradient(135deg,#c4b5fd,#818cf8); display:flex; align-items:center; justify-content:center; color:#fff; font-size:28px; border-radius:10px 10px 0 0; }
+      .line-card-inner { background:#fff; border-radius:0 0 10px 10px; padding:12px; box-shadow:0 2px 8px rgba(0,0,0,.1); }
+      .line-card-title-preview { font-weight:700; font-size:14px; color:#1f2937; margin-bottom:3px; }
+      .line-card-desc-preview { font-size:12px; color:#6b7280; line-height:1.5; margin-bottom:10px; min-height:18px; }
+      .line-card-btn-preview { display:block; text-align:center; padding:8px; background:#6366f1; color:#fff; border-radius:7px; font-size:13px; font-weight:600; }
+      .line-loc-card { background:#fff; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.1); overflow:hidden; }
+      .line-loc-top { padding:12px; display:flex; align-items:flex-start; gap:9px; }
+      .line-loc-icon { width:32px; height:32px; background:#fee2e2; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#ef4444; font-size:14px; flex-shrink:0; }
+      .line-loc-name-preview { font-weight:700; font-size:13px; color:#1f2937; }
+      .line-loc-addr-preview { font-size:11px; color:#6b7280; margin-top:2px; }
+      .line-loc-map-ph { height:70px; background:linear-gradient(135deg,#bbf7d0,#6ee7b7); display:flex; align-items:center; justify-content:center; color:#065f46; font-size:20px; }
+      .line-text-bubble { background:#fff; border-radius:12px; padding:12px 14px; box-shadow:0 2px 8px rgba(0,0,0,.1); font-size:13px; line-height:1.7; color:#374151; white-space:pre-wrap; word-break:break-word; }
 
-      /* ── log tab ── */
-      .log-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
-      .log-card-head {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 14px 20px; border-bottom: 1px solid #e5e7eb;
-      }
-      .log-card-title { font-weight: 700; font-size: 14px; color: #1f2937; }
-      .btn-refresh {
-        font-size: 12px; padding: 4px 12px; border: 1px solid #e5e7eb; border-radius: 6px;
-        cursor: pointer; background: #fff; font-family: 'Noto Sans TC', sans-serif;
-      }
-      .log-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-      .log-table thead th {
-        padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600;
-        color: #252629; background: #f9fafb; border-bottom: 1px solid #e5e7eb; white-space: nowrap;
-      }
-      .log-table tbody td { padding: 11px 14px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
-      .log-table tbody tr:last-child td { border-bottom: none; }
-      .log-table tbody tr:hover td { background: #fafafa; }
-      .log-ch-badge {
-        display: inline-flex; align-items: center; gap: 3px;
-        font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
-      }
-      .log-ch-badge--sms  { background: #dbeafe; color: #1d4ed8; }
-      .log-ch-badge--line { background: #dcfce7; color: #15803d; }
-      .log-sent { font-size: 11px; padding: 2px 9px; border-radius: 10px; background: #d1fae5; color: #065f46; font-weight: 600; }
+      /* preview section */
+      .preview-card { background:#f8fafc; border:1px solid #e5e7eb; border-radius:9px; padding:13px 15px; font-size:13px; line-height:1.7; color:#374151; white-space:pre-wrap; min-height:58px; }
+      .preview-hint { font-size:11px; color:#c0c4cc; margin-top:5px; }
+      .send-bar { display:flex; align-items:center; justify-content:flex-end; padding-top:16px; border-top:1px solid #f3f4f6; gap:12px; }
+      .btn-send { padding:10px 24px; background:#6366f1; color:#fff; border:none; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; white-space:nowrap; font-family:'Noto Sans TC',sans-serif; transition:background .15s; }
+      .btn-send:hover:not(:disabled) { background:#4f46e5; }
+      .btn-send:disabled { background:#e5e7eb; color:#9ca3af; cursor:not-allowed; }
+      .tpl-select { width:100%; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; background:#fff; color:#1f2937; outline:none; font-family:'Noto Sans TC',sans-serif; cursor:pointer; }
+      .tpl-select:focus { border-color:#6366f1; }
 
-      /* ── log detail button ── */
-      .log-detail-btn {
-        font-size: 11px; padding: 3px 10px; border: 1px solid #e0e7ff;
-        border-radius: 5px; cursor: pointer; background: #eef2ff; color: #6366f1;
-        font-family: 'Noto Sans TC', sans-serif; transition: all .12s;
-        white-space: nowrap; font-weight: 500; display: block; margin-top: 5px;
-      }
-      .log-detail-btn:hover { background: #6366f1; color: #fff; border-color: #6366f1; }
+      /* ══════════ TAB 2 — 人員管理 ══════════ */
+      .s-card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
+      .s-card-head { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; border-bottom:1px solid #e5e7eb; }
+      .s-card-title { font-weight:600; font-size:13px; color:#1f2937; display:flex; align-items:center; gap:6px; }
+      .tbl-wrap { overflow-x:auto; }
+      .data-tbl { width:100%; border-collapse:collapse; font-size:13px; }
+      .data-tbl thead th { padding:10px 14px; text-align:left; font-size:11px; font-weight:600; color:#6b7280; background:#f9fafb; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+      .data-tbl tbody td { padding:11px 14px; border-bottom:1px solid #f3f4f6; vertical-align:middle; }
+      .data-tbl tbody tr:last-child td { border-bottom:none; }
+      .data-tbl tbody tr:hover td { background:#fafafa; }
+      .m-avatar { width:32px; height:32px; border-radius:50%; background:#ede9fe; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#6366f1; flex-shrink:0; }
+      .m-name-cell { display:flex; align-items:center; gap:10px; }
+      .m-name { font-weight:600; color:#1f2937; }
+      .m-id { font-size:10px; color:#9ca3af; display:block; }
+      .identities-cell { display:flex; gap:4px; flex-wrap:wrap; }
+      .tag-chips-cell { display:flex; gap:4px; flex-wrap:wrap; }
+      .tag-chip-sm { display:inline-flex; align-items:center; padding:2px 7px; border-radius:10px; font-size:10px; font-weight:600; }
+      .line-yes { color:#15803d; font-size:11px; font-weight:600; }
+      .line-no  { color:#9ca3af; font-size:11px; }
+      .pagination { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-top:1px solid #e5e7eb; }
+      .pag-info { font-size:12px; color:#6b7280; }
+      .pag-btns { display:flex; gap:4px; }
+      .pag-btn { width:30px; height:30px; border-radius:7px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; color:#374151; transition:all .12s; }
+      .pag-btn:hover:not(:disabled) { background:#f3f4f6; }
+      .pag-btn.active { background:#6366f1; color:#fff; border-color:#6366f1; }
+      .pag-btn:disabled { opacity:.4; cursor:not-allowed; }
 
-      /* ── 發送明細 Modal ── */
-      .notify-modal {
-        position: fixed; inset: 0; z-index: 300;
-        display: flex; align-items: center; justify-content: center; padding: 16px;
-      }
-      .notify-modal[hidden] { display: none; }
-      .notify-modal-backdrop {
-        position: absolute; inset: 0; background: rgba(17,12,40,.50); cursor: pointer;
-      }
-      .notify-modal-panel {
-        position: relative; background: #fff; width: 100%;
-        max-width: 600px; max-height: 90vh;
-        display: flex; flex-direction: column;
-        border-radius: 14px; box-shadow: 0 24px 60px rgba(0,0,0,.28);
-        animation: nmSlide .2s ease;
-      }
-      @keyframes nmSlide {
-        from { transform: translateY(10px); opacity:.5; }
-        to   { transform: translateY(0);    opacity:1; }
-      }
-      .notify-modal-head {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 15px 20px; border-bottom: 1px solid #e5e7eb;
-        background: linear-gradient(135deg,#f8f9ff,#eef2ff);
-        border-radius: 14px 14px 0 0; flex-shrink: 0;
-      }
-      .notify-modal-title {
-        font-size: 15px; font-weight: 700; color: #1f2937;
-        display: flex; align-items: center; gap: 8px;
-      }
-      .notify-modal-close {
-        width: 30px; height: 30px; border: 1px solid #e5e7eb; border-radius: 7px;
-        background: #fff; color: #252629; cursor: pointer; font-size: 13px;
-        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      }
-      .notify-modal-close:hover { background: #f3f4f6; color: #374151; }
-      .notify-modal-body { padding: 18px 20px; overflow-y: auto; flex: 1; }
-      .notify-modal-foot {
-        padding: 12px 20px; border-top: 1px solid #e5e7eb; flex-shrink: 0;
-        display: flex; justify-content: flex-end;
-      }
-      .nm-meta {
-        display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-        padding: 10px 12px; background: #f9fafb; border-radius: 8px;
-        margin-bottom: 16px; font-size: 12px; color: #252629;
-        border: 1px solid #f3f4f6;
-      }
-      .nm-meta strong { color: #1f2937; }
-      .nm-meta-sep { color: #d1d5db; }
-      .nm-section { margin-bottom: 18px; }
-      .nm-section:last-child { margin-bottom: 0; }
-      .nm-section-title {
-        font-size: 11px; font-weight: 700; color: #252629; text-transform: uppercase;
-        letter-spacing: .6px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
-      }
-      .nm-rcpt-list { display: flex; flex-direction: column; gap: 5px; }
-      .nm-rcpt-item {
-        font-size: 13px; color: #1f2937; font-weight: 600;
-        padding: 7px 11px; background: #f8faff; border-radius: 7px;
-        border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 6px;
-      }
-      .nm-rcpt-meta { color: #252629; font-weight: 400; font-size: 12px; }
-      .nm-rcpt-line { margin-left: auto; font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: 999px; }
-      .nm-rcpt-line--yes { background: #dcfce7; color: #15803d; }
-      .nm-rcpt-line--no  { background: #f3f4f6; color: #252629; }
-      .nm-ch-head {
-        font-size: 12px; font-weight: 700; display: flex; align-items: center;
-        gap: 5px; margin-bottom: 7px;
-      }
-      .nm-ch-head--sms  { color: #1d4ed8; }
-      .nm-ch-head--line { color: #15803d; }
-      .nm-msg-box {
-        background: #fafbff; border: 1px solid #e5e7eb; border-radius: 8px;
-        padding: 13px 15px; font-size: 13px; line-height: 1.8; color: #374151;
-        white-space: pre-wrap; font-family: 'Noto Sans TC', sans-serif;
-        word-break: break-word;
-      }
-      .nm-msg-note {
-        font-size: 11px; color: #c0c4cc; margin-top: 5px;
-      }
-      .nm-close-btn {
-        padding: 8px 24px; background: #6366f1; color: #fff; border: none;
-        border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
-        font-family: 'Noto Sans TC', sans-serif; transition: background .15s;
-      }
-      .nm-close-btn:hover { background: #4f46e5; }
+      /* ══════════ TAB 3 — 群組管理 ══════════ */
+      .groups-layout { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
+      .group-list-col { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
+      .group-list-head { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; border-bottom:1px solid #e5e7eb; }
+      .group-list-title { font-weight:600; font-size:13px; color:#1f2937; display:flex; align-items:center; gap:6px; }
+      .group-item { display:flex; align-items:center; gap:11px; padding:13px 16px; border-bottom:1px solid #f3f4f6; cursor:pointer; transition:background .1s; }
+      .group-item:last-child { border-bottom:none; }
+      .group-item:hover { background:#fafafa; }
+      .group-item.active { background:#eef2ff; }
+      .group-item-icon { width:36px; height:36px; border-radius:9px; background:#ede9fe; display:flex; align-items:center; justify-content:center; font-size:14px; color:#6366f1; flex-shrink:0; }
+      .group-item-info { flex:1; min-width:0; }
+      .group-item-name { font-weight:600; font-size:13px; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .group-item-meta { font-size:11px; color:#9ca3af; margin-top:2px; }
+      .group-item-acts { display:flex; gap:4px; flex-shrink:0; }
+      .group-detail-col { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
+      .group-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:64px 20px; color:#c0c4cc; font-size:13px; gap:10px; }
+      .group-detail-head { padding:16px 20px; border-bottom:1px solid #e5e7eb; background:linear-gradient(135deg,#f8f8ff,#eef2ff); }
+      .group-detail-name-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+      .group-d-name { font-size:17px; font-weight:700; color:#1f2937; flex:1; }
+      .group-d-name-input { font-size:16px; font-weight:700; color:#1f2937; border:1.5px solid #6366f1; border-radius:7px; padding:4px 10px; outline:none; font-family:'Noto Sans TC',sans-serif; flex:1; }
+      .group-detail-acts { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+      .group-members-head { padding:12px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #f3f4f6; }
+      .group-members-title { font-size:13px; font-weight:600; color:#1f2937; }
+      .group-member-list { max-height:260px; overflow-y:auto; }
+      .gm-row { display:flex; align-items:center; gap:12px; padding:10px 16px; border-bottom:1px solid #f9fafb; }
+      .gm-row:last-child { border-bottom:none; }
+      .gm-info { flex:1; min-width:0; }
+      .gm-name { font-size:13px; font-weight:600; color:#1f2937; }
+      .gm-sub { font-size:11px; color:#9ca3af; margin-top:2px; }
+      .gm-tags { display:flex; gap:4px; flex-wrap:wrap; margin-top:4px; }
+      .history-section { padding:16px 20px; border-top:1px solid #f3f4f6; }
+      .history-title { font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; margin-bottom:14px; display:flex; align-items:center; gap:6px; }
+      .history-item { display:flex; gap:12px; margin-bottom:14px; }
+      .history-item:last-child { margin-bottom:0; }
+      .hi-dot-col { display:flex; flex-direction:column; align-items:center; }
+      .hi-dot { width:10px; height:10px; border-radius:50%; background:#6366f1; flex-shrink:0; margin-top:3px; }
+      .hi-line { width:1px; flex:1; background:#e5e7eb; min-height:16px; margin-top:2px; }
+      .hi-content { flex:1; min-width:0; padding-bottom:2px; }
+      .hi-meta { font-size:11px; color:#9ca3af; margin-bottom:3px; }
+      .hi-action { font-size:13px; color:#374151; }
+      .hi-note { font-size:12px; color:#6b7280; font-style:italic; margin-top:2px; }
+      .group-empty-hist { font-size:12px; color:#c0c4cc; text-align:center; padding:16px 0; }
+
+      /* ══════════ TAB 4 — 標籤管理 ══════════ */
+      .tags-layout { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
+      .tag-panel { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
+      .tag-panel-head { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; border-bottom:1px solid #e5e7eb; }
+      .tag-panel-title { font-weight:600; font-size:13px; color:#1f2937; display:flex; align-items:center; gap:6px; }
+      .tag-row { display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid #f3f4f6; }
+      .tag-row:last-child { border-bottom:none; }
+      .tag-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+      .tag-row-name { font-size:13px; font-weight:600; color:#1f2937; flex:1; }
+      .tag-row-count { font-size:11px; color:#9ca3af; white-space:nowrap; }
+      .tag-row-acts { display:flex; gap:5px; }
+      .tag-act-btn { width:26px; height:26px; border-radius:6px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; color:#9ca3af; transition:all .12s; }
+      .tag-act-btn:hover { background:#f3f4f6; color:#374151; }
+      .tag-act-btn.del:hover { background:#fee2e2; color:#dc2626; border-color:#fca5a5; }
+      .tag-empty { padding:32px 20px; text-align:center; color:#c0c4cc; font-size:13px; }
+      .assign-list { max-height:520px; overflow-y:auto; }
+      .assign-row { display:flex; align-items:flex-start; gap:12px; padding:11px 14px; border-bottom:1px solid #f9fafb; }
+      .assign-row:last-child { border-bottom:none; }
+      .assign-avatar { width:34px; height:34px; border-radius:50%; flex-shrink:0; background:#ede9fe; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#6366f1; }
+      .assign-info { flex:1; min-width:0; }
+      .assign-name { font-size:13px; font-weight:600; color:#1f2937; }
+      .assign-id { font-size:10px; color:#9ca3af; margin-left:4px; }
+      .assign-tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:6px; align-items:center; position:relative; }
+      .u-tag-chip { display:inline-flex; align-items:center; gap:4px; padding:2px 9px; border-radius:10px; font-size:11px; font-weight:600; cursor:pointer; transition:opacity .12s; }
+      .u-tag-chip:hover { opacity:.7; }
+      .remove-tag { font-size:9px; }
+      .btn-add-tag { width:22px; height:22px; border-radius:50%; border:1.5px dashed #d1d5db; background:#fff; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:11px; color:#9ca3af; transition:all .12s; flex-shrink:0; }
+      .btn-add-tag:hover { border-color:#6366f1; color:#6366f1; background:#eef2ff; }
+      .tag-dropdown { position:absolute; top:calc(100% + 4px); left:0; z-index:100; background:#fff; border:1px solid #e5e7eb; border-radius:9px; box-shadow:0 8px 20px rgba(0,0,0,.12); padding:5px; min-width:150px; }
+      .tag-dd-item { display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; transition:background .1s; }
+      .tag-dd-item:hover { background:#f3f4f6; }
+      .tag-dd-item.assigned { color:#9ca3af; cursor:default; }
+      .tag-dd-item.assigned:hover { background:transparent; }
+      .tag-assign-filter-row { display:flex; gap:6px; flex-wrap:wrap; align-items:center; padding:8px 14px; border-bottom:1px solid #f3f4f6; background:#fafafa; }
+      .tag-filter-chip { padding:3px 11px; border-radius:20px; border:1px solid #e5e7eb; font-size:12px; cursor:pointer; background:#fff; color:#374151; font-family:'Noto Sans TC',sans-serif; transition:all .15s; display:flex; align-items:center; }
+      .tag-filter-chip.active { background:#ede9fe; border-color:#6366f1; color:#6366f1; font-weight:600; }
+      .tag-color-grid { display:flex; gap:10px; flex-wrap:wrap; }
+      .tag-color-swatch { width:28px; height:28px; border-radius:50%; cursor:pointer; transition:all .12s; flex-shrink:0; box-shadow:0 1px 4px rgba(0,0,0,.2); }
+      .tag-color-swatch.selected { box-shadow:0 0 0 3px #fff, 0 0 0 5px currentColor; }
+
+      /* ══════════ TAB 5 — 推播設定 ══════════ */
+      .tpl-cards { display:flex; flex-direction:column; gap:20px; }
+      .tpl-card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
+      .tpl-card-head { display:flex; align-items:flex-start; gap:14px; padding:16px 20px; background:linear-gradient(135deg,#f8f8ff,#eef2ff); border-bottom:1px solid #e5e7eb; }
+      .tpl-icon { width:42px; height:42px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:19px; }
+      .tpl-icon--payout   { background:#dcfce7; color:#15803d; }
+      .tpl-icon--transfer { background:#dbeafe; color:#1d4ed8; }
+      .tpl-icon--failed   { background:#fee2e2; color:#dc2626; }
+      .tpl-icon--admin    { background:#f3e8ff; color:#7c3aed; }
+      .tpl-card-title { font-weight:700; font-size:15px; color:#1f2937; margin-bottom:5px; }
+      .tpl-trigger { font-size:12px; color:#6b7280; display:flex; align-items:center; gap:5px; }
+      .tpl-trigger-code { background:#f3f4f6; border-radius:4px; padding:1px 7px; font-family:monospace; font-size:11px; color:#374151; }
+      .tpl-body { padding:20px; }
+      .tpl-ch-tabs { display:flex; gap:5px; margin-bottom:14px; }
+      .tpl-ch-tab { padding:4px 14px; font-size:12px; border-radius:20px; cursor:pointer; border:1px solid #e5e7eb; background:#f9fafb; color:#6b7280; font-family:'Noto Sans TC',sans-serif; transition:all .15s; }
+      .tpl-ch-tab.active { background:#6366f1; color:#fff; border-color:#6366f1; }
+      .tpl-line-types { display:flex; gap:5px; margin-bottom:12px; }
+      .tpl-lt-btn { padding:3px 11px; font-size:11px; border-radius:20px; cursor:pointer; border:1px solid #e5e7eb; background:#f9fafb; color:#6b7280; font-family:'Noto Sans TC',sans-serif; transition:all .15s; }
+      .tpl-lt-btn.active { background:#22c55e; color:#fff; border-color:#22c55e; }
+      .tpl-textarea { width:100%; box-sizing:border-box; min-height:88px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; font-family:'Noto Sans TC',sans-serif; resize:vertical; outline:none; color:#1f2937; }
+      .tpl-textarea:focus { border-color:#6366f1; }
+      .tpl-var-row { margin-bottom:9px; }
+      .tpl-var-label { font-size:11px; color:#6b7280; margin-bottom:4px; }
+      .tpl-save-row { display:flex; align-items:center; justify-content:space-between; margin-top:14px; }
+      .tpl-char-info { font-size:11px; color:#6b7280; }
+      .tpl-char-info.warn { color:#ef4444; font-weight:700; }
+      .btn-tpl-save { padding:7px 18px; background:#6366f1; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans TC',sans-serif; transition:background .15s; }
+      .btn-tpl-save:hover { background:#4f46e5; }
+
+      /* ══════════ TAB 6 — 發送紀錄 ══════════ */
+      .log-card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
+      .log-card-head { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid #e5e7eb; }
+      .log-card-title { font-weight:700; font-size:14px; color:#1f2937; }
+      .btn-refresh { font-size:12px; padding:4px 12px; border:1px solid #e5e7eb; border-radius:6px; cursor:pointer; background:#fff; font-family:'Noto Sans TC',sans-serif; }
+      .log-table { width:100%; border-collapse:collapse; font-size:13px; }
+      .log-table thead th { padding:10px 14px; text-align:left; font-size:11px; font-weight:600; color:#6b7280; background:#f9fafb; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+      .log-table tbody td { padding:11px 14px; border-bottom:1px solid #f3f4f6; vertical-align:top; }
+      .log-table tbody tr:last-child td { border-bottom:none; }
+      .log-table tbody tr:hover td { background:#fafafa; }
+      .log-ch-badge { display:inline-flex; align-items:center; gap:3px; font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600; }
+      .log-ch-badge--sms  { background:#dbeafe; color:#1d4ed8; }
+      .log-ch-badge--line { background:#dcfce7; color:#15803d; }
+      .log-sent { font-size:11px; padding:2px 9px; border-radius:10px; background:#d1fae5; color:#065f46; font-weight:600; }
+      .log-detail-btn { font-size:11px; padding:3px 10px; border:1px solid #e0e7ff; border-radius:5px; cursor:pointer; background:#eef2ff; color:#6366f1; font-family:'Noto Sans TC',sans-serif; transition:all .12s; white-space:nowrap; font-weight:500; display:block; margin-top:5px; }
+      .log-detail-btn:hover { background:#6366f1; color:#fff; }
+
+      /* ══════════ Modals ══════════ */
+      .m-ov { position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center; padding:16px; }
+      .m-ov[hidden] { display:none; }
+      .m-backdrop { position:absolute; inset:0; background:rgba(17,12,40,.5); cursor:pointer; }
+      .m-panel { position:relative; background:#fff; width:100%; max-width:520px; max-height:90vh; display:flex; flex-direction:column; border-radius:14px; box-shadow:0 24px 60px rgba(0,0,0,.28); animation:mSlide .2s ease; }
+      .m-panel--sm { max-width:380px; }
+      .m-panel--lg { max-width:680px; }
+      @keyframes mSlide { from{transform:translateY(10px);opacity:.5} to{transform:translateY(0);opacity:1} }
+      .m-head { display:flex; align-items:center; justify-content:space-between; padding:15px 20px; border-bottom:1px solid #e5e7eb; background:linear-gradient(135deg,#f8f9ff,#eef2ff); border-radius:14px 14px 0 0; flex-shrink:0; }
+      .m-title { font-size:15px; font-weight:700; color:#1f2937; display:flex; align-items:center; gap:8px; }
+      .m-close { width:30px; height:30px; border:1px solid #e5e7eb; border-radius:7px; background:#fff; color:#6b7280; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; }
+      .m-close:hover { background:#f3f4f6; }
+      .m-body { padding:18px 20px; overflow-y:auto; flex:1; }
+      .m-foot { padding:12px 20px; border-top:1px solid #e5e7eb; flex-shrink:0; display:flex; justify-content:flex-end; gap:8px; }
+      .m-btn-cancel { padding:8px 18px; background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans TC',sans-serif; }
+      .m-btn-ok { padding:8px 20px; background:#6366f1; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans TC',sans-serif; transition:background .15s; display:flex; align-items:center; gap:6px; }
+      .m-btn-ok:hover { background:#4f46e5; }
+      .m-btn-ok:disabled { background:#e5e7eb; color:#9ca3af; cursor:not-allowed; }
+      .m-btn-danger { padding:8px 18px; background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans TC',sans-serif; transition:all .15s; }
+      .m-btn-danger:hover { background:#dc2626; color:#fff; }
+
+      /* pick modal */
+      .pick-search { display:flex; align-items:center; gap:8px; padding:9px 14px; border-bottom:1px solid #f3f4f6; background:#fafafa; }
+      .pick-search input { flex:1; border:none; background:transparent; font-size:13px; outline:none; color:#1f2937; font-family:'Noto Sans TC',sans-serif; }
+      .pick-search input::placeholder { color:#c0c4cc; }
+      .pick-list { max-height:320px; overflow-y:auto; }
+      .pick-item { display:flex; align-items:center; gap:12px; padding:11px 14px; border-bottom:1px solid #f3f4f6; cursor:pointer; transition:background .1s; }
+      .pick-item:last-child { border-bottom:none; }
+      .pick-item:hover { background:#fafafa; }
+      .pick-item.is-picked { background:#eef2ff; }
+      .pick-cb { width:15px; height:15px; cursor:pointer; accent-color:#6366f1; flex-shrink:0; }
+      .pick-info { flex:1; min-width:0; }
+      .pick-name { font-size:13px; font-weight:600; color:#1f2937; }
+      .pick-meta { font-size:11px; color:#9ca3af; margin-top:2px; }
+      .pick-sel-count { font-size:12px; color:#6366f1; font-weight:700; }
+
+      /* member edit */
+      .identity-cbs { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+      .id-cb-label { display:flex; align-items:center; gap:6px; cursor:pointer; padding:6px 12px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:13px; font-weight:500; color:#374151; transition:all .15s; user-select:none; }
+      .id-cb-label:hover { border-color:#6366f1; background:#f5f3ff; }
+      .id-cb-label.on { border-color:#6366f1; background:#ede9fe; color:#4338ca; }
+      .id-cb-label input { display:none; }
+      .edit-tag-chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; align-items:center; position:relative; }
+
+      /* notify detail modal */
+      .nm-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:10px 12px; background:#f9fafb; border-radius:8px; margin-bottom:16px; font-size:12px; color:#6b7280; border:1px solid #f3f4f6; }
+      .nm-meta strong { color:#1f2937; }
+      .nm-meta-sep { color:#d1d5db; }
+      .nm-section { margin-bottom:18px; }
+      .nm-section:last-child { margin-bottom:0; }
+      .nm-section-title { font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+      .nm-rcpt-list { display:flex; flex-direction:column; gap:5px; }
+      .nm-rcpt-item { font-size:13px; color:#1f2937; font-weight:600; padding:7px 11px; background:#f8faff; border-radius:7px; border:1px solid #e5e7eb; display:flex; align-items:center; gap:6px; }
+      .nm-rcpt-meta { color:#6b7280; font-weight:400; font-size:12px; }
+      .nm-rcpt-line { margin-left:auto; font-size:10px; font-weight:600; padding:1px 7px; border-radius:999px; }
+      .nm-rcpt-line--yes { background:#dcfce7; color:#15803d; }
+      .nm-rcpt-line--no  { background:#f3f4f6; color:#6b7280; }
+      .nm-ch-head { font-size:12px; font-weight:700; display:flex; align-items:center; gap:5px; margin-bottom:7px; }
+      .nm-ch-head--sms  { color:#1d4ed8; }
+      .nm-ch-head--line { color:#15803d; }
+      .nm-msg-box { background:#fafbff; border:1px solid #e5e7eb; border-radius:8px; padding:13px 15px; font-size:13px; line-height:1.8; color:#374151; white-space:pre-wrap; font-family:'Noto Sans TC',sans-serif; word-break:break-word; }
+      .nm-msg-note { font-size:11px; color:#c0c4cc; margin-top:5px; }
+
+      /* send confirm */
+      .sc-section { margin-bottom:16px; }
+      .sc-label { font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+      .sc-chips { display:flex; flex-wrap:wrap; gap:5px; }
+      .sc-total { font-size:13px; font-weight:700; color:#1f2937; padding:10px 14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; margin-top:8px; }
+      .sc-preview { background:#f8faff; border:1px solid #e5e7eb; border-radius:8px; padding:12px; font-size:13px; color:#374151; white-space:pre-wrap; word-break:break-word; line-height:1.7; max-height:110px; overflow-y:auto; }
+
+      /* group action note */
+      .note-input { width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; font-family:'Noto Sans TC',sans-serif; outline:none; color:#1f2937; resize:none; min-height:72px; }
+      .note-input:focus { border-color:#6366f1; }
     </style>
   </head>
   <body class="admin">
-    <div class="page-wrap fade-in">
+  <div class="page-wrap fade-in">
 
-      <div class="page-header">
-        <div class="ph-title">
-          <h1></i>推播通知管理</h1>
-          
+    <div class="page-header">
+      <div class="ph-title">
+        <h1><i class="fa-solid fa-bell" style="color:#6366f1;margin-right:8px;font-size:18px;"></i>推播通知管理</h1>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="notify-tabs">
+      <button class="ntab active" data-ntab="send"><i class="fa-solid fa-paper-plane"></i> 發送推播</button>
+      <button class="ntab" data-ntab="members"><i class="fa-solid fa-users"></i> 人員管理</button>
+      <button class="ntab" data-ntab="groups"><i class="fa-solid fa-layer-group"></i> 群組管理</button>
+      <button class="ntab" data-ntab="tags"><i class="fa-solid fa-tags"></i> 標籤管理</button>
+      <button class="ntab" data-ntab="settings"><i class="fa-solid fa-sliders"></i> 推播設定</button>
+      <button class="ntab" data-ntab="log"><i class="fa-solid fa-clock-rotate-left"></i> 發送紀錄</button>
+    </div>
+
+    <!-- ══════ TAB 1 — 發送推播 ══════ -->
+    <div class="ntab-panel active" id="panel-send">
+      <div class="send-layout">
+
+        <!-- LEFT: recipient builder -->
+        <div class="rcpt-panel">
+          <div class="rcpt-head">
+            <span class="rcpt-head-title"><i class="fa-solid fa-users" style="color:#6366f1;font-size:12px;margin-right:5px;"></i>推播對象</span>
+            <span class="rcpt-total-chip" id="send-total-label">共 0 人</span>
+          </div>
+          <div class="rcpt-add-row">
+            <button class="rcpt-add-btn" id="btn-add-groups"><i class="fa-solid fa-layer-group"></i> 選群組</button>
+            <button class="rcpt-add-btn" id="btn-add-tags"><i class="fa-solid fa-tags"></i> 選標籤</button>
+            <button class="rcpt-add-btn" id="btn-add-members"><i class="fa-solid fa-magnifying-glass"></i> 搜尋加入</button>
+          </div>
+          <div class="rcpt-chips-area" id="rcpt-chips-area">
+            <div class="rcpt-chips-empty" id="rcpt-chips-empty">尚未選擇任何對象</div>
+            <div id="rcpt-groups-section" style="display:none;">
+              <div class="rcpt-section-row">
+                <div class="rcpt-section-lbl"><i class="fa-solid fa-layer-group" style="margin-right:3px;"></i>群組</div>
+                <div class="rcpt-chips-row" id="rcpt-groups-chips"></div>
+              </div>
+            </div>
+            <div id="rcpt-tags-section" style="display:none;">
+              <div class="rcpt-section-row">
+                <div class="rcpt-section-lbl"><i class="fa-solid fa-tags" style="margin-right:3px;"></i>標籤</div>
+                <div class="rcpt-chips-row" id="rcpt-tags-chips"></div>
+              </div>
+            </div>
+            <div id="rcpt-persons-section" style="display:none;">
+              <div class="rcpt-section-row">
+                <div class="rcpt-section-lbl"><i class="fa-solid fa-user" style="margin-right:3px;"></i>個別人員</div>
+                <div class="rcpt-chips-row" id="rcpt-persons-chips"></div>
+              </div>
+            </div>
+          </div>
+          <div class="rcpt-foot">
+            <span>去重合計：<strong id="send-resolved-count">0</strong> 人</span>
+            <button class="btn-s" id="btn-rcpt-clear" style="font-size:11px;padding:3px 9px;">清除全部</button>
+          </div>
         </div>
-      </div>
 
-      <!-- ── Tabs ── -->
-      <div class="notify-tabs">
-        <button class="ntab active" data-ntab="send">
-          <i class="fa-solid fa-paper-plane"></i> 發送推播
-        </button>
-        <button class="ntab" data-ntab="settings">
-          <i class="fa-solid fa-sliders"></i> 推播設定
-        </button>
-        <button class="ntab" data-ntab="log">
-          <i class="fa-solid fa-clock-rotate-left"></i> 發送紀錄
-        </button>
-      </div>
+        <!-- RIGHT: compose -->
+        <div class="compose-panel">
 
-      <!-- ══════════════════════════════════
-           TAB 1 — 發送推播
-      ══════════════════════════════════ -->
-      <div class="ntab-panel active" id="panel-send">
-        <div class="send-layout">
-
-          <!-- LEFT: recipient selector -->
-          <div class="rcpt-panel">
-            <div class="rcpt-header">
-              <span class="rcpt-header-title">
-                <i class="fa-solid fa-users" style="color:#6366f1;margin-right:6px;font-size:12px;"></i>選擇推薦人
-              </span>
-              <span class="rcpt-sel-count" id="sel-count-label">已選 0 人</span>
+          <!-- Channel -->
+          <div class="cs">
+            <div class="cs-label">推播管道</div>
+            <div class="ch-row">
+              <label class="ch-option" id="ch-line-opt">
+                <input type="checkbox" id="ch-line" />
+                <i class="fa-brands fa-line ch-icon" style="color:#15803d;"></i> LINE 推播
+              </label>
+              <label class="ch-option" id="ch-sms-opt">
+                <input type="checkbox" id="ch-sms" />
+                <i class="fa-solid fa-comment-sms ch-icon" style="color:#0284c7;"></i> 簡訊 SMS
+              </label>
             </div>
-            <div class="rcpt-search">
-              <i class="fa-solid fa-magnifying-glass rcpt-search-icon"></i>
-              <input id="rcpt-search-input" type="text" placeholder="搜尋姓名 / 會員編號（如 U240105002）…" />
+            <div class="no-line-warn" id="no-line-warn">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              已選對象中有 <strong id="no-line-count">0</strong> 人尚未綁定 LINE，將僅透過 SMS 發送
             </div>
-            <div class="rcpt-filters">
-              <button class="rcpt-filter-btn active" data-filter="all">全部</button>
-              <button class="rcpt-filter-btn" data-filter="line">有LINE</button>
-              <button class="rcpt-filter-btn" data-filter="sms">僅簡訊</button>
-            </div>
-            <div class="rcpt-actions">
-              <button class="rcpt-act-btn" id="btn-sel-all">全選</button>
-              <button class="rcpt-act-btn" id="btn-sel-clear">清除</button>
-              <button class="rcpt-act-btn rcpt-act-btn--line" id="btn-sel-line">
-                <i class="fa-brands fa-line"></i> 選有LINE
-              </button>
-            </div>
-            <div class="rcpt-list" id="rcpt-list"></div>
           </div>
 
-          <!-- RIGHT: compose -->
-          <div class="compose-panel">
+          <!-- Template -->
+          <div class="cs">
+            <div class="cs-label">套用母版</div>
+            <select class="tpl-select" id="tpl-picker">
+              <option value="">── 自訂訊息（不套用母版）──</option>
+              <option value="tpl-payout">核款通知 — 提醒推薦人選擇提領方式</option>
+              <option value="tpl-transferred">已撥款通知 — 告知推薦人獎金已撥款</option>
+              <option value="tpl-n11">N11 | 匯款失敗通知</option>
+              <option value="tpl-n12">N12 | 現場提領失敗通知</option>
+              <option value="tpl-n13">N13 | 當月失效案件通知（管理者）</option>
+            </select>
+          </div>
 
-            <!-- Channel -->
-            <div class="cs">
-              <div class="cs-label">推播管道</div>
-              <div class="ch-row">
-                <label class="ch-option is-on" id="ch-sms-opt">
-                  <input type="checkbox" id="ch-sms" checked />
-                  <i class="fa-solid fa-comment-sms ch-icon" style="color:#0284c7;"></i>
-                  簡訊 SMS
-                </label>
-                <label class="ch-option is-on" id="ch-line-opt">
-                  <input type="checkbox" id="ch-line" checked />
-                  <i class="fa-brands fa-line ch-icon" style="color:#15803d;"></i>
-                  LINE 推播
-                </label>
+          <!-- Message -->
+          <div class="cs">
+            <div class="cs-label">訊息內容</div>
+            <div class="msg-tabs" id="compose-msg-tabs">
+              <button class="msg-tab active" data-ch="line" id="msgtab-line" style="display:none;">
+                <i class="fa-brands fa-line"></i> LINE
+              </button>
+              <button class="msg-tab" data-ch="sms" id="msgtab-sms" style="display:none;">
+                <i class="fa-solid fa-comment-sms"></i> SMS
+              </button>
+            </div>
+
+            <!-- LINE compose -->
+            <div id="line-compose-area" style="display:none;">
+              <div class="line-type-row" id="line-type-row">
+                <button class="line-type-btn active" data-ltype="text"><i class="fa-solid fa-align-left"></i> 文字訊息</button>
+                <button class="line-type-btn" data-ltype="image"><i class="fa-regular fa-image"></i> 影像卡片</button>
+                <button class="line-type-btn" data-ltype="location"><i class="fa-solid fa-location-dot"></i> 地點卡片</button>
               </div>
-              <div class="no-line-warn" id="no-line-warn">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                已選推薦人中有 <strong id="no-line-count">0</strong> 人尚未綁定 LINE，將只能透過 SMS 發送
+
+              <!-- LINE text -->
+              <div id="ltype-text">
+                <div class="msg-box">
+                  <textarea class="msg-textarea" id="msg-line-text" placeholder="輸入 LINE 訊息內容…"></textarea>
+                </div>
+                <div class="msg-foot">
+                  <div class="var-chips">
+                    <span class="var-chip" data-var="{姓名}">{姓名}</span>
+                    <span class="var-chip" data-var="{URL}">{URL}</span>
+                    <span class="var-chip" data-var="{效期}">{效期}</span>
+                  </div>
+                  <span class="char-count" id="line-char-count">0 字</span>
+                </div>
+                <div class="line-preview-wrap" style="margin-top:12px;">
+                  <div class="line-preview-hint">預覽（範例：王大明）</div>
+                  <div class="line-text-bubble" id="line-text-preview">（尚未輸入）</div>
+                </div>
+              </div>
+
+              <!-- LINE image card -->
+              <div id="ltype-image" style="display:none;">
+                <div class="card-fields">
+                  <div class="cf-row">
+                    <label class="cf-label"><i class="fa-regular fa-image" style="margin-right:3px;"></i>圖片網址</label>
+                    <input class="cf-input" id="li-img-url" placeholder="https://example.com/image.jpg" />
+                  </div>
+                  <div class="cf-row">
+                    <label class="cf-label">標題</label>
+                    <input class="cf-input" id="li-title" placeholder="輸入卡片標題…" maxlength="30" />
+                  </div>
+                  <div class="cf-row">
+                    <label class="cf-label">說明文字</label>
+                    <textarea class="cf-textarea" id="li-body" placeholder="輸入說明內容…" maxlength="60"></textarea>
+                  </div>
+                  <div class="cf-2col">
+                    <div class="cf-row">
+                      <label class="cf-label">按鈕文字</label>
+                      <input class="cf-input" id="li-btn-label" placeholder="例：立即查看" maxlength="20" />
+                    </div>
+                    <div class="cf-row">
+                      <label class="cf-label">按鈕連結</label>
+                      <input class="cf-input" id="li-btn-url" placeholder="https://…" />
+                    </div>
+                  </div>
+                </div>
+                <div class="line-preview-wrap" style="margin-top:12px;">
+                  <div class="line-preview-hint">卡片預覽</div>
+                  <div class="line-bubble-box">
+                    <div class="line-img-ph" id="li-img-preview"><i class="fa-regular fa-image"></i></div>
+                    <div class="line-card-inner">
+                      <div class="line-card-title-preview" id="li-title-preview">（標題）</div>
+                      <div class="line-card-desc-preview" id="li-body-preview">（說明文字）</div>
+                      <div class="line-card-btn-preview" id="li-btn-preview">立即查看</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- LINE location card -->
+              <div id="ltype-location" style="display:none;">
+                <div class="card-fields">
+                  <div class="cf-row">
+                    <label class="cf-label"><i class="fa-solid fa-location-dot" style="margin-right:3px;"></i>地點名稱</label>
+                    <input class="cf-input" id="ll-name" placeholder="例：新光三越信義A8" maxlength="30" />
+                  </div>
+                  <div class="cf-row">
+                    <label class="cf-label">地址</label>
+                    <input class="cf-input" id="ll-addr" placeholder="例：台北市信義區松壽路12號" maxlength="60" />
+                  </div>
+                  <div class="cf-2col">
+                    <div class="cf-row">
+                      <label class="cf-label">緯度</label>
+                      <input class="cf-input" id="ll-lat" placeholder="25.0356" />
+                    </div>
+                    <div class="cf-row">
+                      <label class="cf-label">經度</label>
+                      <input class="cf-input" id="ll-lng" placeholder="121.5673" />
+                    </div>
+                  </div>
+                </div>
+                <div class="line-preview-wrap" style="margin-top:12px;">
+                  <div class="line-preview-hint">地點卡片預覽</div>
+                  <div class="line-bubble-box">
+                    <div class="line-loc-card">
+                      <div class="line-loc-top">
+                        <div class="line-loc-icon"><i class="fa-solid fa-location-dot"></i></div>
+                        <div>
+                          <div class="line-loc-name-preview" id="ll-name-preview">（地點名稱）</div>
+                          <div class="line-loc-addr-preview" id="ll-addr-preview">（地址）</div>
+                        </div>
+                      </div>
+                      <div class="line-loc-map-ph"><i class="fa-solid fa-map"></i></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- Template -->
-            <div class="cs">
-              <div class="cs-label">套用母版</div>
-              <select class="tpl-select" id="tpl-picker">
-                <option value="">── 自訂訊息（不套用母版）──</option>
-                <option value="tpl-payout">核款通知 — 提醒推薦人至平台選擇提領方式</option>
-                <option value="tpl-transferred">已撥款通知 — 告知推薦人獎金已撥款</option>
-              </select>
-            </div>
-
-            <!-- Message -->
-            <div class="cs">
-              <div class="cs-label">訊息內容</div>
-              <div class="msg-tabs" id="compose-msg-tabs">
-                <button class="msg-tab active" data-ch="sms">
-                  <i class="fa-solid fa-comment-sms"></i> SMS
-                </button>
-                <button class="msg-tab" data-ch="line">
-                  <i class="fa-brands fa-line"></i> LINE
-                </button>
-              </div>
-
+            <!-- SMS compose -->
+            <div id="sms-compose-area" style="display:none;">
               <div class="msg-box">
-                <div id="sms-area">
-                  <textarea class="msg-textarea" id="msg-sms-text" placeholder="輸入 SMS 訊息內容…"></textarea>
-                </div>
-                <div id="line-area" style="display:none;">
-                  <textarea class="msg-textarea" id="msg-line-text" placeholder="輸入 LINE 推播訊息內容（建議 50 字以內）…"></textarea>
-                </div>
+                <textarea class="msg-textarea" id="msg-sms-text" placeholder="輸入 SMS 訊息內容（建議 60 字以內）…"></textarea>
               </div>
               <div class="msg-foot">
                 <div class="var-chips">
                   <span class="var-chip" data-var="{姓名}">{姓名}</span>
                   <span class="var-chip" data-var="{URL}">{URL}</span>
                   <span class="var-chip" data-var="{效期}">{效期}</span>
+                  <span class="var-chip" data-var="{案號}">{案號}</span>
+                  <span class="var-chip" data-var="{筆數}">{筆數}</span>
                 </div>
-                <span class="char-count" id="compose-char-count">0 字</span>
+                <span class="char-count" id="sms-char-count">0 字</span>
+              </div>
+              <div class="sms-2nd-warn" id="sms-2nd-warn">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                超過 60 字，將自動發送第 2 封 SMS（<span id="sms-char-total">0</span> 字）
+              </div>
+              <div style="margin-top:10px;">
+                <div class="cs-label" style="margin-bottom:6px;">預覽（範例：王大明）</div>
+                <div class="preview-card" id="sms-preview">（尚未輸入訊息）</div>
               </div>
             </div>
 
-            <!-- Preview -->
-            <div class="cs">
-              <div class="cs-label">預覽（範例：王大明）</div>
-              <div class="preview-card" id="msg-preview">（尚未輸入訊息）</div>
-              <div class="preview-hint">* {姓名}、{URL}、{效期} 將於發送時自動帶入各推薦人資料</div>
+            <div id="compose-placeholder" style="padding:28px;text-align:center;color:#c0c4cc;font-size:13px;border:1px dashed #e5e7eb;border-radius:8px;">
+              請先選擇推播管道（LINE 或 SMS）
             </div>
+          </div>
 
-            <!-- Send bar -->
-            <div class="send-bar">
-              <div class="send-rcpt-info">
-                收件人：<strong id="send-rcpt-display">尚未選擇推薦人</strong>
-              </div>
-              <button class="btn-send" id="btn-send-notify" disabled>
-                <i class="fa-solid fa-paper-plane"></i> 發送推播
-              </button>
-            </div>
-
-          </div><!-- /compose-panel -->
-        </div><!-- /send-layout -->
-      </div><!-- /panel-send -->
-
-      <!-- ══════════════════════════════════
-           TAB 2 — 推播設定
-      ══════════════════════════════════ -->
-      <div class="ntab-panel" id="panel-settings">
-        <div class="tpl-cards" id="tpl-cards-container">
-          <!-- rendered by JS -->
-        </div>
-      </div>
-
-      <!-- ══════════════════════════════════
-           TAB 3 — 發送紀錄
-      ══════════════════════════════════ -->
-      <div class="ntab-panel" id="panel-log">
-        <div class="log-card">
-          <div class="log-card-head">
-            <span class="log-card-title">
-              <i class="fa-solid fa-clock-rotate-left" style="color:#6366f1;margin-right:6px;"></i>推播發送紀錄
-            </span>
-            <button class="btn-refresh" id="btn-refresh-log">
-              <i class="fa-solid fa-rotate-right"></i> 重新整理
+          <!-- Send bar -->
+          <div class="send-bar">
+            <button class="btn-send" id="btn-send-notify" disabled>
+              <i class="fa-solid fa-paper-plane"></i> 發送推播
             </button>
           </div>
+
+        </div><!-- /compose-panel -->
+      </div><!-- /send-layout -->
+    </div><!-- /panel-send -->
+
+
+    <!-- ══════ TAB 2 — 人員管理 ══════ -->
+    <div class="ntab-panel" id="panel-members">
+      <div class="s-card">
+        <div class="s-card-head">
+          <span class="s-card-title"><i class="fa-solid fa-users" style="color:#6366f1;"></i>人員清單</span>
+          <span id="member-count-label" style="font-size:12px;color:#9ca3af;"></span>
+        </div>
+        <div class="search-bar">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="member-search" type="text" placeholder="搜尋姓名 / 手機號碼…" />
+        </div>
+        <div class="chip-row" id="member-identity-filter-row">
+          <span style="font-size:11px;color:#9ca3af;white-space:nowrap;margin-right:2px;">身份</span>
+          <button class="fchip active" data-identity="">全部</button>
+          <button class="fchip" data-identity="員工">員工</button>
+          <button class="fchip" data-identity="新客">新客</button>
+          <button class="fchip" data-identity="會員">會員</button>
+          <button class="fchip" data-identity="離職員工">離職員工</button>
+          <button class="fchip" data-identity="訪客">訪客</button>
+        </div>
+        <div class="chip-row" id="member-tag-filter-row">
+          <span style="font-size:11px;color:#9ca3af;white-space:nowrap;margin-right:2px;">標籤</span>
+          <!-- rendered by JS -->
+        </div>
+        <div class="tbl-wrap">
+          <table class="data-tbl">
+            <thead>
+              <tr>
+                <th>姓名</th>
+                <th>手機號碼</th>
+                <th>身份</th>
+                <th>LINE</th>
+                <th>加入好友時間</th>
+                <th>標籤</th>
+                <th>群組</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="member-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="member-pagination"></div>
+      </div>
+    </div>
+
+    <!-- ══════ TAB 3 — 群組管理 ══════ -->
+    <div class="ntab-panel" id="panel-groups">
+      <div class="groups-layout">
+
+        <!-- Left: group list -->
+        <div class="group-list-col">
+          <div class="group-list-head">
+            <span class="group-list-title"><i class="fa-solid fa-layer-group" style="color:#6366f1;"></i>群組清單</span>
+            <div style="display:flex;gap:6px;">
+              <button class="btn-p" id="btn-new-group" style="font-size:12px;padding:5px 12px;">
+                <i class="fa-solid fa-plus"></i> 新增群組
+              </button>
+            </div>
+          </div>
+          <div id="group-list-container"></div>
+        </div>
+
+        <!-- Right: group detail -->
+        <div class="group-detail-col" id="group-detail-col">
+          <div class="group-empty" id="group-empty-state">
+            <i class="fa-solid fa-layer-group" style="font-size:36px;color:#e5e7eb;"></i>
+            <span>點選左側群組以查看詳情</span>
+          </div>
+          <div id="group-detail-panel" style="display:none;">
+            <div class="group-detail-head">
+              <div class="group-detail-name-row">
+                <div class="group-d-name" id="group-d-name"></div>
+                <button class="btn-icon" id="btn-group-rename" title="重新命名"><i class="fa-solid fa-pen"></i></button>
+              </div>
+              <div class="group-detail-acts">
+                <button class="btn-s" id="btn-group-add-members"><i class="fa-solid fa-user-plus"></i> 加入成員</button>
+                <button class="btn-s" id="btn-group-sync-tags"><i class="fa-solid fa-rotate"></i> 從標籤同步</button>
+                <button class="btn-s" id="btn-group-copy"><i class="fa-regular fa-copy"></i> 複製</button>
+                <button class="btn-icon del" id="btn-group-delete" title="刪除群組"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </div>
+            <!-- Conditions block (only visible when group was built from conditions) -->
+            <div class="group-conditions-block" id="group-conditions-block" style="display:none;">
+              <div class="gcb-head">
+                <span class="gcb-title"><i class="fa-solid fa-filter"></i> 建立條件</span>
+                <button class="btn-reapply" id="btn-reapply-conditions"><i class="fa-solid fa-rotate"></i> 重新套用條件</button>
+              </div>
+              <div class="gcb-badges" id="group-conditions-badges"></div>
+            </div>
+            <div class="group-members-head">
+              <span class="group-members-title"><i class="fa-solid fa-users" style="color:#6366f1;font-size:12px;margin-right:5px;"></i>成員清單 (<span id="group-d-count">0</span> 人)</span>
+            </div>
+            <div class="search-bar">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input id="group-member-search" type="text" placeholder="搜尋成員…" />
+            </div>
+            <div class="group-member-list" id="group-member-list"></div>
+            <div class="history-section">
+              <div class="history-title"><i class="fa-solid fa-clock-rotate-left" style="color:#6366f1;"></i>變更歷程</div>
+              <div id="group-history-list"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════ TAB 4 — 標籤管理 ══════ -->
+    <div class="ntab-panel" id="panel-tags">
+      <div class="tags-layout">
+
+        <!-- Left: tag CRUD -->
+        <div class="tag-panel">
+          <div class="tag-panel-head">
+            <span class="tag-panel-title"><i class="fa-solid fa-tag" style="color:#6366f1;"></i>標籤清單</span>
+            <button class="btn-p" id="btn-new-tag" style="font-size:12px;padding:5px 12px;"><i class="fa-solid fa-plus"></i> 新增標籤</button>
+          </div>
+          <div id="tag-list-container"></div>
+        </div>
+
+        <!-- Right: assign tags to members -->
+        <div class="tag-panel">
+          <div class="tag-panel-head">
+            <span class="tag-panel-title"><i class="fa-solid fa-user-tag" style="color:#6366f1;"></i>指派標籤給人員</span>
+          </div>
+          <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="tag-assign-search" type="text" placeholder="搜尋姓名 / 會員編號…" />
+          </div>
+          <div class="tag-assign-filter-row" id="tag-assign-filter-row"></div>
+          <div class="assign-list" id="assign-list"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════ TAB 5 — 推播設定 ══════ -->
+    <div class="ntab-panel" id="panel-settings">
+      <div class="tpl-cards" id="tpl-cards-container"></div>
+    </div>
+
+    <!-- ══════ TAB 6 — 發送紀錄 ══════ -->
+    <div class="ntab-panel" id="panel-log">
+      <div class="log-card">
+        <div class="log-card-head">
+          <span class="log-card-title"><i class="fa-solid fa-clock-rotate-left" style="color:#6366f1;margin-right:6px;"></i>推播發送紀錄</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn-export-log" id="btn-export-log"><i class="fa-solid fa-file-csv"></i> 匯出</button>
+            <button class="btn-refresh" id="btn-refresh-log"><i class="fa-solid fa-rotate-right"></i> 重新整理</button>
+          </div>
+        </div>
+        <div class="log-filter-bar">
+          <div class="log-filter-row">
+            <div class="log-filter-item">
+              <label class="lf-label">會員姓名 / ID</label>
+              <input class="lf-input" type="text" id="lf-member" placeholder="姓名或會員 ID…" autocomplete="off" />
+            </div>
+            <div class="log-filter-item">
+              <label class="lf-label">發送時間（起）</label>
+              <input class="lf-input" type="date" id="lf-date-from" />
+            </div>
+            <div class="log-filter-item">
+              <label class="lf-label">發送時間（訖）</label>
+              <input class="lf-input" type="date" id="lf-date-to" />
+            </div>
+            <div class="log-filter-item">
+              <label class="lf-label">操作人員</label>
+              <input class="lf-input" type="text" id="lf-actor" placeholder="人員名稱…" autocomplete="off" />
+            </div>
+            <div class="log-filter-item">
+              <label class="lf-label">管道</label>
+              <select class="lf-select" id="lf-channel">
+                <option value="">全部管道</option>
+                <option value="LINE">LINE</option>
+                <option value="SMS">SMS</option>
+              </select>
+            </div>
+            <div class="log-filter-item lf-item--grow">
+              <label class="lf-label">關鍵字</label>
+              <input class="lf-input" type="text" id="lf-keyword" placeholder="母版名稱 / 訊息內容…" autocomplete="off" />
+            </div>
+          </div>
+          <div class="log-filter-actions">
+            <button class="btn-lf-search" id="btn-search-log"><i class="fa-solid fa-magnifying-glass"></i> 搜尋</button>
+            <button class="btn-lf-clear"  id="btn-clear-log"><i class="fa-solid fa-xmark"></i> 清除篩選</button>
+          </div>
+        </div>
+        <div class="log-result-bar" id="log-result-info"></div>
+        <div style="overflow-x:auto;">
           <table class="log-table">
             <thead>
               <tr>
-                <th>發送時間</th>
-                <th>操作人員</th>
-                <th>收件推薦人</th>
-                <th>管道</th>
-                <th>母版 / 訊息摘要</th>
-                <th>狀態</th>
+                <th>發送時間</th><th>操作人員</th><th>收件對象</th><th>管道</th><th>母版 / 摘要</th><th>狀態</th>
               </tr>
             </thead>
             <tbody id="log-tbody"></tbody>
           </table>
         </div>
-      </div>
-
-    </div><!-- /page-wrap -->
-
-    <!-- ============== 發送明細 Modal ============== -->
-    <div id="notify-detail-modal" class="notify-modal" hidden>
-      <div class="notify-modal-backdrop" id="nm-backdrop"></div>
-      <div class="notify-modal-panel" role="dialog" aria-modal="true" aria-labelledby="nm-title">
-        <header class="notify-modal-head">
-          <div class="notify-modal-title" id="nm-title">
-            <i class="fa-solid fa-rectangle-list" style="color:#6366f1;"></i>推播發送明細
-          </div>
-          <button class="notify-modal-close" id="nm-close" aria-label="關閉">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </header>
-        <div class="notify-modal-body" id="nm-body">
-          <!-- filled by JS -->
-        </div>
-        <footer class="notify-modal-foot">
-          <button class="nm-close-btn" id="nm-close-foot">關閉</button>
-        </footer>
+        <div class="pagination" id="log-pagination"></div>
       </div>
     </div>
 
-    <script src="../js/admin-notify.js"></script>
+  </div><!-- /page-wrap -->
+
+
+  <!-- ====== Modal: 選群組 ====== -->
+  <div id="modal-pick-groups" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-pick-groups"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-layer-group" style="color:#6366f1;"></i>選擇群組</div>
+        <button class="m-close" data-close="modal-pick-groups"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="pick-search">
+        <i class="fa-solid fa-magnifying-glass" style="color:#9ca3af;font-size:12px;"></i>
+        <input id="pick-groups-search" type="text" placeholder="搜尋群組名稱…" />
+      </div>
+      <div class="m-body" style="padding:0;">
+        <div class="pick-list" id="pick-groups-list"></div>
+      </div>
+      <footer class="m-foot">
+        <span class="pick-sel-count" id="pick-groups-sel-count" style="margin-right:auto;"></span>
+        <button class="m-btn-cancel" data-close="modal-pick-groups">取消</button>
+        <button class="m-btn-ok" id="btn-pick-groups-ok"><i class="fa-solid fa-check"></i> 確認加入</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====== Modal: 選標籤 ====== -->
+  <div id="modal-pick-tags" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-pick-tags"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-tags" style="color:#6366f1;"></i>選擇標籤</div>
+        <button class="m-close" data-close="modal-pick-tags"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body" style="padding:0;">
+        <div class="pick-list" id="pick-tags-list"></div>
+      </div>
+      <footer class="m-foot">
+        <span class="pick-sel-count" id="pick-tags-sel-count" style="margin-right:auto;"></span>
+        <button class="m-btn-cancel" data-close="modal-pick-tags">取消</button>
+        <button class="m-btn-ok" id="btn-pick-tags-ok"><i class="fa-solid fa-check"></i> 確認加入</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====== Modal: 搜尋加入個別人員 ====== -->
+  <div id="modal-pick-members" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-pick-members"></div>
+    <div class="m-panel" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-user-plus" style="color:#6366f1;"></i>搜尋加入個別人員</div>
+        <button class="m-close" data-close="modal-pick-members"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="pick-search">
+        <i class="fa-solid fa-magnifying-glass" style="color:#9ca3af;font-size:12px;"></i>
+        <input id="pick-members-search" type="text" placeholder="搜尋姓名 / 手機號碼…" />
+      </div>
+      <div class="chip-row" id="pick-members-filter-row" style="padding:6px 14px;">
+        <button class="fchip active" data-pm-filter="">全部</button>
+        <button class="fchip" data-pm-filter="員工">員工</button>
+        <button class="fchip" data-pm-filter="新客">新客</button>
+        <button class="fchip" data-pm-filter="會員">會員</button>
+        <button class="fchip" data-pm-filter="訪客">訪客</button>
+        <button class="fchip" data-pm-filter="離職員工">離職員工</button>
+      </div>
+      <div class="m-body" style="padding:0;">
+        <div class="pick-list" id="pick-members-list"></div>
+      </div>
+      <footer class="m-foot">
+        <span class="pick-sel-count" id="pick-members-sel-count" style="margin-right:auto;"></span>
+        <button class="m-btn-cancel" data-close="modal-pick-members">取消</button>
+        <button class="m-btn-ok" id="btn-pick-members-ok"><i class="fa-solid fa-check"></i> 加入選擇</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====== Modal: 確認發送 ====== -->
+  <div id="modal-send-confirm" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-send-confirm"></div>
+    <div class="m-panel" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-paper-plane" style="color:#6366f1;"></i>確認發送</div>
+        <button class="m-close" data-close="modal-send-confirm"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body" id="send-confirm-body"></div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-send-confirm">取消</button>
+        <button class="m-btn-ok" id="btn-send-confirm-ok"><i class="fa-solid fa-paper-plane"></i> 確認發送</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====== Modal: 編輯人員 ====== -->
+  <div id="modal-member-edit" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-member-edit"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-user-pen" style="color:#6366f1;"></i><span id="member-edit-title">編輯人員</span></div>
+        <button class="m-close" data-close="modal-member-edit"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body">
+        <input type="hidden" id="member-edit-id" />
+        <div style="margin-bottom:16px;">
+          <div class="cs-label">身份（可多選）</div>
+          <div class="identity-cbs" id="member-edit-identity-cbs">
+            <label class="id-cb-label"><input type="checkbox" value="員工" />員工</label>
+            <label class="id-cb-label"><input type="checkbox" value="新客" />新客</label>
+            <label class="id-cb-label"><input type="checkbox" value="會員" />會員</label>
+            <label class="id-cb-label"><input type="checkbox" value="離職員工" />離職員工</label>
+            <label class="id-cb-label"><input type="checkbox" value="訪客" />訪客</label>
+          </div>
+        </div>
+        <div>
+          <div class="cs-label">標籤</div>
+          <div class="edit-tag-chips" id="member-edit-tags"></div>
+        </div>
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-member-edit">取消</button>
+        <button class="m-btn-ok" id="btn-member-edit-save"><i class="fa-solid fa-check"></i> 儲存</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====== Modal: 群組加入成員（搜尋） ====== -->
+  <div id="modal-group-add-members" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-group-add-members"></div>
+    <div class="m-panel" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-user-plus" style="color:#6366f1;"></i>加入成員至群組</div>
+        <button class="m-close" data-close="modal-group-add-members"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="pick-search">
+        <i class="fa-solid fa-magnifying-glass" style="color:#9ca3af;font-size:12px;"></i>
+        <input id="gam-search" type="text" placeholder="搜尋姓名 / 手機號碼…" />
+      </div>
+      <div class="m-body" style="padding:0;">
+        <div class="pick-list" id="gam-list"></div>
+      </div>
+      <footer class="m-foot">
+        <span class="pick-sel-count" id="gam-sel-count" style="margin-right:auto;"></span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;margin-right:12px;">
+          <label style="font-size:12px;color:#6b7280;white-space:nowrap;">備註：</label>
+          <input id="gam-note" type="text" placeholder="（選填）" style="flex:1;padding:6px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:12px;font-family:'Noto Sans TC',sans-serif;outline:none;" />
+        </div>
+        <button class="m-btn-cancel" data-close="modal-group-add-members">取消</button>
+        <button class="m-btn-ok" id="btn-gam-ok"><i class="fa-solid fa-check"></i> 加入</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====== Modal: 群組從標籤同步 ====== -->
+  <div id="modal-group-sync" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-group-sync"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-rotate" style="color:#6366f1;"></i>從標籤同步成員</div>
+        <button class="m-close" data-close="modal-group-sync"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body">
+        <p style="font-size:13px;color:#374151;margin:0 0 14px;">選擇標籤後，系統將把所有持有該標籤的人員加入群組（不會移除現有成員）。</p>
+        <div class="cs-label" style="margin-bottom:8px;">選擇標籤</div>
+        <div class="pick-list" id="sync-tags-list" style="border:1px solid #e5e7eb;border-radius:8px;max-height:200px;overflow-y:auto;"></div>
+        <div style="margin-top:14px;">
+          <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:5px;">備註（選填）</label>
+          <input id="sync-note" type="text" placeholder="例：月度VIP更新" style="width:100%;box-sizing:border-box;padding:8px 11px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:'Noto Sans TC',sans-serif;outline:none;" />
+        </div>
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-group-sync">取消</button>
+        <button class="m-btn-ok" id="btn-sync-ok"><i class="fa-solid fa-rotate"></i> 執行同步</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====== Modal: 標籤 CRUD ====== -->
+  <div id="modal-tag-edit" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-tag-edit"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-tag" style="color:#6366f1;"></i><span id="tag-edit-modal-label">新增標籤</span></div>
+        <button class="m-close" data-close="modal-tag-edit"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body">
+        <div style="margin-bottom:18px;">
+          <div class="cs-label" style="margin-bottom:6px;">標籤名稱</div>
+          <input id="tag-edit-name" type="text" maxlength="12" placeholder="例：VIP、高潛力…" class="cf-input" style="font-size:14px;" />
+          <div id="tag-edit-name-err" style="color:#ef4444;font-size:12px;margin-top:4px;display:none;">請輸入標籤名稱</div>
+        </div>
+        <div>
+          <div class="cs-label" style="margin-bottom:10px;">標籤顏色</div>
+          <div class="tag-color-grid" id="tag-color-picker"></div>
+        </div>
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-tag-edit">取消</button>
+        <button class="m-btn-ok" id="tag-edit-save"><i class="fa-solid fa-check"></i> 儲存</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====== Modal: 發送明細 ====== -->
+  <div id="modal-notify-detail" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-notify-detail"></div>
+    <div class="m-panel m-panel--lg" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-rectangle-list" style="color:#6366f1;"></i>推播發送明細</div>
+        <button class="m-close" data-close="modal-notify-detail"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body" id="nm-body"></div>
+      <footer class="m-foot">
+        <button class="m-btn-ok" data-close="modal-notify-detail">關閉</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====== Modal: 新增群組 ====== -->
+  <div id="modal-new-group" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-new-group"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-layer-group" style="color:#6366f1;"></i>新增群組</div>
+        <button class="m-close" data-close="modal-new-group"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body">
+        <div class="cs-label" style="margin-bottom:6px;">群組名稱</div>
+        <input id="new-group-name" type="text" maxlength="30" placeholder="輸入群組名稱…" class="cf-input" style="font-size:14px;" />
+        <div id="new-group-name-err" style="color:#ef4444;font-size:12px;margin-top:4px;display:none;">請輸入群組名稱</div>
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-new-group">取消</button>
+        <button class="m-btn-ok" id="btn-new-group-ok"><i class="fa-solid fa-check"></i> 建立群組</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====== Modal: 移除群組成員備註 ====== -->
+  <div id="modal-remove-note" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-remove-note"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-user-minus" style="color:#dc2626;"></i>移除成員</div>
+        <button class="m-close" data-close="modal-remove-note"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body">
+        <p id="remove-note-desc" style="font-size:13px;color:#374151;margin:0 0 14px;"></p>
+        <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:5px;">備註（選填）</label>
+        <textarea id="remove-note-input" placeholder="輸入備註…" class="note-input"></textarea>
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-remove-note">取消</button>
+        <button class="m-btn-danger" id="btn-remove-note-ok">確認移除</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====== Modal: 條件篩選建立群組 ====== -->
+  <div id="modal-condition-filter" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-condition-filter"></div>
+    <div class="m-panel m-panel--lg" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-filter" style="color:#6366f1;"></i>條件篩選</div>
+        <button class="m-close" data-close="modal-condition-filter"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body cf-modal-body">
+
+        <!-- 推薦行為 -->
+        <div class="cfs-section">
+          <div class="cfs-head"><i class="fa-solid fa-handshake" style="color:#6366f1;"></i>推薦行為</div>
+          <div class="cfs-grid">
+            <div class="cfs-field">
+              <label class="cfs-label">累積推薦次數</label>
+              <div class="cfs-inline">
+                <select id="cf-referral-count-op" class="cfs-select">
+                  <option value="">不限</option>
+                  <option value="eq">= 等於</option>
+                  <option value="gte">≥ 至少</option>
+                  <option value="lte">≤ 至多</option>
+                </select>
+                <input id="cf-referral-count-val" type="number" min="0" placeholder="次數" class="cfs-num" />
+              </div>
+            </div>
+            <div class="cfs-field">
+              <label class="cfs-label">上次推薦距今</label>
+              <div class="cfs-inline">
+                <select id="cf-last-referral-op" class="cfs-select">
+                  <option value="gte">≥ 超過</option>
+                  <option value="lte">≤ 不超過</option>
+                </select>
+                <input id="cf-last-referral-val" type="number" min="0" placeholder="天數（空白=不限）" class="cfs-num" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 獎金狀態 -->
+        <div class="cfs-section">
+          <div class="cfs-head"><i class="fa-solid fa-circle-dollar-to-slot" style="color:#10b981;"></i>獎金狀態</div>
+          <div class="cfs-grid">
+            <div class="cfs-field">
+              <label class="cfs-label">有待領獎金</label>
+              <select id="cf-pending-reward" class="cfs-select cfs-select--full">
+                <option value="">不限</option>
+                <option value="yes">有</option>
+                <option value="no">沒有</option>
+              </select>
+            </div>
+            <div class="cfs-field">
+              <label class="cfs-label">獎金到期倒數</label>
+              <div class="cfs-inline">
+                <span class="cfs-prefix">≤</span>
+                <input id="cf-reward-expire-days" type="number" min="1" placeholder="天（空白=不限）" class="cfs-num" />
+                <span class="cfs-suffix">天內</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 案件狀態 -->
+        <div class="cfs-section">
+          <div class="cfs-head"><i class="fa-solid fa-file-lines" style="color:#f59e0b;"></i>案件狀態</div>
+          <div class="cfs-grid">
+            <div class="cfs-field">
+              <label class="cfs-label">進行中審核單</label>
+              <select id="cf-review-case" class="cfs-select cfs-select--full">
+                <option value="">不限</option>
+                <option value="no">沒有</option>
+                <option value="yes">有</option>
+              </select>
+            </div>
+            <div class="cfs-field">
+              <label class="cfs-label">進行中收款單</label>
+              <select id="cf-collection-case" class="cfs-select cfs-select--full">
+                <option value="">不限</option>
+                <option value="no">沒有</option>
+                <option value="yes">有</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- LINE 狀態 -->
+        <div class="cfs-section">
+          <div class="cfs-head"><i class="fa-brands fa-line" style="color:#06b96f;"></i>LINE 狀態</div>
+          <div class="cfs-grid">
+            <div class="cfs-field">
+              <label class="cfs-label">LINE 加入狀態</label>
+              <select id="cf-line-status" class="cfs-select cfs-select--full">
+                <option value="">不限</option>
+                <option value="joined">已加入</option>
+                <option value="not-joined">未加入</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 身份 -->
+        <div class="cfs-section">
+          <div class="cfs-head"><i class="fa-solid fa-id-badge" style="color:#8b5cf6;"></i>身份（不選 = 全部）</div>
+          <div class="cfs-identity-row" id="cf-identities">
+            <label class="cfs-id-label"><input type="checkbox" value="員工" />員工</label>
+            <label class="cfs-id-label"><input type="checkbox" value="新客" />新客</label>
+            <label class="cfs-id-label"><input type="checkbox" value="會員" />會員</label>
+            <label class="cfs-id-label"><input type="checkbox" value="離職員工" />離職員工</label>
+            <label class="cfs-id-label"><input type="checkbox" value="訪客" />訪客</label>
+          </div>
+        </div>
+
+        <!-- 排除 -->
+        <div class="cfs-section cfs-section--exclude">
+          <label class="cfs-exclude-label">
+            <input type="checkbox" id="cf-exclude-dnd" checked />
+            <i class="fa-solid fa-ban" style="color:#ef4444;font-size:12px;"></i>
+            排除勿擾標記人員
+          </label>
+        </div>
+
+      </div>
+      <!-- Result bar -->
+      <div class="cf-result-bar">
+        <div class="cf-result-text">
+          <i class="fa-solid fa-users" style="color:#6366f1;"></i>
+          符合條件：<strong id="cf-result-count">0</strong> 人
+        </div>
+        <button class="cf-preview-btn" id="btn-cf-preview"><i class="fa-solid fa-eye"></i> 預覽名單</button>
+      </div>
+      <!-- Preview list (hidden by default) -->
+      <div class="cf-preview-area" id="cf-preview-area" style="display:none;">
+        <div class="pick-list" id="cf-preview-list" style="max-height:160px;"></div>
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-condition-filter">取消</button>
+        <button class="m-btn-secondary" id="btn-cf-to-send"><i class="fa-solid fa-paper-plane"></i> 加入收件人</button>
+        <button class="m-btn-ok" id="btn-cf-save-group"><i class="fa-solid fa-layer-group"></i> 存為群組…</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ====== Modal: 條件群組命名 ====== -->
+  <div id="modal-save-cond-group" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-save-cond-group"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-layer-group" style="color:#6366f1;"></i>儲存為群組</div>
+        <button class="m-close" data-close="modal-save-cond-group"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body">
+        <div class="cs-label" style="margin-bottom:6px;">群組名稱</div>
+        <input id="save-cond-group-name" type="text" maxlength="30" placeholder="例：沉睡客 60天、零推薦新人…" class="cf-input" style="font-size:14px;" />
+        <div id="save-cond-group-err" style="color:#ef4444;font-size:12px;margin-top:4px;display:none;">請輸入群組名稱</div>
+        <div class="save-cond-group-info" id="save-cond-group-info" style="margin-top:12px;font-size:12px;color:#6b7280;"></div>
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-save-cond-group">取消</button>
+        <button class="m-btn-ok" id="btn-save-cond-group-ok"><i class="fa-solid fa-check"></i> 建立群組</button>
+      </footer>
+    </div>
+  </div>
+
+  <style>
+  /* ── Tag Searchable Combobox ─────────────────────── */
+  .tcb-wrap { position: relative; display: inline-block; }
+  .tcb-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px 5px 9px; border: 1.5px solid #e5e7eb; border-radius: 8px; background: #fff; cursor: pointer; font-size: 13px; font-family: 'Noto Sans TC', sans-serif; color: #374151; white-space: nowrap; transition: border-color .15s; min-width: 130px; }
+  .tcb-btn:hover { border-color: #6366f1; }
+  .tcb-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .tcb-label { flex: 1; text-align: left; }
+  .tcb-clear { color: #9ca3af; font-size: 14px; line-height: 1; padding: 0 2px; cursor: pointer; flex-shrink: 0; }
+  .tcb-clear:hover { color: #ef4444; }
+  .tcb-dropdown { position: absolute; top: calc(100% + 4px); left: 0; min-width: 230px; background: #fff; border: 1.5px solid #e5e7eb; border-radius: 10px; box-shadow: 0 8px 28px rgba(0,0,0,.10); z-index: 300; overflow: hidden; }
+  .tcb-search-row { display: flex; align-items: center; gap: 7px; padding: 8px 10px; border-bottom: 1px solid #f3f4f6; }
+  .tcb-search-input { flex: 1; border: none; outline: none; font-size: 12px; font-family: 'Noto Sans TC', sans-serif; background: transparent; }
+  .tcb-list { max-height: 240px; overflow-y: auto; }
+  .tcb-item { display: flex; align-items: center; gap: 7px; padding: 8px 12px; font-size: 13px; cursor: pointer; }
+  .tcb-item:hover { background: #f8f9ff; }
+  .tcb-item.active { background: rgba(99,102,241,.07); color: #4f46e5; }
+  .tcb-item-name { flex: 1; }
+  .tcb-item-cnt { font-size: 11px; color: #9ca3af; }
+  .tcb-empty { padding: 14px 12px; text-align: center; font-size: 12px; color: #c0c4cc; }
+  /* ── Visitor LINE badge ──────────────────────────── */
+  .line-visitor { color: #0e7a5e !important; background: rgba(6,185,111,.08) !important; border: 1px solid rgba(6,185,111,.25) !important; font-size: 11px; padding: 2px 7px; border-radius: 10px; }
+  /* ── Condition Filter Modal ─────────────────────── */
+  .m-panel--lg { max-width: 640px; }
+  .cf-modal-body { padding: 0 20px 4px; }
+  .cfs-section { padding: 14px 0; border-bottom: 1px solid #f3f4f6; }
+  .cfs-section:last-child { border-bottom: none; }
+  .cfs-section--exclude { padding: 12px 0 6px; }
+  .cfs-head { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .04em; }
+  .cfs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cfs-field { display: flex; flex-direction: column; gap: 5px; }
+  .cfs-label { font-size: 12px; color: #6b7280; }
+  .cfs-inline { display: flex; align-items: center; gap: 6px; }
+  .cfs-select { border: 1px solid #e5e7eb; border-radius: 7px; padding: 7px 10px; font-size: 13px; font-family: 'Noto Sans TC', sans-serif; outline: none; background: #fff; color: #374151; cursor: pointer; flex-shrink: 0; }
+  .cfs-select:focus { border-color: #6366f1; }
+  .cfs-select--full { width: 100%; }
+  .cfs-num { border: 1px solid #e5e7eb; border-radius: 7px; padding: 7px 10px; font-size: 13px; font-family: 'Noto Sans TC', sans-serif; outline: none; width: 80px; }
+  .cfs-num:focus { border-color: #6366f1; }
+  .cfs-prefix, .cfs-suffix { font-size: 12px; color: #9ca3af; white-space: nowrap; }
+  .cfs-identity-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cfs-id-label { display: flex; align-items: center; gap: 5px; padding: 5px 12px; border: 1.5px solid #e5e7eb; border-radius: 20px; font-size: 13px; color: #374151; cursor: pointer; transition: all .15s; }
+  .cfs-id-label:has(input:checked) { border-color: #6366f1; background: rgba(99,102,241,.08); color: #4f46e5; font-weight: 600; }
+  .cfs-id-label input { display: none; }
+  .cfs-exclude-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151; cursor: pointer; }
+  .cfs-exclude-label input { accent-color: #6366f1; width: 15px; height: 15px; cursor: pointer; }
+  .cf-result-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: #f8f9ff; border-top: 1px solid #e8eaf8; }
+  .cf-result-text { font-size: 13px; color: #374151; display: flex; align-items: center; gap: 7px; }
+  .cf-result-text strong { color: #6366f1; font-size: 18px; font-weight: 700; }
+  .cf-preview-btn { background: none; border: 1.5px solid #6366f1; color: #6366f1; border-radius: 7px; padding: 5px 14px; font-size: 12px; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; transition: all .15s; }
+  .cf-preview-btn:hover { background: rgba(99,102,241,.08); }
+  .cf-preview-area { border-top: 1px solid #f3f4f6; }
+  .m-btn-secondary { background: #f3f4f6; color: #374151; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; transition: all .15s; }
+  .m-btn-secondary:hover { background: #e5e7eb; }
+  /* ── Group Conditions Block ─────────────────────── */
+  .group-conditions-block { background: #f8f9ff; border: 1px solid #e8eaf8; border-radius: 10px; padding: 10px 14px; margin: 0 0 12px; }
+  .gcb-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .gcb-title { font-size: 11px; font-weight: 700; color: #6366f1; display: flex; align-items: center; gap: 5px; text-transform: uppercase; letter-spacing: .04em; }
+  .gcb-badges { display: flex; flex-wrap: wrap; gap: 5px; }
+  .gcb-badge { background: rgba(99,102,241,.1); color: #4f46e5; border: 1px solid rgba(99,102,241,.2); border-radius: 12px; padding: 2px 10px; font-size: 11px; font-weight: 500; }
+  .gcb-badge--exclude { background: rgba(239,68,68,.08); color: #dc2626; border-color: rgba(239,68,68,.2); }
+  .btn-reapply { background: #fff; border: 1.5px solid #6366f1; color: #6366f1; border-radius: 7px; padding: 4px 12px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; white-space: nowrap; transition: all .15s; }
+  .btn-reapply:hover { background: rgba(99,102,241,.08); }
+  /* ── Save cond group info ───────────────────────── */
+  .save-cond-group-info { background: #f8f9ff; border: 1px solid #e8eaf8; border-radius: 8px; padding: 8px 12px; line-height: 1.8; }
+  </style>
+
+  <script src="../js/admin-notify.js"></script>
   </body>
 </html>

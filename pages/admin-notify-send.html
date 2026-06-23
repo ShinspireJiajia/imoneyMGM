@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>發送推播 - 後台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-notify.css" />
+  </head>
+  <body class="admin" data-notify-page="send">
+  <div class="page-wrap fade-in">
+
+    <div class="page-header">
+      <div class="ph-title">
+        <h1><i class="fa-solid fa-paper-plane" style="color:#6366f1;margin-right:8px;font-size:18px;"></i>發送推播</h1>
+      </div>
+    </div>
+
+    <div class="send-layout">
+
+      <!-- LEFT: recipient builder -->
+      <div class="rcpt-panel">
+        <div class="rcpt-head">
+          <span class="rcpt-head-title"><i class="fa-solid fa-users" style="color:#6366f1;font-size:12px;margin-right:5px;"></i>推播對象</span>
+          <span class="rcpt-total-chip" id="send-total-label">共 0 人</span>
+        </div>
+        <div class="rcpt-add-row">
+          <button class="rcpt-add-btn" id="btn-add-groups"><i class="fa-solid fa-layer-group"></i> 選群組</button>
+          <button class="rcpt-add-btn" id="btn-add-tags"><i class="fa-solid fa-tags"></i> 選標籤</button>
+          <button class="rcpt-add-btn" id="btn-add-members"><i class="fa-solid fa-magnifying-glass"></i> 搜尋加入</button>
+        </div>
+        <div class="rcpt-chips-area" id="rcpt-chips-area">
+          <div class="rcpt-chips-empty" id="rcpt-chips-empty">尚未選擇任何對象</div>
+          <div id="rcpt-groups-section" style="display:none;">
+            <div class="rcpt-section-row">
+              <div class="rcpt-section-lbl"><i class="fa-solid fa-layer-group" style="margin-right:3px;"></i>群組</div>
+              <div class="rcpt-chips-row" id="rcpt-groups-chips"></div>
+            </div>
+          </div>
+          <div id="rcpt-tags-section" style="display:none;">
+            <div class="rcpt-section-row">
+              <div class="rcpt-section-lbl"><i class="fa-solid fa-tags" style="margin-right:3px;"></i>標籤</div>
+              <div class="rcpt-chips-row" id="rcpt-tags-chips"></div>
+            </div>
+          </div>
+          <div id="rcpt-persons-section" style="display:none;">
+            <div class="rcpt-section-row">
+              <div class="rcpt-section-lbl"><i class="fa-solid fa-user" style="margin-right:3px;"></i>個別人員</div>
+              <div class="rcpt-chips-row" id="rcpt-persons-chips"></div>
+            </div>
+          </div>
+        </div>
+        <div class="rcpt-foot">
+          <span>去重合計：<strong id="send-resolved-count">0</strong> 人</span>
+          <button class="btn-s" id="btn-rcpt-clear" style="font-size:11px;padding:3px 9px;">清除全部</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: compose -->
+      <div class="compose-panel">
+
+        <!-- Channel -->
+        <div class="cs">
+          <div class="cs-label">推播管道</div>
+          <div class="ch-row">
+            <label class="ch-option" id="ch-line-opt">
+              <input type="checkbox" id="ch-line" />
+              <i class="fa-brands fa-line ch-icon" style="color:#15803d;"></i> LINE 推播
+            </label>
+            <label class="ch-option" id="ch-sms-opt">
+              <input type="checkbox" id="ch-sms" />
+              <i class="fa-solid fa-comment-sms ch-icon" style="color:#0284c7;"></i> 簡訊 SMS
+            </label>
+          </div>
+          <div class="no-line-warn" id="no-line-warn">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            已選對象中有 <strong id="no-line-count">0</strong> 人尚未綁定 LINE，將僅透過 SMS 發送
+          </div>
+        </div>
+
+        <!-- Template -->
+        <div class="cs">
+          <div class="cs-label">套用母版</div>
+          <select class="tpl-select" id="tpl-picker">
+            <option value="">── 自訂訊息（不套用母版）──</option>
+          </select>
+        </div>
+
+        <!-- Message -->
+        <div class="cs">
+          <div class="cs-label">訊息內容</div>
+          <div class="msg-tabs" id="compose-msg-tabs">
+            <button class="msg-tab active" data-ch="line" id="msgtab-line" style="display:none;">
+              <i class="fa-brands fa-line"></i> LINE
+            </button>
+            <button class="msg-tab" data-ch="sms" id="msgtab-sms" style="display:none;">
+              <i class="fa-solid fa-comment-sms"></i> SMS
+            </button>
+          </div>
+
+          <!-- LINE compose -->
+          <div id="line-compose-area" style="display:none;">
+            <div class="line-type-row" id="line-type-row">
+              <button class="line-type-btn active" data-ltype="text"><i class="fa-solid fa-align-left"></i> 文字訊息</button>
+              <button class="line-type-btn" data-ltype="image"><i class="fa-regular fa-image"></i> 影像卡片</button>
+              <!-- <button class="line-type-btn" data-ltype="location"><i class="fa-solid fa-location-dot"></i> 地點卡片</button> -->
+            </div>
+
+            <!-- LINE text -->
+            <div id="ltype-text">
+              <div class="msg-box">
+                <textarea class="msg-textarea" id="msg-line-text" placeholder="輸入 LINE 訊息內容…"></textarea>
+              </div>
+              <div class="msg-foot">
+                <div class="var-chips">
+                  <span class="var-chip" data-var="{姓名}">{姓名}</span>
+                  <span class="var-chip" data-var="{URL}">{URL}</span>
+                  <span class="var-chip" data-var="{效期}">{效期}</span>
+                </div>
+                <span class="char-count" id="line-char-count">0 字</span>
+              </div>
+              <div class="line-preview-wrap" style="margin-top:12px;">
+                <div class="line-preview-hint">預覽（範例：王大明）</div>
+                <div class="line-text-bubble" id="line-text-preview">（尚未輸入）</div>
+              </div>
+            </div>
+
+            <!-- LINE image card -->
+            <div id="ltype-image" style="display:none;">
+              <div class="card-fields">
+                <div class="cf-row">
+                  <label class="cf-label"><i class="fa-regular fa-image" style="margin-right:3px;"></i>圖片網址</label>
+                  <input class="cf-input" id="li-img-url" placeholder="https://example.com/image.jpg" />
+                </div>
+                <div class="cf-row">
+                  <label class="cf-label">標題</label>
+                  <input class="cf-input" id="li-title" placeholder="輸入卡片標題…" maxlength="30" />
+                </div>
+                <div class="cf-row">
+                  <label class="cf-label">說明文字(上限50個字)</label>
+                  <textarea class="cf-textarea" id="li-body" placeholder="輸入說明內容…" maxlength="60"></textarea>
+                </div>
+                <div class="cf-2col">
+                  <div class="cf-row">
+                    <label class="cf-label">按鈕文字</label>
+                    <input class="cf-input" id="li-btn-label" placeholder="例：立即查看" maxlength="20" />
+                  </div>
+                  <div class="cf-row">
+                    <label class="cf-label">按鈕連結</label>
+                    <input class="cf-input" id="li-btn-url" placeholder="https://…" />
+                  </div>
+                </div>
+              </div>
+              <div class="line-preview-wrap" style="margin-top:12px;">
+                <div class="line-preview-hint">卡片預覽</div>
+                <div class="line-bubble-box">
+                  <div class="line-img-ph" id="li-img-preview"><i class="fa-regular fa-image"></i></div>
+                  <div class="line-card-inner">
+                    <div class="line-card-title-preview" id="li-title-preview">（標題）</div>
+                    <div class="line-card-desc-preview" id="li-body-preview">（說明文字）</div>
+                    <div class="line-card-btn-preview" id="li-btn-preview">立即查看</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- LINE location card -->
+            <div id="ltype-location" style="display:none;">
+              <div class="card-fields">
+                <div class="cf-row">
+                  <label class="cf-label"><i class="fa-solid fa-location-dot" style="margin-right:3px;"></i>地點名稱</label>
+                  <input class="cf-input" id="ll-name" placeholder="例：新光三越信義A8" maxlength="30" />
+                </div>
+                <div class="cf-row">
+                  <label class="cf-label">地址</label>
+                  <input class="cf-input" id="ll-addr" placeholder="例：台北市信義區松壽路12號" maxlength="60" />
+                </div>
+                <div class="cf-2col">
+                  <div class="cf-row">
+                    <label class="cf-label">緯度</label>
+                    <input class="cf-input" id="ll-lat" placeholder="25.0356" />
+                  </div>
+                  <div class="cf-row">
+                    <label class="cf-label">經度</label>
+                    <input class="cf-input" id="ll-lng" placeholder="121.5673" />
+                  </div>
+                </div>
+              </div>
+              <div class="line-preview-wrap" style="margin-top:12px;">
+                <div class="line-preview-hint">地點卡片預覽</div>
+                <div class="line-bubble-box">
+                  <div class="line-loc-card">
+                    <div class="line-loc-top">
+                      <div class="line-loc-icon"><i class="fa-solid fa-location-dot"></i></div>
+                      <div>
+                        <div class="line-loc-name-preview" id="ll-name-preview">（地點名稱）</div>
+                        <div class="line-loc-addr-preview" id="ll-addr-preview">（地址）</div>
+                      </div>
+                    </div>
+                    <div class="line-loc-map-ph"><i class="fa-solid fa-map"></i></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SMS compose -->
+          <div id="sms-compose-area" style="display:none;">
+            <div class="msg-box">
+              <textarea class="msg-textarea" id="msg-sms-text" placeholder="輸入 SMS 訊息內容（建議 60 字以內）…"></textarea>
+            </div>
+            <div class="msg-foot">
+              <div class="var-chips">
+                <span class="var-chip" data-var="{姓名}">{姓名}</span>
+                <span class="var-chip" data-var="{URL}">{URL}</span>
+                <span class="var-chip" data-var="{效期}">{效期}</span>
+                <span class="var-chip" data-var="{案號}">{案號}</span>
+                <span class="var-chip" data-var="{筆數}">{筆數}</span>
+              </div>
+              <span class="char-count" id="sms-char-count">0 字</span>
+            </div>
+            <div class="sms-2nd-warn" id="sms-2nd-warn">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              超過 60 字，將自動發送第 2 封 SMS（<span id="sms-char-total">0</span> 字）
+            </div>
+            <div style="margin-top:10px;">
+              <div class="cs-label" style="margin-bottom:6px;">預覽（範例：王大明）</div>
+              <div class="preview-card" id="sms-preview">（尚未輸入訊息）</div>
+            </div>
+          </div>
+
+          <div id="compose-placeholder" style="padding:28px;text-align:center;color:#c0c4cc;font-size:13px;border:1px dashed #e5e7eb;border-radius:8px;">
+            請先選擇推播管道（LINE 或 SMS）
+          </div>
+        </div>
+
+        <!-- Send bar -->
+        <div class="send-bar">
+          <button class="btn-send" id="btn-send-notify" disabled>
+            <i class="fa-solid fa-paper-plane"></i> 發送推播
+          </button>
+        </div>
+
+      </div><!-- /compose-panel -->
+    </div><!-- /send-layout -->
+
+  </div><!-- /page-wrap -->
+
+
+  <!-- Modal: 選群組 -->
+  <div id="modal-pick-groups" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-pick-groups"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-layer-group" style="color:#6366f1;"></i>選擇群組</div>
+        <button class="m-close" data-close="modal-pick-groups"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="pick-search">
+        <i class="fa-solid fa-magnifying-glass" style="color:#9ca3af;font-size:12px;"></i>
+        <input id="pick-groups-search" type="text" placeholder="搜尋群組名稱…" />
+      </div>
+      <div class="m-body" style="padding:0;">
+        <div class="pick-list" id="pick-groups-list"></div>
+      </div>
+      <footer class="m-foot">
+        <span class="pick-sel-count" id="pick-groups-sel-count" style="margin-right:auto;"></span>
+        <button class="m-btn-cancel" data-close="modal-pick-groups">取消</button>
+        <button class="m-btn-ok" id="btn-pick-groups-ok"><i class="fa-solid fa-check"></i> 確認加入</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: 選標籤 -->
+  <div id="modal-pick-tags" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-pick-tags"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-tags" style="color:#6366f1;"></i>選擇標籤</div>
+        <button class="m-close" data-close="modal-pick-tags"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body" style="padding:0;">
+        <div class="pick-list" id="pick-tags-list"></div>
+      </div>
+      <footer class="m-foot">
+        <span class="pick-sel-count" id="pick-tags-sel-count" style="margin-right:auto;"></span>
+        <button class="m-btn-cancel" data-close="modal-pick-tags">取消</button>
+        <button class="m-btn-ok" id="btn-pick-tags-ok"><i class="fa-solid fa-check"></i> 確認加入</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: 搜尋加入個別人員 -->
+  <div id="modal-pick-members" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-pick-members"></div>
+    <div class="m-panel" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-user-plus" style="color:#6366f1;"></i>搜尋加入個別人員</div>
+        <button class="m-close" data-close="modal-pick-members"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="pick-search">
+        <i class="fa-solid fa-magnifying-glass" style="color:#9ca3af;font-size:12px;"></i>
+        <input id="pick-members-search" type="text" placeholder="搜尋姓名 / 手機號碼…" />
+      </div>
+      <div class="chip-row" id="pick-members-filter-row" style="padding:6px 14px;">
+        <button class="fchip active" data-pm-filter="">全部</button>
+        <button class="fchip" data-pm-filter="員工">員工</button>
+        <button class="fchip" data-pm-filter="新客">新客</button>
+        <button class="fchip" data-pm-filter="會員">會員</button>
+        <button class="fchip" data-pm-filter="訪客">訪客</button>
+        <button class="fchip" data-pm-filter="離職員工">離職員工</button>
+      </div>
+      <div class="m-body" style="padding:0;">
+        <div class="pick-list" id="pick-members-list"></div>
+      </div>
+      <footer class="m-foot">
+        <span class="pick-sel-count" id="pick-members-sel-count" style="margin-right:auto;"></span>
+        <button class="m-btn-cancel" data-close="modal-pick-members">取消</button>
+        <button class="m-btn-ok" id="btn-pick-members-ok"><i class="fa-solid fa-check"></i> 加入選擇</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: 確認發送 -->
+  <div id="modal-send-confirm" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-send-confirm"></div>
+    <div class="m-panel" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-paper-plane" style="color:#6366f1;"></i>確認發送</div>
+        <button class="m-close" data-close="modal-send-confirm"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body" id="send-confirm-body"></div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-send-confirm">取消</button>
+        <button class="m-btn-ok" id="btn-send-confirm-ok"><i class="fa-solid fa-paper-plane"></i> 確認發送</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="../js/admin-notify.js"></script>
+  </body>
+</html>

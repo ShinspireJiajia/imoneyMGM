@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="../css/admin-referrers.css" />
     <link rel="stylesheet" href="../css/admin-campaigns.css" />
     <link rel="stylesheet" href="../css/admin-payments.css" />
+    <link rel="stylesheet" href="../css/memo.css" />
   </head>
   <body class="admin">
     <main class="payments-page fade-in page-wrap">
@@ -41,30 +42,66 @@
         </div>
       </div>
 
+      <!-- KPI 日期篩選 -->
+      <div class="kpi-date-bar">
+        <span class="kpi-date-label"><i class="fa-solid fa-calendar-days"></i> 統計區間</span>
+        <input type="date" id="kpi-date-start" class="field-input kpi-date-input" />
+        <span class="kpi-date-sep">至</span>
+        <input type="date" id="kpi-date-end" class="field-input kpi-date-input" />
+        <button type="button" class="btn-outline btn-sm" id="btn-kpi-date-apply">
+          <i class="fa-solid fa-magnifying-glass"></i>套用
+        </button>
+        <button type="button" class="kpi-date-reset-btn" id="btn-kpi-date-reset">重設近一個月</button>
+      </div>
+
       <!-- KPI -->
-      <section class="kpi-grid" style="margin-bottom: 16px;">
+      <section class="kpi-grid kpi-grid-payments" style="margin-bottom: 16px;">
         <div class="kpi-card">
           <div class="kpi-icon yellow"><i class="fa-solid fa-money-bill-transfer"></i></div>
           <div class="kpi-body">
             <div class="kpi-label">待匯款</div>
-            <div class="kpi-value" id="kpi-transfer-amount">$0</div>
-            <div class="kpi-label" id="kpi-transfer-count" style="margin-top: 2px;">0 筆</div>
+            <div class="kpi-value" id="kpi-transfer-pending-amount">$0</div>
+            <div class="kpi-label" id="kpi-transfer-pending-count" style="margin-top: 2px;">0 筆</div>
           </div>
         </div>
         <div class="kpi-card">
           <div class="kpi-icon blue"><i class="fa-solid fa-store"></i></div>
           <div class="kpi-body">
-            <div class="kpi-label">現場領取</div>
-            <div class="kpi-value" id="kpi-cash-amount">$0</div>
-            <div class="kpi-label" id="kpi-cash-count" style="margin-top: 2px;">0 筆</div>
+            <div class="kpi-label">待現場領取</div>
+            <div class="kpi-value" id="kpi-cash-pickup-amount">$0</div>
+            <div class="kpi-label" id="kpi-cash-pickup-count" style="margin-top: 2px;">0 筆</div>
           </div>
         </div>
         <div class="kpi-card">
           <div class="kpi-icon green"><i class="fa-solid fa-circle-check"></i></div>
           <div class="kpi-body">
-            <div class="kpi-label">本月已撥款</div>
-            <div class="kpi-value" id="kpi-done-amount">$0</div>
-            <div class="kpi-label" id="kpi-done-count" style="margin-top: 2px;">0 筆</div>
+            <div class="kpi-label">已匯款</div>
+            <div class="kpi-value" id="kpi-transferred-amount">$0</div>
+            <div class="kpi-label" id="kpi-transferred-count" style="margin-top: 2px;">0 筆</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon teal"><i class="fa-solid fa-handshake"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">已現場領取</div>
+            <div class="kpi-value" id="kpi-completed-amount">$0</div>
+            <div class="kpi-label" id="kpi-completed-count" style="margin-top: 2px;">0 筆</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon orange"><i class="fa-solid fa-clock"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">合計未撥款</div>
+            <div class="kpi-value" id="kpi-unpaid-amount">$0</div>
+            <div class="kpi-label" id="kpi-unpaid-count" style="margin-top: 2px;">0 筆</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon purple"><i class="fa-solid fa-check-double"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">合計已撥款</div>
+            <div class="kpi-value" id="kpi-paid-amount">$0</div>
+            <div class="kpi-label" id="kpi-paid-count" style="margin-top: 2px;">0 筆</div>
           </div>
         </div>
       </section>
@@ -78,8 +115,12 @@
         </div>
         <div class="filter-grid" id="filter-grid">
           <div class="field-row">
+            <label class="field-label">提領編號</label>
+            <input id="filter-withdrawal-id" class="field-input" type="text" placeholder="例如 WD-2026052201" />
+          </div>
+          <div class="field-row">
             <label class="field-label">關鍵字搜尋</label>
-            <input id="filter-keyword" class="field-input" type="text" placeholder="提領編號、會員編號、推薦人…" />
+            <input id="filter-keyword" class="field-input" type="text" placeholder="會員編號、推薦人…" />
           </div>
           <div class="field-row">
             <label class="field-label">狀態</label>
@@ -107,6 +148,14 @@
           <div class="field-row">
             <label class="field-label">會員編號</label>
             <input id="filter-member-id" class="field-input" type="text" placeholder="例如 U250310001" />
+          </div>
+          <div class="field-row">
+            <label class="field-label">異動日期（起）</label>
+            <input id="filter-updated-from" class="field-input" type="date" />
+          </div>
+          <div class="field-row">
+            <label class="field-label">異動日期（迄）</label>
+            <input id="filter-updated-to" class="field-input" type="date" />
           </div>
         </div>
         <div class="filter-card-actions">
@@ -140,9 +189,6 @@
               <span class="batch-amount" id="batch-amount">$0</span>
             </span>
             <div class="batch-spacer"></div>
-            <button id="btn-batch-transferred" type="button" class="btn btn-primary" style="padding: 6px 14px; font-size: 12px;">
-              <i class="fa-solid fa-check"></i>批次標記「已撥款」
-            </button>
             <button id="btn-batch-completed" type="button" class="btn btn-success" style="padding: 6px 14px; font-size: 12px;">
               <i class="fa-solid fa-handshake"></i>批次標記「已領取」
             </button>
@@ -167,10 +213,11 @@
                 <th>推薦人</th>
                 <th>標籤</th>
                 <th>金額</th>
-                <th>匯款手續費</th>
+                <th>匯款作業費</th>
                 <th>應付金額</th>
                 <th>方式</th>
                 <th>狀態</th>
+                <th>最後更新</th>
                 <th>操作</th>
               </tr>
             </thead>
@@ -313,7 +360,7 @@
           <div class="wd-detail-summary">
             <div class="item"><span>推薦人</span><strong id="wd-detail-ref">—</strong></div>
             <div class="item"><span>金額</span><strong id="wd-detail-total">—</strong></div>
-            <div class="item"><span>匯款手續費</span><strong id="wd-detail-fee" style="color:var(--color-text-muted);">—</strong></div>
+            <div class="item"><span>匯款作業費</span><strong id="wd-detail-fee" style="color:var(--color-text-muted);">—</strong></div>
             <div class="item"><span>應付金額</span><strong id="wd-detail-net" style="color:var(--color-success-dark);">—</strong></div>
             <div class="item"><span>方式</span><strong id="wd-detail-method">—</strong></div>
             <div class="item"><span>狀態</span><strong id="wd-detail-status">—</strong></div>
@@ -343,23 +390,11 @@
           </div>
           <div id="wd-detail-history" class="timeline-vertical" style="margin-top: 10px;"></div>
 
-          <!-- 新增備註 -->
+          <!-- 備註（共用模組） -->
           <div class="wd-detail-section-head" style="margin-top: 24px;">
-            <i class="fa-regular fa-note-sticky"></i>新增備註
+            <i class="fa-regular fa-note-sticky"></i>備註
           </div>
-          <div class="wd-note-form">
-            <textarea id="wd-detail-note-text" class="field-input" rows="3"
-              placeholder="例：銀行帳號已補正、推薦人改現場領取、退款待補件…"
-              style="resize:vertical;"></textarea>
-            <div style="display:flex;justify-content:flex-end;margin-top:8px;">
-              <button id="btn-wd-detail-note-save" type="button" class="btn btn-primary" style="font-size:13px;padding:7px 16px;">
-                <i class="fa-solid fa-check"></i>儲存備註
-              </button>
-            </div>
-          </div>
-          <p class="wd-note-append-hint">
-            <i class="fa-solid fa-lock"></i>備註寫入後不可刪除，將追加至異動歷程
-          </p>
+          <div id="memo-container-withdrawal"></div>
         </div>
       </div>
     </div>
@@ -615,6 +650,7 @@
     </div>
 
     <script src="../js/common.js"></script>
+    <script src="../js/memo.js"></script>
     <script src="../js/admin-payments.js"></script>
   </body>
 </html>

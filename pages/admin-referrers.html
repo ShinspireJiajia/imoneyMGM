@@ -79,9 +79,17 @@
       <!-- 列表 -->
       <section class="list-card">
         <div class="list-head">
-          <h3>推薦人清單</h3>
+          <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+            <h3 style="white-space:nowrap;margin:0;">推薦人清單</h3>
+            <div id="ref-summary-bar" class="ref-summary-bar">
+              <!-- JS will populate this -->
+            </div>
+          </div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span class="list-head-hint">點擊「備註」可加入僅後台可見之客服筆記</span>
+            <div class="ref-search-wrap">
+              <i class="fa-solid fa-magnifying-glass ref-search-icon"></i>
+              <input type="text" class="ref-search-input" id="ref-quick-search" placeholder="快速搜尋姓名、編號、手機…" />
+            </div>
             <button type="button" class="btn btn-outline" id="btn-export-csv" style="font-size:12px;padding:4px 12px;white-space:nowrap;">
               <i class="fa-solid fa-download"></i>匯出資料
             </button>

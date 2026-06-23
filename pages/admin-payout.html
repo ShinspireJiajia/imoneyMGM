@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../css/admin-records.css" />
     <link rel="stylesheet" href="../css/admin-campaigns.css" />
     <link rel="stylesheet" href="../css/admin-payments.css" />
+    <link rel="stylesheet" href="../css/memo.css" />
     <style>
       .warn-chips-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
       .warn-chip {
@@ -62,6 +63,12 @@
       }
       .receipt-link:hover { text-decoration: underline; }
       .receipt-amount { font-size: 12px; color: var(--color-text-muted); }
+      .receipt-note-icon {
+        display: inline-flex; align-items: center; justify-content: center;
+        color: #f59e0b; font-size: 11px; cursor: help;
+        margin-left: 5px; vertical-align: middle;
+        flex-shrink: 0;
+      }
       /* 貸款類型小標籤（案號欄） */
       .loan-type-chips { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
       .loan-type-chip {
@@ -124,6 +131,21 @@
             <div class="kpi-value" id="kpi-rejected-count">0 筆</div>
           </div>
         </div>
+        <div class="kpi-card">
+          <div class="kpi-icon red"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">本月已拒絕金額</div>
+            <div class="kpi-value" id="kpi-rejected-amount">$0</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon blue"><i class="fa-solid fa-building-columns"></i></div>
+          <div class="kpi-body">
+            <div class="kpi-label">累積待匯款總額</div>
+            <div class="kpi-value" id="kpi-unpaid-amount">$0</div>
+          </div>
+        </div>
+
       </section>
 
       <!-- 篩選列 -->
@@ -165,11 +187,10 @@
               <option value="all">全部</option>
               <option value="has_warn">有警示</option>
               <option value="no_warn">無警示</option>
-              <option value="E-150">E-150</option>
+              <option value="E-120">E-120</option>
               <option value="E-180">E-180</option>
               <option value="E-OLD">E-OLD</option>
               <option value="E-BLK">E-BLK</option>
-              <option value="E-PAY">E-PAY</option>
             </select>
           </div>
         </div>
@@ -320,6 +341,11 @@
               <div class="rv-row rv-row-full"><span class="rv-label">拒絕原因</span><span class="rv-value" id="pm-reject-note">—</span></div>
             </div>
           </section>
+
+          <section class="rv-section">
+            <h4><i class="fa-regular fa-note-sticky"></i> 備註</h4>
+            <div id="memo-container-payout"></div>
+          </section>
         </div>
 
         <footer class="rec-modal-foot">
@@ -391,8 +417,8 @@
             </thead>
             <tbody>
               <tr>
-                <td><span class="warn-chip">E-150</span></td>
-                <td id="legend-desc-e150">後續案件超過 150 天紅利效期</td>
+                <td><span class="warn-chip">E-120</span></td>
+                <td id="legend-desc-e150">後續案件超過 120 天紅利效期</td>
                 <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
               </tr>
               <tr>
@@ -410,11 +436,7 @@
                 <td>帳號被列為黑名單</td>
                 <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
               </tr>
-              <tr>
-                <td><span class="warn-chip">E-PAY</span></td>
-                <td>未達成案件生效的基本繳款條件</td>
-                <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
-              </tr>
+
             </tbody>
           </table>
           <p style="font-size:12px;color:var(--color-text-muted);margin-top:12px;line-height:1.6;">
@@ -503,6 +525,7 @@
       </div>
     </div>
 
+    <script src="../js/memo.js"></script>
     <script src="../js/admin-payout.js"></script>
   </body>
 </html>

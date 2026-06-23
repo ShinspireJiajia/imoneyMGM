@@ -16,6 +16,10 @@
     <link rel="stylesheet" href="../css/admin-campaigns.css" />
     <link rel="stylesheet" href="../css/admin-referrers.css" />
     <link rel="stylesheet" href="../css/admin-pending-review.css" />
+  <style>
+    tr.row-payout-rejected > td { background: #fef9f0; }
+    tr.row-payout-rejected:hover > td { background: #fef3e2 !important; }
+  </style>
   </head>
   <body class="admin">
     <main class="pending-review-page page-wrap fade-in">
@@ -58,6 +62,7 @@
               <option value="">全部</option>
               <option value="overrun">超量送單</option>
               <option value="blacklist">黑名單會員獎金</option>
+              <option value="payout_rejected">核款拒絕待修正</option>
             </select>
           </div>
           <div class="field-row">
@@ -185,6 +190,61 @@
             <button type="button" class="btn btn-outline" data-close>取消</button>
             <button id="bl-confirm" type="button" class="btn btn-primary" style="background: var(--color-danger);">
               <i class="fa-solid fa-ban"></i>確認轉黑名單
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <!-- ============== 提交維護人員 Modal ============== -->
+    <div id="submit-maintenance-modal" class="ce-modal" hidden>
+      <div class="ce-modal-backdrop" id="sm-backdrop"></div>
+      <div class="ce-modal-panel" style="max-width: 520px;">
+        <header class="ce-modal-header">
+          <div>
+            <h3>
+              <i class="fa-solid fa-wrench" style="color: var(--color-primary);"></i>提交維護人員
+            </h3>
+            <div class="ce-subtitle">
+              <span class="ce-hint">請將以下資訊轉交維護人員進行線下資料修正</span>
+            </div>
+          </div>
+          <button type="button" class="ce-close" id="btn-sm-close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </header>
+
+        <div class="ce-modal-body" style="padding: 18px 22px;">
+          <div style="background:#f8fafc;border:1px solid var(--color-border-light);border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:13px;display:flex;flex-direction:column;gap:9px;">
+            <div style="display:flex;gap:10px;">
+              <span style="color:var(--color-text-muted);min-width:72px;">案號</span>
+              <strong id="sm-caseid" style="font-family:'Courier New',monospace;color:var(--color-primary-dark);">—</strong>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <span style="color:var(--color-text-muted);min-width:72px;">推薦人</span>
+              <strong id="sm-referrer">—</strong>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <span style="color:var(--color-text-muted);min-width:72px;">金額</span>
+              <strong id="sm-amount" style="color:var(--color-danger);">—</strong>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <span style="color:var(--color-text-muted);min-width:72px;">拒絕原因</span>
+              <span id="sm-reject-note" style="color:var(--color-text-secondary);">—</span>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--color-text-muted);line-height:1.6;padding:10px 14px;background:#fffbeb;border-radius:7px;border:1px solid #fcd34d;">
+            <i class="fa-solid fa-circle-info" style="color:#f59e0b;"></i>
+            此案件核款已被拒絕，需由維護人員進行線下資料異動。請複製上方資訊後透過內部系統通知維護人員。點擊「確認已通知維護人員」後，本案件將標記為已處理並寫入稽核軌跡。
+          </div>
+        </div>
+
+        <footer class="ce-modal-footer">
+          <div></div>
+          <div class="ce-footer-right">
+            <button type="button" class="btn btn-outline" id="btn-sm-cancel">關閉</button>
+            <button id="btn-sm-confirm" type="button" class="btn btn-primary">
+              <i class="fa-solid fa-check"></i>確認已通知維護人員
             </button>
           </div>
         </footer>

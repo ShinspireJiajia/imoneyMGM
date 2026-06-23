@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="../css/admin-referrers.css" />
     <link rel="stylesheet" href="../css/admin-campaigns.css" />
     <link rel="stylesheet" href="../css/admin-payments.css" />
+    <link rel="stylesheet" href="../css/memo.css" />
     <style>
       /* AM/PM badge（清單欄位 & 每日看板共用） */
       .slot-badge {
@@ -32,6 +33,17 @@
       .slot-count { color: var(--color-text-secondary); min-width: 24px; }
       .slot-amt { font-weight: 700; font-size: 12px; margin-left: auto; }
       .slot-empty { font-size: 12px; color: var(--color-text-muted); display: block; margin-top: 4px; }
+      /* KPI 數據看板 */
+      .board-kpi-row { display:flex; gap:12px; flex-wrap:wrap; padding:0 0 16px; }
+      .kpi-card { flex:1; min-width:160px; padding:14px 18px; border-radius:10px; border:1px solid var(--color-border-light); background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.05); }
+      .kpi-label { font-size:12px; color:var(--color-text-muted); margin-bottom:5px; display:flex; align-items:center; gap:5px; }
+      .kpi-value { font-size:24px; font-weight:700; line-height:1.2; }
+      .kpi-count { font-size:11px; color:var(--color-text-secondary); margin-top:4px; }
+      .kpi-card-completed { border-left:4px solid #10b981; }
+      .kpi-card-pending   { border-left:4px solid #f59e0b; }
+      .kpi-card-failed    { border-left:4px solid #ef4444; }
+      /* 狀態小徽章（看板卡片內） */
+      .board-status-row { font-size:11px; margin-top:5px; display:flex; gap:7px; flex-wrap:wrap; }
     </style>
   </head>
   <body class="admin">
@@ -53,21 +65,27 @@
         </div>
       </div>
 
-      <!-- 每日刊版 -->
+      <!-- 資訊看板 -->
       <section class="daily-board-section">
         <div class="daily-board-header">
-          <h3><i class="fa-solid fa-calendar-day"></i>每日刊版 — <span id="daily-board-range-label">近五日</span>現場提領</h3>
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-            <div class="daily-range-tabs">
-              <button type="button" class="daily-range-tab active" data-range="5">近五日</button>
-              <button type="button" class="daily-range-tab" data-range="14">近兩週</button>
+          <h3><i class="fa-solid fa-chart-bar"></i>資訊看板 — 週一・週三預約提領</h3>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <label style="font-size:13px;color:var(--color-text-secondary);white-space:nowrap;">查詢期間</label>
+              <input type="date" id="board-date-from" class="field-input" style="width:140px;" />
+              <span style="color:var(--color-text-muted);font-size:13px;">至</span>
+              <input type="date" id="board-date-to" class="field-input" style="width:140px;" />
+              <button type="button" id="btn-board-query" class="btn-primary" style="padding:5px 14px;font-size:13px;white-space:nowrap;">
+                <i class="fa-solid fa-magnifying-glass"></i>查詢
+              </button>
+              <button type="button" id="btn-board-reset" class="btn-outline" style="padding:5px 12px;font-size:13px;white-space:nowrap;">近四週</button>
             </div>
-            <span class="daily-board-subtitle">依預計領取日 / 分台北・台中顯示</span>
+            <span class="daily-board-subtitle">僅顯示有預約資料</span>
           </div>
         </div>
-        <div class="daily-board-grid" id="daily-board-grid">
-          <!-- JS 動態渲染 -->
-        </div>
+        <!-- KPI 數據看板 -->
+        <div class="board-kpi-row" id="board-kpi-row"></div>
+        <div class="daily-board-grid" id="daily-board-grid"></div>
       </section>
 
       <!-- 篩選 -->
@@ -83,16 +101,16 @@
             <input id="cash-filter-referrer-name" class="field-input" type="text" placeholder="輸入姓名搜尋" />
           </div>
           <div class="field-row">
-            <label class="field-label">推薦人編號</label>
+            <label class="field-label">會員編號</label>
             <input id="cash-filter-referrer-id" class="field-input" type="text" placeholder="如 U240105002" />
           </div>
           <div class="field-row">
             <label class="field-label">狀態</label>
             <select class="field-select" id="cash-filter-status">
               <option value="all">全部</option>
-              <option value="pending">待確認</option>
-              <option value="pickup">待領取</option>
+              <option value="pickup" selected>待領取</option>
               <option value="completed">已領取</option>
+              <option value="cash_failed">提領失敗</option>
             </select>
           </div>
           <div class="field-row">
@@ -197,9 +215,18 @@
           <div class="field">
             <label class="field-label">狀態（人工維護）</label>
             <select id="edit-pay-status" class="field-select">
-              <option value="pending">待確認</option>
               <option value="pickup">待領取</option>
               <option value="completed">已領取</option>
+              <option value="cash_failed">提領失敗</option>
+            </select>
+          </div>
+          <div id="edit-fail-reason-row" class="field" style="display:none;">
+            <label class="field-label">提領失敗原因</label>
+            <select id="edit-fail-reason-select" class="field-select">
+              <option value="not_present">本人未到場</option>
+              <option value="id_mismatch">身分證件不符</option>
+              <option value="expired">逾期未領取</option>
+              <option value="other">其他</option>
             </select>
           </div>
           <div class="field">
@@ -276,23 +303,52 @@
           </div>
           <div id="cash-wd-detail-history" class="timeline-vertical" style="margin-top:10px;"></div>
 
-          <!-- 新增備註 -->
+          <!-- 備註（共用模組） -->
           <div class="wd-detail-section-head" style="margin-top:24px;">
-            <i class="fa-regular fa-note-sticky"></i>新增備註
+            <i class="fa-regular fa-note-sticky"></i>備註
           </div>
-          <div class="wd-note-form">
-            <textarea id="cash-wd-detail-note-text" class="field-input" rows="3"
-              placeholder="例：已通知推薦人攜帶身分證、確認預約時段…"
-              style="resize:vertical;"></textarea>
-            <div style="display:flex;justify-content:flex-end;margin-top:8px;">
-              <button id="btn-cash-wd-detail-note-save" type="button" class="btn btn-primary" style="font-size:13px;padding:7px 16px;">
-                <i class="fa-solid fa-check"></i>儲存備註
-              </button>
-            </div>
-          </div>
-          <p class="wd-note-append-hint">
-            <i class="fa-solid fa-lock"></i>備註寫入後不可刪除，將追加至異動歷程
+          <div id="memo-container-cash"></div>
+        </div>
+        <div class="history-modal-footer">
+          <button id="btn-cash-wd-mark-fail" class="btn btn-danger" style="display:none;">
+            <i class="fa-solid fa-circle-xmark"></i>標記提領失敗
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== 標記提領失敗 Modal ============== -->
+    <div id="cash-fail-modal" class="history-modal-bg">
+      <div class="history-modal" style="max-width:480px;">
+        <div class="history-modal-head">
+          <h3><i class="fa-solid fa-circle-xmark" style="color:#ef4444;"></i>標記提領失敗</h3>
+          <span id="btn-cash-fail-close" class="history-modal-close" role="button" tabindex="0">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </div>
+        <div class="history-modal-body" style="padding:20px 24px;">
+          <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:16px;">
+            提領申請 <strong id="cash-fail-wd-id" style="font-family:'Courier New',monospace;color:var(--color-primary-dark);">—</strong> 將被標記為提領失敗，請選擇失敗原因。
           </p>
+          <div class="field-row" style="margin-bottom:14px;">
+            <label class="field-label">失敗原因</label>
+            <select id="cash-fail-reason" class="field-select">
+              <option value="not_present">本人未到場</option>
+              <option value="id_mismatch">身分證件不符</option>
+              <option value="expired">逾期未領取</option>
+              <option value="other">其他</option>
+            </select>
+          </div>
+          <div id="cash-fail-other-row" class="field-row" style="display:none;margin-bottom:4px;">
+            <label class="field-label">補充說明</label>
+            <textarea id="cash-fail-other-text" class="field-input" rows="3" maxlength="200" placeholder="請輸入補充說明（選填）"></textarea>
+          </div>
+        </div>
+        <div class="history-modal-footer">
+          <button id="btn-cash-fail-cancel" class="btn btn-ghost">取消</button>
+          <button id="btn-cash-fail-confirm" class="btn btn-danger">
+            <i class="fa-solid fa-circle-xmark"></i>確認標記失敗
+          </button>
         </div>
       </div>
     </div>
@@ -375,7 +431,88 @@
       .img-lightbox-img { max-width:92vw; max-height:82vh; border-radius:10px; box-shadow:0 8px 48px rgba(0,0,0,.7); object-fit:contain; display:block; }
     </style>
 
+    <!-- ============== 更新現場提領狀態 Modal ============== -->
+    <div id="cash-mark-status-modal" class="history-modal-bg">
+      <div class="history-modal" style="max-width:480px;">
+        <div class="history-modal-head">
+          <h3>
+            <i class="fa-solid fa-pen-to-square" style="color:var(--color-primary);"></i>
+            更新提領狀態
+            <span class="ms-payid-label" id="cms-payid">—</span>
+          </h3>
+          <span id="btn-cms-close" class="history-modal-close" role="button" tabindex="0">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+        </div>
+        <div class="history-modal-body" style="padding:18px 22px;">
+          <div class="ms-summary">
+            <div class="ms-summary-item">
+              <span class="ms-summary-label">推薦人</span>
+              <strong id="cms-ref">—</strong>
+            </div>
+            <div class="ms-summary-item">
+              <span class="ms-summary-label">金額</span>
+              <strong id="cms-amount" style="color:var(--color-success-dark);">—</strong>
+            </div>
+            <div class="ms-summary-item">
+              <span class="ms-summary-label">門市</span>
+              <strong id="cms-branch">—</strong>
+            </div>
+            <div class="ms-summary-item">
+              <span class="ms-summary-label">目前狀態</span>
+              <span id="cms-current-status">—</span>
+            </div>
+          </div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;">請選擇新狀態</div>
+          <div class="ms-option-grid">
+            <label class="ms-option" id="cms-opt-completed">
+              <input type="radio" name="cms-status-pick" value="completed">
+              <div class="ms-option-body">
+                <i class="fa-solid fa-handshake ms-icon-success"></i>
+                <div class="ms-option-title">已領取</div>
+                <div class="ms-option-desc">推薦人已現場簽收完成</div>
+              </div>
+            </label>
+            <label class="ms-option" id="cms-opt-failed">
+              <input type="radio" name="cms-status-pick" value="cash_failed">
+              <div class="ms-option-body">
+                <i class="fa-solid fa-circle-exclamation ms-icon-danger"></i>
+                <div class="ms-option-title">提領失敗</div>
+                <div class="ms-option-desc">本人未到 / 證件不符 / 逾期</div>
+              </div>
+            </label>
+          </div>
+          <div id="cms-fail-wrap" class="field" hidden>
+            <label class="field-label">失敗原因 <span style="color:var(--color-danger);">*</span></label>
+            <select id="cms-fail-reason-sel" class="field-select" style="margin-bottom:6px;">
+              <option value="">— 請選擇失敗原因 —</option>
+              <option value="not_present">本人未到場</option>
+              <option value="id_mismatch">身分證件不符</option>
+              <option value="expired">逾期未領取</option>
+              <option value="other">其他原因（請填寫）</option>
+            </select>
+            <textarea id="cms-fail-reason-text" class="field-input" rows="2"
+              placeholder="請填寫失敗詳細說明"
+              style="resize:vertical;display:none;"></textarea>
+          </div>
+          <div class="field">
+            <label class="field-label">備註（選填，將寫入異動歷程）</label>
+            <textarea id="cms-note" class="field-input" rows="2"
+              placeholder="例：已通知推薦人重新預約…"
+              style="resize:vertical;"></textarea>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;padding:14px 22px;border-top:1px solid var(--color-border-light);">
+          <button id="btn-cms-cancel" type="button" class="btn btn-outline">取消</button>
+          <button id="btn-cms-save" type="button" class="btn btn-primary" disabled>
+            <i class="fa-solid fa-check"></i>確認更新
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="../js/common.js"></script>
+    <script src="../js/memo.js"></script>
     <script src="../js/admin-cash-payments.js"></script>
   </body>
 </html>

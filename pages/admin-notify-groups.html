@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>群組管理 - 後台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-notify.css" />
+  </head>
+  <body class="admin" data-notify-page="groups">
+  <div class="page-wrap fade-in">
+
+    <div class="page-header">
+      <div class="ph-title">
+        <h1><i class="fa-solid fa-layer-group" style="color:#6366f1;margin-right:8px;font-size:18px;"></i>群組管理</h1>
+      </div>
+    </div>
+
+    <!-- ── 列表視圖 ── -->
+    <div id="groups-list-view">
+      <div class="groups-toolbar">
+        <div class="groups-search-wrap">
+          <i class="fa-solid fa-magnifying-glass groups-search-icon"></i>
+          <input type="text" id="group-search-input" placeholder="搜尋群組名稱…" class="groups-search-input" />
+        </div>
+        <div class="groups-toolbar-actions">
+          <button class="btn-p" id="btn-new-group" style="font-size:12px;">
+            <i class="fa-solid fa-plus"></i> 新增群組
+          </button>
+        </div>
+      </div>
+      <div id="group-list-container"></div>
+    </div>
+
+    <!-- ── 詳情視圖 ── -->
+    <div id="groups-detail-view" style="display:none;">
+      <div class="groups-detail-nav">
+        <button class="btn-back-to-list" id="btn-back-to-list">
+          <i class="fa-solid fa-arrow-left"></i> 返回清單
+        </button>
+        <div class="groups-detail-title-row">
+          <div class="group-d-name" id="group-d-name"></div>
+          <button class="btn-icon" id="btn-group-rename" title="重新命名"><i class="fa-solid fa-pen"></i></button>
+        </div>
+        <div class="group-detail-acts">
+          <div class="grp-dd-wrap" id="grp-more-wrap">
+            <button class="btn-s" id="btn-group-more" style="font-size:12px;padding:5px 12px;">
+              <i class="fa-solid fa-ellipsis"></i> 更多操作
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="group-detail-panel">
+        <!-- Conditions block -->
+        <div class="group-conditions-block" id="group-conditions-block">
+          <div class="gcb-head">
+            <span class="gcb-title"><i class="fa-solid fa-filter"></i> 篩選條件</span>
+            <div id="gcb-action-btns" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"></div>
+          </div>
+          <div id="gcb-member-stat" style="margin:6px 0 8px;"></div>
+          <div class="gcb-badges" id="group-conditions-badges"></div>
+        </div>
+        <!-- hidden for JS compat -->
+        <span id="group-d-count" style="display:none;"></span>
+        <div class="history-section">
+          <div class="history-title"><i class="fa-solid fa-clock-rotate-left" style="color:#6366f1;"></i> 變更歷程</div>
+          <div id="group-history-list"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-wrap -->
+
+
+  <!-- Modal: 條件篩選建立群組 -->
+  <div id="modal-condition-filter" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-condition-filter"></div>
+    <div class="m-panel m-panel--lg" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-filter" style="color:#6366f1;"></i>從條件建立群組</div>
+        <button class="m-close" data-close="modal-condition-filter"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body cf-modal-body" style="padding:0;">
+
+        <!-- Condition builder -->
+        <div class="cfb-wrap">
+
+          <!-- Time range row -->
+          <div class="cfb-time-bar">
+            <label class="cfb-time-label">
+              <input type="checkbox" id="cf-time-unlimited" checked />
+              <i class="fa-regular fa-clock" style="color:#6b7280;font-size:12px;"></i>
+              時間不限
+            </label>
+            <div class="cfb-date-range" id="cfb-date-range" style="display:none;">
+              <input type="date" id="cf-date-from" class="cfb-date-input" />
+              <span class="cfb-date-sep">～</span>
+              <input type="date" id="cf-date-to" class="cfb-date-input" />
+            </div>
+          </div>
+
+          <!-- Dynamic condition rows -->
+          <div id="cf-rows" class="cfb-rows"></div>
+
+          <!-- Add / Clear -->
+          <div class="cfb-actions">
+            <button class="cfb-add-btn" id="btn-cf-add-row">
+              <i class="fa-solid fa-plus"></i> 新增條件
+            </button>
+            <button class="cfb-clear-btn" id="btn-cf-clear-rows">
+              <i class="fa-solid fa-trash-can"></i> 清除條件
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Result bar -->
+      <div class="cf-result-bar">
+        <div class="cf-result-text">
+          <i class="fa-solid fa-users" style="color:#6366f1;"></i>
+          符合條件：<strong id="cf-result-count">0</strong> 人
+        </div>
+        <button class="cf-preview-btn" id="btn-cf-preview"><i class="fa-solid fa-eye"></i> 預覽名單</button>
+      </div>
+      <div class="cf-preview-area" id="cf-preview-area" style="display:none;">
+        <div class="pick-list" id="cf-preview-list" style="max-height:160px;"></div>
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-condition-filter">取消</button>
+        <button class="m-btn-ok" id="btn-cf-save-group"><i class="fa-solid fa-layer-group"></i> 存為群組…</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: 條件群組命名 -->
+  <div id="modal-save-cond-group" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-save-cond-group"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-layer-group" style="color:#6366f1;"></i>儲存為群組</div>
+        <button class="m-close" data-close="modal-save-cond-group"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body">
+        <div class="cs-label" style="margin-bottom:6px;">群組名稱</div>
+        <input id="save-cond-group-name" type="text" maxlength="30" placeholder="例：沉睡客 60天、零推薦新人…" class="cf-input" style="font-size:14px;" />
+        <div id="save-cond-group-err" style="color:#ef4444;font-size:12px;margin-top:4px;display:none;">請輸入群組名稱</div>
+        <div class="save-cond-group-info" id="save-cond-group-info" style="margin-top:12px;font-size:12px;color:#6b7280;"></div>
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-save-cond-group">取消</button>
+        <button class="m-btn-ok" id="btn-save-cond-group-ok"><i class="fa-solid fa-check"></i> 建立群組</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: 新增群組 -->
+  <div id="modal-new-group" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-new-group"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-layer-group" style="color:#6366f1;"></i>新增群組</div>
+        <button class="m-close" data-close="modal-new-group"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body">
+        <div class="cs-label" style="margin-bottom:6px;">群組名稱</div>
+        <input id="new-group-name" type="text" maxlength="30" placeholder="輸入群組名稱…" class="cf-input" style="font-size:14px;" />
+        <div id="new-group-name-err" style="color:#ef4444;font-size:12px;margin-top:4px;display:none;">請輸入群組名稱</div>
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-new-group">取消</button>
+        <button class="m-btn-ok" id="btn-new-group-ok"><i class="fa-solid fa-check"></i> 建立群組</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: 群組從標籤同步 -->
+  <div id="modal-group-sync" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-group-sync"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-rotate" style="color:#6366f1;"></i>從標籤同步成員</div>
+        <button class="m-close" data-close="modal-group-sync"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body">
+        <p style="font-size:13px;color:#374151;margin:0 0 14px;">選擇標籤後，系統將把所有持有該標籤的人員加入群組（不會移除現有成員）。</p>
+        <div class="cs-label" style="margin-bottom:8px;">選擇標籤</div>
+        <div class="pick-list" id="sync-tags-list" style="border:1px solid #e5e7eb;border-radius:8px;max-height:200px;overflow-y:auto;"></div>
+        <div style="margin-top:14px;">
+          <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:5px;">備註（選填）</label>
+          <input id="sync-note" type="text" placeholder="例：月度VIP更新" style="width:100%;box-sizing:border-box;padding:8px 11px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:'Noto Sans TC',sans-serif;outline:none;" />
+        </div>
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-group-sync">取消</button>
+        <button class="m-btn-ok" id="btn-sync-ok"><i class="fa-solid fa-rotate"></i> 執行同步</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: 移除群組成員備註 -->
+  <div id="modal-remove-note" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-remove-note"></div>
+    <div class="m-panel m-panel--sm" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-user-minus" style="color:#dc2626;"></i>移除成員</div>
+        <button class="m-close" data-close="modal-remove-note"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body">
+        <p id="remove-note-desc" style="font-size:13px;color:#374151;margin:0 0 14px;"></p>
+        <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:5px;">備註（選填）</label>
+        <textarea id="remove-note-input" placeholder="輸入備註…" class="note-input"></textarea>
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-remove-note">取消</button>
+        <button class="m-btn-danger" id="btn-remove-note-ok">確認移除</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="../js/admin-notify.js"></script>
+  </body>
+</html>

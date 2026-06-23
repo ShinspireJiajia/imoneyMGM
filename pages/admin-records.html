@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="../css/admin-referrers.css" />
     <link rel="stylesheet" href="../css/admin-campaigns.css" />
     <link rel="stylesheet" href="../css/admin-records.css" />
+    <link rel="stylesheet" href="../css/memo.css" />
   </head>
   <body class="admin">
     <main class="records-page fade-in page-wrap">
@@ -45,11 +46,16 @@
             <label class="field-label">狀態</label>
             <select class="field-select" id="f-status">
               <option value="all">全部</option>
-              <option value="reviewing">審核中</option>
-              <option value="pending_review">人工審核中</option>
-              <option value="pending_approval">待放行</option>
+              <option value="reviewing">案件審核中</option>
+              <option value="waiting_accounting">待會計核對</option>
+              <option value="accounting_confirmed">會計已核對</option>
               <option value="rewardable">可提領</option>
-              <option value="withdrawn">已提領</option>
+              <option value="withdrawal_pending">提領申請中</option>
+              <option value="disbursing">撥款處理中</option>
+              <option value="archived">已歸檔</option>
+              <option value="expired">獎金已失效</option>
+              <option value="transfer_failed">匯款失敗</option>
+              <option value="cash_failed">現場提領失敗</option>
               <option value="invalid">未符合資格</option>
             </select>
           </div>
@@ -100,6 +106,7 @@
                 <th>被推薦人</th>
                 <th>被推薦人手機號碼</th>
                 <th>狀態</th>
+                <th>提領剩餘天數</th>
                 <th>對應獎金</th>
                 <th style="min-width: 100px;">操作</th>
               </tr>
@@ -155,10 +162,12 @@
               <div class="rv-row"><span class="rv-label">符合活動編號</span><span class="rv-value mono" id="rv-campaign">—</span></div>
               <div class="rv-row"><span class="rv-label">申請日期</span><span class="rv-value mono" id="rv-submit">—</span></div>
               <div class="rv-row"><span class="rv-label">撥款日</span><span class="rv-value mono" id="rv-payout">—</span></div>
-              <div class="rv-row"><span class="rv-label">收款單號</span><a class="rv-value mono rv-ext-link" id="rv-receipt-no" href="#" target="_blank" rel="noopener">—</a></div>
+              <div class="rv-row"><span class="rv-label">收款單號</span><span class="rv-value mono" style="display:inline-flex;align-items:center;gap:4px;"><a class="rv-ext-link" id="rv-receipt-no" href="#" target="_blank" rel="noopener">—</a><span class="receipt-note-icon" id="rv-receipt-note-icon" hidden></span></span></div>
               <div class="rv-row"><span class="rv-label">應收服務費</span><span class="rv-value mono" id="rv-expected-fee">—</span></div>
               <div class="rv-row"><span class="rv-label">實收服務費</span><span class="rv-value mono" id="rv-actual-fee">—</span></div>
               <div class="rv-row"><span class="rv-label">狀態</span><span class="rv-value" id="rv-status">—</span></div>
+              <div class="rv-row" id="rv-row-rewardable-date" hidden><span class="rv-label">可提領日</span><span class="rv-value mono" id="rv-rewardable-date">—</span></div>
+              <div class="rv-row" id="rv-row-withdrawal-data" hidden><span class="rv-label">提領資料</span><span class="rv-value" id="rv-withdrawal-data">—</span></div>
               <div class="rv-row rv-row-full"><span class="rv-label">對應獎金</span><span class="rv-value mono rv-amount-emph" id="rv-amount">—</span></div>
             </div>
           </section>
@@ -180,6 +189,11 @@
             <div class="rv-snapshot" id="rv-snapshot">—</div>
             <p class="rv-foot">※ 快照於送單當下擷取，後續活動規則調整不影響本案件。</p>
           </section>
+
+          <section class="rv-section">
+            <h4><i class="fa-regular fa-note-sticky"></i> 備註</h4>
+            <div id="memo-container-record"></div>
+          </section>
         </div>
 
         <footer class="rec-modal-foot">
@@ -188,6 +202,7 @@
       </div>
     </div>
 
+    <script src="../js/memo.js"></script>
     <script src="../js/admin-records.js"></script>
   </body>
 </html>

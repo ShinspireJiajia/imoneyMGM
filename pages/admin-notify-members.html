@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>人員管理 - 後台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-referrers.css" />
+    <link rel="stylesheet" href="../css/admin-employees.css" />
+    <link rel="stylesheet" href="../css/admin-notify.css" />
+    <style>
+      /* ── filter bar 整體 ── */
+      .nm-filter-bar { grid-template-columns: 1fr !important; gap: 8px !important; }
+      /* 3 欄輸入列 */
+      .nm-filter-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        align-items: start;
+      }
+      /* LINE 好友 + 日期 + 重置 (4 欄) */
+      .nm-filter-grid--r2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr auto;
+        align-items: end;
+        gap: 12px;
+      }
+      /* 篩選列內的 chips 橫排（身份 / 標籤 / 群組） */
+      .nm-filter-fc-row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+        min-height: 30px;
+        padding: 2px 0;
+      }
+      .nm-chip-row-label {
+        font-size: 11px;
+        color: #9ca3af;
+        font-weight: 500;
+        white-space: nowrap;
+        margin-right: 4px;
+        min-width: 28px;
+      }
+    </style>
+  </head>
+  <body class="admin" data-notify-page="members">
+    <main class="employees-page fade-in page-wrap">
+
+      <div class="page-crumb">推播管理 / 人員管理</div>
+
+      <div class="page-toolbar">
+        <div>
+          <div class="page-title">人員管理</div>
+        </div>
+      </div>
+
+      <!-- 篩選列 -->
+      <section class="filter-bar nm-filter-bar">
+        <!-- Row 1：文字搜尋 -->
+        <div class="nm-filter-grid">
+          <div class="field">
+            <label class="field-label">會員編號</label>
+            <input class="field-input" id="filter-member-id" type="text" placeholder="U2503xxxxx" />
+          </div>
+          <div class="field">
+            <label class="field-label">姓名</label>
+            <input class="field-input" id="filter-member-name" type="text" placeholder="輸入姓名…" />
+          </div>
+          <div class="field">
+            <label class="field-label">手機號碼</label>
+            <input class="field-input" id="filter-member-mobile" type="text" placeholder="09xx-xxx-xxx" />
+          </div>
+        </div>
+        <!-- Row 2：LINE 好友下拉 + 日期 + 重置 -->
+        <div class="nm-filter-grid nm-filter-grid--r2">
+          <div class="field">
+            <label class="field-label">是否已加入好友</label>
+            <select class="field-input field-select" id="filter-line-status">
+              <option value="">全部</option>
+              <option value="yes">已加入</option>
+              <option value="no">未加入</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">加入好友起始日</label>
+            <input class="field-input" id="filter-line-from" type="date" />
+          </div>
+          <div class="field">
+            <label class="field-label">加入好友截止日</label>
+            <input class="field-input" id="filter-line-to" type="date" />
+          </div>
+          <div class="field" style="display:flex;align-items:flex-end;">
+            <button class="btn btn--sm btn--outline" id="btn-nm-filter-reset" style="white-space:nowrap;height:36px;">
+              <i class="fa-solid fa-rotate-left"></i> 重置篩選
+            </button>
+          </div>
+        </div>
+        <!-- Row 3：身份（多選，不選 = 全部） -->
+        <div class="nm-filter-fc-row">
+          <span class="nm-chip-row-label">身份</span>
+          <button class="fchip" data-identity="員工">員工</button>
+          <button class="fchip" data-identity="新客">新客</button>
+          <button class="fchip" data-identity="會員">會員</button>
+          <button class="fchip" data-identity="離職員工">離職員工</button>
+          <button class="fchip" data-identity="訪客">訪客</button>
+        </div>
+        <!-- Row 4：標籤（多選，由 JS 填充） -->
+        <div class="nm-filter-fc-row" id="member-tag-filter-row"></div>
+        <!-- Row 5：群組（多選，由 JS 填充） -->
+        <div class="nm-filter-fc-row" id="member-group-filter-row"></div>
+      </section>
+
+      <!-- 列表 -->
+      <section class="list-card">
+        <div class="list-head">
+          <h3>人員清單</h3>
+          <span id="member-count-label" style="font-size:12px;color:#9ca3af;"></span>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="th-cb"><input type="checkbox" id="member-select-all" class="member-row-cb" title="全選 / 取消全選" /></th>
+                <th>姓名</th>
+                <th>手機號碼</th>
+                <th>身份</th>
+                <th>LINE</th>
+                <th>加入好友時間</th>
+                <th>標籤</th>
+                <th>群組</th>
+                <th style="min-width:80px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="member-tbody"></tbody>
+          </table>
+        </div>
+
+        <div id="member-pagination" class="pagination"></div>
+      </section>
+
+    </main><!-- /page-wrap -->
+
+    <!-- ── 批次操作列（Batch Action Bar）── -->
+    <div id="member-batch-bar" class="member-batch-bar" hidden>
+      <span class="batch-sel-count">
+        <i class="fa-solid fa-square-check" style="color:#a5b4fc;font-size:15px;"></i>
+        已選 <strong class="batch-sel-num" id="batch-sel-num">0</strong> 人
+      </span>
+      <div class="batch-actions">
+        <button id="btn-batch-tags" class="btn-batch btn-batch--tag">
+          <i class="fa-solid fa-tags"></i> 批次貼標籤
+        </button>
+        <button id="btn-batch-groups" class="btn-batch btn-batch--group">
+          <i class="fa-solid fa-layer-group"></i> 批次加入群組
+        </button>
+        <button id="btn-batch-clear" class="btn-batch btn-batch--clear">
+          <i class="fa-solid fa-xmark"></i> 取消選取
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal: 批次貼標籤 -->
+    <div id="modal-batch-tags" class="m-ov" hidden>
+      <div class="m-backdrop" data-close="modal-batch-tags"></div>
+      <div class="m-panel m-panel--sm" role="dialog">
+        <header class="m-head">
+          <div class="m-title"><i class="fa-solid fa-tags" style="color:#6366f1;"></i><span>批次貼標籤</span></div>
+          <button class="m-close" data-close="modal-batch-tags"><i class="fa-solid fa-xmark"></i></button>
+        </header>
+        <div class="m-body" style="padding:0;">
+          <div style="padding:10px 16px;font-size:12px;color:#6b7280;border-bottom:1px solid #f3f4f6;background:#fafafa;">
+            選取的標籤將「新增」到 <strong id="batch-tags-count">0</strong> 位人員（不覆蓋現有標籤）
+          </div>
+          <div class="pick-list" id="batch-tags-list" style="max-height:320px;overflow-y:auto;"></div>
+        </div>
+        <footer class="m-foot">
+          <button class="m-btn-cancel" data-close="modal-batch-tags">取消</button>
+          <button class="m-btn-ok" id="btn-batch-tags-ok"><i class="fa-solid fa-check"></i> 套用</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Modal: 批次加入群組 -->
+    <div id="modal-batch-groups" class="m-ov" hidden>
+      <div class="m-backdrop" data-close="modal-batch-groups"></div>
+      <div class="m-panel m-panel--sm" role="dialog">
+        <header class="m-head">
+          <div class="m-title"><i class="fa-solid fa-layer-group" style="color:#10b981;"></i><span>批次加入群組</span></div>
+          <button class="m-close" data-close="modal-batch-groups"><i class="fa-solid fa-xmark"></i></button>
+        </header>
+        <div class="m-body" style="padding:0;">
+          <div style="padding:10px 16px;font-size:12px;color:#6b7280;border-bottom:1px solid #f3f4f6;background:#fafafa;">
+            將 <strong id="batch-groups-count">0</strong> 位人員「加入」選取的群組（已在群組內者不重複加入）
+          </div>
+          <div class="pick-list" id="batch-groups-list" style="max-height:320px;overflow-y:auto;"></div>
+        </div>
+        <footer class="m-foot">
+          <button class="m-btn-cancel" data-close="modal-batch-groups">取消</button>
+          <button class="m-btn-ok" id="btn-batch-groups-ok"><i class="fa-solid fa-check"></i> 套用</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Modal: 貼群組 -->
+    <div id="modal-attach-groups" class="m-ov" hidden>
+      <div class="m-backdrop" data-close="modal-attach-groups"></div>
+      <div class="m-panel m-panel--sm" role="dialog">
+        <header class="m-head">
+          <div class="m-title"><i class="fa-solid fa-layer-group" style="color:#6366f1;"></i><span id="attach-groups-title">管理群組</span></div>
+          <button class="m-close" data-close="modal-attach-groups"><i class="fa-solid fa-xmark"></i></button>
+        </header>
+        <div class="m-body" style="padding:0;">
+          <div class="pick-list" id="attach-groups-list" style="max-height:360px;overflow-y:auto;"></div>
+        </div>
+        <footer class="m-foot">
+          <button class="m-btn-cancel" data-close="modal-attach-groups">取消</button>
+          <button class="m-btn-ok" id="btn-attach-groups-ok"><i class="fa-solid fa-check"></i> 儲存</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Modal: 編輯人員 -->
+    <div id="modal-member-edit" class="m-ov" hidden>
+      <div class="m-backdrop" data-close="modal-member-edit"></div>
+      <div class="m-panel m-panel--sm" role="dialog">
+        <header class="m-head">
+          <div class="m-title"><i class="fa-solid fa-user-pen" style="color:#6366f1;"></i><span id="member-edit-title">編輯人員</span></div>
+          <button class="m-close" data-close="modal-member-edit"><i class="fa-solid fa-xmark"></i></button>
+        </header>
+        <div class="m-body">
+          <input type="hidden" id="member-edit-id" />
+          <div style="margin-bottom:16px;">
+            <div class="cs-label">身份（可多選）</div>
+            <div class="identity-cbs" id="member-edit-identity-cbs">
+              <label class="id-cb-label"><input type="checkbox" value="員工" />員工</label>
+              <label class="id-cb-label"><input type="checkbox" value="新客" />新客</label>
+              <label class="id-cb-label"><input type="checkbox" value="會員" />會員</label>
+              <label class="id-cb-label"><input type="checkbox" value="離職員工" />離職員工</label>
+              <label class="id-cb-label"><input type="checkbox" value="訪客" />訪客</label>
+            </div>
+          </div>
+          <div>
+            <div class="cs-label">標籤</div>
+            <div class="edit-tag-chips" id="member-edit-tags"></div>
+          </div>
+        </div>
+        <footer class="m-foot">
+          <button class="m-btn-cancel" data-close="modal-member-edit">取消</button>
+          <button class="m-btn-ok" id="btn-member-edit-save"><i class="fa-solid fa-check"></i> 儲存</button>
+        </footer>
+      </div>
+    </div>
+
+    <script src="../js/admin-notify.js"></script>
+  </body>
+</html>

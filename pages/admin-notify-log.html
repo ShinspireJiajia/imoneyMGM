@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>發送紀錄 - 後台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-notify.css" />
+  </head>
+  <body class="admin" data-notify-page="log">
+  <div class="page-wrap fade-in">
+
+    <div class="page-header">
+      <div class="ph-title">
+        <h1><i class="fa-solid fa-clock-rotate-left" style="color:#6366f1;margin-right:8px;font-size:18px;"></i>發送紀錄</h1>
+      </div>
+    </div>
+
+    <div class="log-card">
+      <div class="log-card-head">
+        <span class="log-card-title"><i class="fa-solid fa-clock-rotate-left" style="color:#6366f1;margin-right:6px;"></i>推播發送紀錄</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-export-log" id="btn-export-log"><i class="fa-solid fa-file-csv"></i> 匯出</button>
+          <button class="btn-refresh" id="btn-refresh-log"><i class="fa-solid fa-rotate-right"></i> 重新整理</button>
+        </div>
+      </div>
+
+      <!-- ── 篩選列 ── -->
+      <div class="log-filter-bar">
+        <div class="log-filter-row">
+          <div class="log-filter-item">
+            <label class="lf-label">會員姓名 / ID</label>
+            <input class="lf-input" type="text" id="lf-member" placeholder="姓名或會員 ID…" autocomplete="off" />
+          </div>
+          <div class="log-filter-item">
+            <label class="lf-label">發送時間（起）</label>
+            <input class="lf-input" type="date" id="lf-date-from" />
+          </div>
+          <div class="log-filter-item">
+            <label class="lf-label">發送時間（訖）</label>
+            <input class="lf-input" type="date" id="lf-date-to" />
+          </div>
+          <div class="log-filter-item">
+            <label class="lf-label">操作人員</label>
+            <input class="lf-input" type="text" id="lf-actor" placeholder="人員名稱…" autocomplete="off" />
+          </div>
+          <div class="log-filter-item">
+            <label class="lf-label">管道</label>
+            <select class="lf-select" id="lf-channel">
+              <option value="">全部管道</option>
+              <option value="LINE">LINE</option>
+              <option value="SMS">SMS</option>
+            </select>
+          </div>
+          <div class="log-filter-item lf-item--grow">
+            <label class="lf-label">關鍵字</label>
+            <input class="lf-input" type="text" id="lf-keyword" placeholder="母版名稱 / 訊息內容…" autocomplete="off" />
+          </div>
+        </div>
+        <div class="log-filter-actions">
+          <button class="btn-lf-search" id="btn-search-log"><i class="fa-solid fa-magnifying-glass"></i> 搜尋</button>
+          <button class="btn-lf-clear"  id="btn-clear-log"><i class="fa-solid fa-xmark"></i> 清除篩選</button>
+        </div>
+      </div>
+
+      <div class="log-result-bar" id="log-result-info"></div>
+
+      <div style="overflow-x:auto;">
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th>發送時間</th><th>操作人員</th><th>收件對象</th><th>管道</th><th>母版 / 摘要</th><th>狀態</th>
+            </tr>
+          </thead>
+          <tbody id="log-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="pagination" id="log-pagination"></div>
+    </div>
+
+  </div><!-- /page-wrap -->
+
+
+  <!-- Modal: 發送明細 -->
+  <div id="modal-notify-detail" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-notify-detail"></div>
+    <div class="m-panel m-panel--lg" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-rectangle-list" style="color:#6366f1;"></i>推播發送明細</div>
+        <button class="m-close" data-close="modal-notify-detail"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body" id="nm-body"></div>
+      <footer class="m-foot">
+        <button class="m-btn-ok" data-close="modal-notify-detail">關閉</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="../js/admin-notify.js"></script>
+  </body>
+</html>
