@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>推薦人行銷成效總覽報表</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 20px; color: #333; margin: 0; }
+        .page-container { max-width: 1400px; margin: 0 auto; }
+
+        /* 標題與控制列 */
+        .header-section { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; }
+        .page-title { font-size: 24px; font-weight: bold; color: #1a1a1a; margin: 0 0 10px 0; }
+        .control-bar { background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; }
+        .filter-group { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; }
+        .filter-group input[type="date"] { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; color: #333; font-family: inherit; }
+
+        /* 按鈕樣式 */
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+        .btn-primary { background: #1677ff; color: white; }
+        .btn-primary:hover { background: #0958d9; }
+        .btn-export { background: #fff; color: #333; border: 1px solid #d9d9d9; }
+        .btn-export:hover { border-color: #1677ff; color: #1677ff; }
+
+        /* 數據總覽看板 (Kanban) */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-top: 4px solid #1677ff; }
+        .stat-card.revenue { border-top-color: #52c41a; }
+        .stat-card.cost { border-top-color: #faad14; }
+        .stat-card.warning { border-top-color: #ff4d4f; }
+        .stat-title { font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 500; }
+        .stat-value { font-size: 26px; font-weight: bold; color: #1a1a1a; }
+        .stat-value.revenue-text { color: #52c41a; }
+        .stat-value.cost-text { color: #faad14; }
+        .stat-value.warning-text { color: #ff4d4f; }
+
+        /* 表格樣式 */
+        .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #fafafa; color: #262626; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; font-weight: 600; font-size: 13px; cursor: pointer; user-select: none; }
+        th:hover { background-color: #f0f0f0; }
+        td { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #434343; }
+        tr:hover { background-color: #fafafa; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        /* 控制列分隔線 */
+        .control-bar-divider { width: 1px; height: 28px; background: #e8e8e8; margin: 0 4px; }
+        /* 推薦人搜尋欄 */
+        .search-wrap { position: relative; }
+        .search-wrap input { padding: 7px 12px 7px 34px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; width: 220px; font-family: inherit; color: #333; }
+        .search-wrap input:focus { outline: none; border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,.1); }
+        .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 13px; pointer-events: none; }
+
+        /* 分頁控制列 */
+        .pagination-container { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; border-top: 1px solid #f0f0f0; font-size: 14px; color: #666; }
+        .pagination { display: flex; gap: 4px; }
+        .page-btn { padding: 6px 12px; border: 1px solid #d9d9d9; background: white; border-radius: 4px; cursor: pointer; color: #333; }
+        .page-btn:hover:not(:disabled) { border-color: #1677ff; color: #1677ff; }
+        .page-btn.active { background: #1677ff; color: white; border-color: #1677ff; }
+        .page-btn:disabled { color: #bfbfbf; cursor: not-allowed; background: #f5f5f5; }
+    </style>
+</head>
+<body>
+
+<div class="page-container">
+    <div class="header-section">
+        <div>
+            <h1 class="page-title">推薦人行銷成效總覽</h1>
+        </div>
+    </div>
+
+    <div class="control-bar" style="margin-bottom: 20px;">
+        <div class="filter-group">
+            <label>推薦人查詢：</label>
+            <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="referrer-search" placeholder="姓名或會員編號">
+            </div>
+            <div class="control-bar-divider"></div>
+            <label>新客加入期間：</label>
+            <input type="date" id="date-start">
+            <span>至</span>
+            <input type="date" id="date-end">
+            <button class="btn btn-primary" onclick="applyFilter()">執行查詢</button>
+        </div>
+        <button class="btn btn-export">📥 匯出報表</button>
+    </div>
+
+    <div id="results-section" style="display:none;">
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <div class="stat-title">👥 總加入新戶 (人)</div>
+            <div class="stat-value" id="kpi-joined">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">📝 總進件人數 (人)</div>
+            <div class="stat-value" id="kpi-submitted">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">✅ 全數入帳 (件)</div>
+            <div class="stat-value" id="kpi-paid">0</div>
+        </div>
+        <div class="stat-card revenue">
+            <div class="stat-title">💰 總核撥金額 (NT$)</div>
+            <div class="stat-value revenue-text" id="kpi-amount">0</div>
+        </div>
+        <div class="stat-card cost">
+            <div class="stat-title">🎁 預估/已發獎金 (NT$)</div>
+            <div class="stat-value cost-text" id="kpi-bonus">0</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-title">❌ 婉拒/不符資格 (件)</div>
+            <div class="stat-value warning-text" id="kpi-rejected">0</div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th onclick="handleSort('name')">推薦人 (姓名/編號) ↕</th>
+                    <th onclick="handleSort('date')">新客加入區間 ↕</th>
+                    <th class="text-right" onclick="handleSort('clicks')">點擊次數 ↕</th>
+                    <th class="text-right" onclick="handleSort('joined')">加入(人) ↕</th>
+                    <th class="text-right" onclick="handleSort('submitted')">進件(人) ↕</th>
+                    <th class="text-right" onclick="handleSort('paid')">入帳(件) ↕</th>
+                    <th class="text-right" onclick="handleSort('rate')">轉換率 ↕</th>
+                    <th class="text-right" onclick="handleSort('amount')">核撥總額 ↕</th>
+                    <th class="text-right" onclick="handleSort('bonus')">發放獎金 ↕</th>
+                    <th class="text-right" onclick="handleSort('rejected')">婉拒(件) ↕</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+            </tbody>
+        </table>
+
+        <div class="pagination-container">
+            <div id="page-info">顯示 0 筆資料</div>
+            <div class="pagination" id="pagination-controls"></div>
+        </div>
+    </div>
+    </div><!-- /results-section -->
+</div>
+
+<script>
+    const firstNames = ["陳", "林", "黃", "張", "李", "王", "吳", "劉", "蔡", "楊"];
+    const lastNames = ["大華", "小明", "Ｏ華", "建國", "家豪", "雅婷", "Ｏ群", "志明", "春嬌", "俊宏"];
+    let allData = [];
+
+    // 產生近 12 個月內的隨機日期
+    const _today = new Date();
+    for (let i = 1; i <= 35; i++) {
+        const daysAgo = Math.floor(Math.random() * 365);
+        const d = new Date(_today);
+        d.setDate(d.getDate() - daysAgo);
+        const dateStr = d.toISOString().slice(0, 10);
+
+        let clicks = Math.floor(Math.random() * 500) + 20;
+        let joined = Math.floor(Math.random() * 80) + 5;
+        let submitted = Math.floor(Math.random() * (joined * 0.6));
+        let paid = Math.floor(Math.random() * (submitted * 0.8));
+        let rejected = submitted > paid ? Math.floor(Math.random() * (submitted - paid)) : 0;
+        let rate = joined > 0 ? ((paid / joined) * 100).toFixed(1) : 0;
+        let amount = paid * (Math.floor(Math.random() * 400000) + 100000);
+        let bonus = paid * (Math.floor(Math.random() * 2000) + 1000);
+
+        allData.push({
+            name: `${firstNames[i % 10]}${lastNames[(i * 3) % 10]}`,
+            id: `U250${String(i).padStart(3, '0')}`,
+            date: dateStr,
+            clicks: clicks,
+            joined: joined,
+            submitted: submitted,
+            paid: paid,
+            rate: parseFloat(rate),
+            amount: amount,
+            bonus: bonus,
+            rejected: rejected
+        });
+    }
+
+    let filteredData = [...allData];
+    let currentSort = { column: 'joined', direction: 'desc' };
+    let currentPage = 1;
+    const rowsPerPage = 10;
+    let searchKeyword = '';
+
+    function updateDashboard(data) {
+        const totals = (data || filteredData).reduce((acc, row) => {
+            acc.joined += row.joined;
+            acc.submitted += row.submitted;
+            acc.paid += row.paid;
+            acc.amount += row.amount;
+            acc.bonus += row.bonus;
+            acc.rejected += row.rejected;
+            return acc;
+        }, { joined: 0, submitted: 0, paid: 0, amount: 0, bonus: 0, rejected: 0 });
+
+        document.getElementById('kpi-joined').innerText = totals.joined.toLocaleString();
+        document.getElementById('kpi-submitted').innerText = totals.submitted.toLocaleString();
+        document.getElementById('kpi-paid').innerText = totals.paid.toLocaleString();
+        document.getElementById('kpi-amount').innerText = '$' + totals.amount.toLocaleString();
+        document.getElementById('kpi-bonus').innerText = '$' + totals.bonus.toLocaleString();
+        document.getElementById('kpi-rejected').innerText = totals.rejected.toLocaleString();
+    }
+
+    function applyFilter() {
+        const startDate = document.getElementById('date-start').value;
+        const endDate = document.getElementById('date-end').value;
+        searchKeyword = document.getElementById('referrer-search').value;
+
+        let dateFiltered = (!startDate || !endDate)
+            ? [...allData]
+            : allData.filter(row => row.date >= startDate && row.date <= endDate);
+
+        updateDashboard(dateFiltered);
+
+        const kw = searchKeyword.trim().toLowerCase();
+        filteredData = kw
+            ? dateFiltered.filter(row =>
+                row.name.toLowerCase().includes(kw) || row.id.toLowerCase().includes(kw))
+            : dateFiltered;
+
+        document.getElementById('results-section').style.display = '';
+        currentPage = 1;
+        executeSort();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const paginatedData = filteredData.slice(startIndex, startIndex + rowsPerPage);
+
+        paginatedData.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${row.name}</strong> <span style="color:#888;font-size:12px;">${row.id}</span></td>
+                <td>${row.date.replace(/-/g, '/')}</td>
+                <td class="text-right">${row.clicks.toLocaleString()}</td>
+                <td class="text-right">${row.joined}</td>
+                <td class="text-right">${row.submitted}</td>
+                <td class="text-right" style="color:#52c41a; font-weight:bold;">${row.paid}</td>
+                <td class="text-right">${row.rate}%</td>
+                <td class="text-right">$${row.amount.toLocaleString()}</td>
+                <td class="text-right" style="color:#faad14;">$${row.bonus.toLocaleString()}</td>
+                <td class="text-right" style="color:#ff4d4f;">${row.rejected}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+        const container = document.getElementById('pagination-controls');
+        container.innerHTML = '';
+
+        if (totalPages === 0) {
+            document.getElementById('page-info').innerText = '無符合條件之資料';
+            return;
+        }
+
+        const start = (currentPage - 1) * rowsPerPage + 1;
+        const end = Math.min(currentPage * rowsPerPage, filteredData.length);
+        document.getElementById('page-info').innerText = `顯示第 ${start} 到 ${end} 筆，共 ${filteredData.length} 筆資料`;
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+            btn.innerText = i;
+            btn.onclick = () => { currentPage = i; renderTable(); };
+            container.appendChild(btn);
+        }
+    }
+
+    function handleSort(column) {
+        if (currentSort.column === column) {
+            currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort.column = column;
+            currentSort.direction = 'desc';
+        }
+        executeSort();
+    }
+
+    function executeSort() {
+        filteredData.sort((a, b) => {
+            let valA = a[currentSort.column];
+            let valB = b[currentSort.column];
+            if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+        renderTable();
+    }
+
+    window.onload = () => {
+        const today = new Date();
+        const end = today.toISOString().slice(0, 10);
+        const start = new Date(today);
+        start.setMonth(start.getMonth() - 3);
+        document.getElementById('date-end').value = end;
+        document.getElementById('date-start').value = start.toISOString().slice(0, 10);
+        applyFilter();
+    };
+</script>
+</body>
+</html>
