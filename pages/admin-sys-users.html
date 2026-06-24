@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>使用者管理 - 系統管理</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/common.css" />
+  <link rel="stylesheet" href="../css/admin-matrix.css" />
+  <link rel="stylesheet" href="../css/admin-campaigns.css" />
+  <style>
+    /* 等寬表格 */
+    .users-table { width:100%; border-collapse:collapse; font-size:14px; table-layout:fixed; }
+    .users-table thead tr { background:var(--admin-table-head-bg); color:var(--admin-table-head-fg); }
+    .users-table th { padding:11px 14px; text-align:left; font-weight:600; white-space:nowrap; }
+    .users-table th:first-child { width:26%; }
+    .users-table tbody tr { border-bottom:1px solid var(--color-border-light); transition:background .15s; }
+    .users-table tbody tr:hover { background:var(--admin-row-hover); }
+    .users-table td { padding:10px 14px; vertical-align:middle; }
+    .users-table td:first-child { word-break:break-all; font-size:13px; }
+
+    .tbl-btn { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1.5px solid transparent; transition:all .15s; white-space:nowrap; }
+    .tbl-btn-edit  { border-color:#6b7280; color:#6b7280; }
+    .tbl-btn-edit:hover { background:#f3f4f6; }
+
+    /* Modal */
+    .sys-modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .sys-modal-backdrop.is-open { opacity:1; pointer-events:auto; }
+    .sys-modal { background:#fff; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.18); width:calc(100% - 32px); max-height:90vh; display:flex; flex-direction:column; overflow:hidden; }
+    .sys-modal-head { padding:18px 24px 14px; border-bottom:1px solid var(--color-border-light); display:flex; align-items:center; gap:10px; flex-shrink:0; }
+    .sys-modal-head h3 { font-size:16px; font-weight:700; flex:1; }
+    .sys-modal-body { padding:20px 24px; overflow-y:auto; flex:1; }
+    .sys-modal-foot { padding:14px 24px; border-top:1px solid var(--color-border-light); display:flex; justify-content:flex-end; gap:10px; flex-shrink:0; }
+
+    /* Form */
+    .form-row { margin-bottom:14px; }
+    .form-label { font-size:13px; font-weight:600; color:var(--color-text); margin-bottom:5px; display:block; }
+    .form-label.required::after { content:' *'; color:var(--color-danger); }
+    .form-input, .form-select { width:100%; padding:9px 12px; border:1.5px solid var(--color-border); border-radius:8px; font-size:14px; transition:border-color .15s; }
+    .form-input:focus, .form-select:focus { border-color:var(--color-primary); outline:none; }
+    .form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+
+    /* 多角色 checkbox 群組 */
+    .roles-checkbox-group { display:flex; flex-wrap:wrap; gap:8px 20px; padding:10px 12px; border:1.5px solid var(--color-border); border-radius:8px; min-height:44px; }
+    .role-check-item { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; cursor:pointer; }
+    .role-check-item input[type="checkbox"] { width:15px; height:15px; flex-shrink:0; }
+  </style>
+</head>
+<body class="admin">
+<main class="page-wrap fade-in">
+  <div class="page-crumb">系統管理 / 使用者管理</div>
+
+
+
+  <!-- 篩選 -->
+  <section class="filter-card">
+    <div class="filter-card-head">
+      <button type="button" class="btn-outline btn-sm" id="btn-toggle-filter">
+        <i class="fa-solid fa-chevron-up"></i>收合篩選
+      </button>
+    </div>
+    <div class="filter-grid" id="filter-grid">
+      <div class="field-row">
+        <label class="field-label">帳號 / 姓名</label>
+        <input class="field-input" id="f-keyword" type="text" placeholder="Email 或姓名" />
+      </div>
+      <div class="field-row">
+        <label class="field-label">工號</label>
+        <input class="field-input" id="f-empid" type="text" placeholder="員工工號" />
+      </div>
+      <div class="field-row">
+        <label class="field-label">角色</label>
+        <select class="field-select" id="f-role"><option value="">全部角色</option></select>
+      </div>
+      <div class="field-row">
+        <label class="field-label">狀態</label>
+        <select class="field-select" id="f-status">
+          <option value="">全部狀態</option>
+          <option value="active">啟用中</option>
+          <option value="disabled">已停用</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-card-actions">
+      <button type="button" class="btn-outline" id="btn-clear-filter">清除篩選</button>
+      <button type="button" class="btn-primary" id="btn-search">查詢</button>
+    </div>
+  </section>
+
+  <!-- 清單 -->
+  <section class="matrix-card" style="margin-top:0;">
+    <div class="matrix-card-head">
+      <h3><i class="fa-solid fa-users"></i>使用者列表</h3>
+      <span id="users-count" style="font-size:13px;color:var(--color-text-secondary);">共 0 筆</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>帳號 (Email)</th>
+            <th>工號</th>
+            <th>姓名</th>
+            <th>角色群組</th>
+            <th>狀態</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination-bar">
+      <div class="pg-size">
+        每頁
+        <select id="page-size">
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+        筆
+      </div>
+      <div class="pagination" id="users-pagination"></div>
+      <div class="pg-total">共 <span id="users-total">0</span> 筆</div>
+    </div>
+  </section>
+</main>
+
+<!-- ── Modal: 編輯使用者 ── -->
+<div class="sys-modal-backdrop" id="modal-user">
+  <div class="sys-modal" style="max-width:560px;">
+    <div class="sys-modal-head">
+      <i class="fa-solid fa-user-pen" style="color:var(--color-primary);font-size:18px;"></i>
+      <h3 id="modal-user-title">編輯使用者</h3>
+    </div>
+    <div class="sys-modal-body">
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label class="form-label" for="u-email">帳號 (Email)</label>
+          <input class="form-input" id="u-email" type="email" disabled />
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="u-empid">工號</label>
+          <input class="form-input" id="u-empid" type="text" disabled />
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="u-name">姓名</label>
+          <input class="form-input" id="u-name" type="text" disabled />
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="u-status">狀態</label>
+          <select class="form-select" id="u-status">
+            <option value="active">啟用中</option>
+            <option value="disabled">已停用</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label required">角色群組（可多選）</label>
+        <div class="roles-checkbox-group" id="u-roles-wrap"></div>
+      </div>
+    </div>
+    <div class="sys-modal-foot">
+      <button type="button" class="btn btn-outline" id="btn-user-cancel">取消</button>
+      <button type="button" class="btn btn-primary" id="btn-user-save"><i class="fa-solid fa-check"></i>儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const ROLES = [
+  { id:'super_admin', label:'系統管理員', color:'#6366f1' },
+  { id:'marketer',    label:'行銷管理員', color:'#3FA89F' },
+  { id:'finance_mgr', label:'財務管理員', color:'#f59e0b' },
+  { id:'risk_mgr',    label:'風控管理員', color:'#ef4444' },
+  { id:'viewer',      label:'唯讀用戶',   color:'#9ca3af' },
+];
+
+let USERS = [
+  { id:'U001', email:'admin@shinda.com.tw',           empId:'E001', name:'系統管理員', roleIds:['super_admin'],              status:'active',   lastLogin:'2026-06-24 09:15:32' },
+  { id:'U002', email:'chen.xiaoming@shinda.com.tw',   empId:'E023', name:'陳小明',     roleIds:['marketer'],                 status:'active',   lastLogin:'2026-06-24 08:42:11' },
+  { id:'U003', email:'lin.yaling@shinda.com.tw',      empId:'E045', name:'林雅玲',     roleIds:['finance_mgr'],              status:'active',   lastLogin:'2026-06-23 17:55:09' },
+  { id:'U004', email:'wang.dehua@shinda.com.tw',      empId:'E078', name:'王德華',     roleIds:['risk_mgr','finance_mgr'],   status:'active',   lastLogin:'2026-06-24 10:02:44' },
+  { id:'U005', email:'zhang.wei@shinda.com.tw',       empId:'E102', name:'張偉',       roleIds:['marketer'],                 status:'disabled', lastLogin:'2026-05-15 14:32:00' },
+  { id:'U006', email:'liu.fang@shinda.com.tw',        empId:'E156', name:'劉芳',       roleIds:['viewer'],                   status:'active',   lastLogin:'2026-06-22 11:20:18' },
+  { id:'U007', email:'huang.jing@shinda.com.tw',      empId:'E201', name:'黃靜',       roleIds:['finance_mgr','marketer'],   status:'active',   lastLogin:'2026-06-23 15:48:33' },
+  { id:'U008', email:'wu.mingliang@shinda.com.tw',    empId:'E234', name:'吳明亮',     roleIds:['marketer'],                 status:'disabled', lastLogin:'2026-04-10 09:00:00' },
+];
+
+let filtered = [...USERS];
+let currentPage = 1;
+let pageSize = 10;
+let editingUserId = null;
+
+function getRoleObj(id) { return ROLES.find(r => r.id === id) || { label:id, color:'#9ca3af' }; }
+
+function applyFilter() {
+  const kw  = document.getElementById('f-keyword').value.trim().toLowerCase();
+  const eid = document.getElementById('f-empid').value.trim().toLowerCase();
+  const role = document.getElementById('f-role').value;
+  const st   = document.getElementById('f-status').value;
+  filtered = USERS.filter(u => {
+    if (kw   && !u.email.toLowerCase().includes(kw) && !u.name.toLowerCase().includes(kw)) return false;
+    if (eid  && !u.empId.toLowerCase().includes(eid)) return false;
+    if (role && !u.roleIds.includes(role)) return false;
+    if (st   && u.status !== st) return false;
+    return true;
+  });
+  currentPage = 1;
+  renderTable();
+}
+
+function renderTable() {
+  const total = filtered.length;
+  document.getElementById('users-total').textContent = total;
+  document.getElementById('users-count').textContent = `共 ${total} 筆`;
+  const slice = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const tbody = document.getElementById('users-tbody');
+  if (!slice.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:#9ca3af;">查無資料</td></tr>';
+    document.getElementById('users-pagination').innerHTML = '';
+    return;
+  }
+  tbody.innerHTML = slice.map(u => {
+    const roleLabels = u.roleIds.map(rid => getRoleObj(rid).label).join('、');
+    const statusText = u.status === 'active' ? '啟用中' : '已停用';
+    return `<tr>
+      <td>${u.email}</td>
+      <td>${u.empId}</td>
+      <td><strong>${u.name}</strong></td>
+      <td style="font-size:13px;">${roleLabels}</td>
+      <td style="font-size:13px;">${statusText}</td>
+      <td>
+        <button class="tbl-btn tbl-btn-edit" onclick="openEditModal('${u.id}')"><i class="fa-solid fa-pen"></i>編輯</button>
+      </td>
+    </tr>`;
+  }).join('');
+  renderPagination(total);
+}
+
+function renderPagination(total) {
+  const pages = Math.ceil(total / pageSize);
+  const pg = document.getElementById('users-pagination');
+  if (pages <= 1) { pg.innerHTML = ''; return; }
+  pg.innerHTML = Array.from({ length: pages }, (_, i) =>
+    `<button class="pg-btn${i + 1 === currentPage ? ' pg-active' : ''}" onclick="goPage(${i + 1})">${i + 1}</button>`
+  ).join('');
+}
+
+function goPage(p) { currentPage = p; renderTable(); }
+
+function openEditModal(userId) {
+  const u = USERS.find(x => x.id === userId);
+  if (!u) return;
+  editingUserId = userId;
+  document.getElementById('u-email').value = u.email;
+  document.getElementById('u-empid').value = u.empId;
+  document.getElementById('u-name').value  = u.name;
+  document.getElementById('u-status').value = u.status;
+  document.querySelectorAll('#u-roles-wrap input[type=checkbox]').forEach(cb => {
+    cb.checked = u.roleIds.includes(cb.value);
+  });
+  openModal('modal-user');
+}
+
+function saveUser() {
+  const status  = document.getElementById('u-status').value;
+  const roleIds = [...document.querySelectorAll('#u-roles-wrap input[type=checkbox]:checked')].map(cb => cb.value);
+  if (!roleIds.length) { alert('請至少選擇一個角色群組'); return; }
+  const u = USERS.find(x => x.id === editingUserId);
+  if (u) Object.assign(u, { roleIds, status });
+  closeModal('modal-user');
+  applyFilter();
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('is-open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('is-open'); }
+
+function init() {
+  const fRole = document.getElementById('f-role');
+  const rolesWrap = document.getElementById('u-roles-wrap');
+  ROLES.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.id; opt.textContent = r.label;
+    fRole.appendChild(opt);
+
+    const label = document.createElement('label');
+    label.className = 'role-check-item';
+    label.innerHTML = `<input type="checkbox" value="${r.id}" style="accent-color:${r.color};width:15px;height:15px;" /><span style="color:${r.color};">${r.label}</span>`;
+    rolesWrap.appendChild(label);
+  });
+
+  applyFilter();
+
+  document.getElementById('btn-user-cancel').addEventListener('click', () => closeModal('modal-user'));
+  document.getElementById('btn-user-save').addEventListener('click', saveUser);
+  document.getElementById('btn-search').addEventListener('click', applyFilter);
+  document.getElementById('btn-clear-filter').addEventListener('click', () => {
+    ['f-keyword','f-empid'].forEach(id => document.getElementById(id).value = '');
+    ['f-role','f-status'].forEach(id => document.getElementById(id).value = '');
+    applyFilter();
+  });
+  document.getElementById('page-size').addEventListener('change', e => { pageSize = +e.target.value; applyFilter(); });
+  document.getElementById('btn-toggle-filter').addEventListener('click', function() {
+    const fg = document.getElementById('filter-grid');
+    fg.classList.toggle('collapsed');
+    const col = fg.classList.contains('collapsed');
+    this.innerHTML = col ? '<i class="fa-solid fa-chevron-down"></i>展開篩選' : '<i class="fa-solid fa-chevron-up"></i>收合篩選';
+  });
+  document.getElementById('modal-user').addEventListener('click', e => { if (e.target.id === 'modal-user') closeModal('modal-user'); });
+}
+init();
+</script>
+</body>
+</html>

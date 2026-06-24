@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>角色權限管理 - 系統管理</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/common.css" />
+  <style>
+    /* ── 篩選列 ── */
+    .sr-filter-bar {
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      background:#fff; border-radius:10px; box-shadow:var(--shadow-sm);
+      padding:14px 18px; margin-bottom:16px;
+    }
+    .sr-filter-label { font-size:13px; color:#6b7280; white-space:nowrap; }
+    .sr-filter-input { padding:7px 11px; border:1.5px solid var(--color-border); border-radius:7px; font-size:13px; min-width:200px; font-family:inherit; }
+    .sr-filter-input:focus { border-color:var(--color-primary); outline:none; }
+    .sr-filter-select { padding:7px 11px; border:1.5px solid var(--color-border); border-radius:7px; font-size:13px; font-family:inherit; cursor:pointer; }
+    .sr-filter-select:focus { border-color:var(--color-primary); outline:none; }
+    .sr-filter-actions { margin-left:auto; display:flex; gap:8px; }
+    .btn-sr-query { padding:7px 18px; background:var(--color-primary); color:#fff; border:none; border-radius:7px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s; }
+    .btn-sr-query:hover { background:var(--color-primary-dark); }
+    .btn-sr-add   { padding:7px 18px; background:var(--color-primary); color:#fff; border:none; border-radius:7px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s; display:flex; align-items:center; gap:6px; }
+    .btn-sr-add:hover { background:var(--color-primary-dark); }
+
+    /* ── 表格 ── */
+    .sr-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .sr-table th { background:var(--color-primary); color:#fff; padding:11px 16px; font-weight:600; text-align:center; white-space:nowrap; }
+    .sr-table th:first-child { border-radius:0; }
+    .sr-table td { padding:10px 16px; text-align:center; border-bottom:1px solid #f0f1f3; color:#374151; }
+    .sr-table tbody tr:nth-child(even) td { background:#f8f9ff; }
+    .sr-table tbody tr:hover td { background:#eef2ff; }
+    .sr-table td.td-name { text-align:left; font-weight:600; }
+    .role-dot-sm { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:7px; vertical-align:middle; }
+    .status-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+    .status-badge--on  { background:#d1fae5; color:#065f46; }
+    .status-badge--off { background:#fee2e2; color:#991b1b; }
+    .btn-tbl-edit, .btn-tbl-del {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:5px 12px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:none; font-family:inherit; transition:background .1s;
+    }
+    .btn-tbl-edit { background:transparent; color:var(--color-primary); }
+    .btn-tbl-edit:hover { background:var(--color-primary-50); }
+    .btn-tbl-del  { background:transparent; color:#ef4444; }
+    .btn-tbl-del:hover  { background:#fee2e2; }
+    .locked-badge { font-size:10px; color:#9ca3af; vertical-align:middle; margin-left:4px; }
+
+    /* ── 編輯 Modal ── */
+    .sr-modal-ov { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .sr-modal-ov.is-open { opacity:1; pointer-events:auto; }
+    .sr-modal { background:#fff; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.18); width:calc(100% - 32px); max-width:740px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; }
+    .sr-modal-head { padding:16px 22px 14px; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; gap:10px; flex-shrink:0; }
+    .sr-modal-head h3 { font-size:15px; font-weight:700; flex:1; }
+    .sr-modal-body { padding:20px 22px; overflow-y:auto; flex:1; }
+    .sr-modal-foot { padding:14px 22px; border-top:1px solid #e5e7eb; display:flex; justify-content:flex-end; gap:10px; flex-shrink:0; }
+    .sr-close-btn { width:30px; height:30px; border:none; background:transparent; cursor:pointer; color:#9ca3af; font-size:16px; display:flex; align-items:center; justify-content:center; border-radius:6px; }
+    .sr-close-btn:hover { background:#f3f4f6; color:#374151; }
+
+    /* 角色名稱行 */
+    .sr-name-row { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #f0f1f3; }
+    .sr-name-label { font-size:13px; font-weight:600; color:#374151; white-space:nowrap; min-width:60px; }
+    .sr-name-input { flex:1; padding:8px 12px; border:1.5px solid var(--color-border); border-radius:8px; font-size:14px; font-family:inherit; }
+    .sr-name-input:focus { border-color:var(--color-primary); outline:none; }
+
+    /* 狀態行 */
+    .sr-status-row { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+    .sr-status-select { padding:8px 12px; border:1.5px solid var(--color-border); border-radius:8px; font-size:13px; font-family:inherit; cursor:pointer; }
+    .sr-status-select:focus { border-color:var(--color-primary); outline:none; }
+
+    /* 權限模組折疊 */
+    .perm-section { border:1px solid #e5e7eb; border-radius:10px; margin-bottom:10px; overflow:hidden; }
+    .perm-section-hd {
+      display:flex; align-items:center; gap:10px; padding:11px 16px;
+      background:#f8f9fa; cursor:pointer; user-select:none;
+      border-bottom:1px solid transparent; transition:background .1s;
+    }
+    .perm-section.is-open > .perm-section-hd { border-bottom-color:#e5e7eb; background:#f3f4f6; }
+    .perm-section-hd:hover { background:#eef2ff; }
+    .perm-section-arrow { margin-left:auto; font-size:11px; color:#9ca3af; transition:transform .2s; }
+    .perm-section.is-open > .perm-section-hd .perm-section-arrow { transform:rotate(180deg); }
+    .perm-section-title { font-size:13px; font-weight:700; color:#374151; }
+    .perm-section-icon { color:var(--color-primary); width:16px; text-align:center; font-size:12px; }
+    .perm-section-body { display:none; padding:4px 0; }
+    .perm-section.is-open > .perm-section-body { display:block; }
+
+    /* 權限矩陣 */
+    .perm-matrix { width:100%; border-collapse:collapse; font-size:13px; }
+    .perm-matrix td { padding:8px 16px; border-bottom:1px solid #f0f1f3; vertical-align:middle; }
+    .perm-matrix tr:last-child td { border-bottom:none; }
+    .perm-matrix .td-feature { color:#374151; min-width:160px; padding-left:20px; }
+    .perm-matrix .td-actions { display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
+    .perm-cb-row { display:flex; align-items:center; gap:5px; font-size:12px; color:#4b5563; cursor:pointer; white-space:nowrap; }
+    .perm-cb-row input[type="checkbox"] { width:14px; height:14px; accent-color:var(--color-primary); cursor:pointer; }
+    .perm-cb-row.disabled { opacity:.4; cursor:default; }
+    .perm-cb-row.disabled input { cursor:default; }
+
+    /* 刪除確認 Modal */
+    .del-modal-ov { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1010; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .del-modal-ov.is-open { opacity:1; pointer-events:auto; }
+    .del-modal { background:#fff; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.18); width:360px; max-width:calc(100% - 32px); text-align:center; }
+    .del-modal-body { padding:30px 24px 20px; }
+    .del-modal-icon { width:56px; height:56px; background:#fee2e2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; }
+    .del-modal-foot { padding:14px 24px; border-top:1px solid #e5e7eb; display:flex; justify-content:center; gap:10px; }
+
+    /* Buttons */
+    .btn-cancel { padding:8px 22px; background:#fff; border:1.5px solid var(--color-border); border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .1s; }
+    .btn-cancel:hover { background:#f3f4f6; }
+    .btn-ok { padding:8px 22px; background:var(--color-primary); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s; }
+    .btn-ok:hover { background:var(--color-primary-dark); }
+    .btn-danger { padding:8px 22px; background:#ef4444; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .15s; }
+    .btn-danger:hover { background:#dc2626; }
+
+    /* Toast */
+    .toast { position:fixed; bottom:24px; right:24px; background:var(--color-success); color:#fff; padding:12px 20px; border-radius:10px; font-size:14px; font-weight:600; box-shadow:0 4px 16px rgba(0,0,0,.2); opacity:0; transform:translateY(12px); transition:all .25s; pointer-events:none; z-index:2000; display:flex; align-items:center; gap:8px; }
+    .toast.show { opacity:1; transform:translateY(0); }
+
+    /* 空狀態 */
+    .sr-empty { text-align:center; padding:48px; color:#9ca3af; font-size:13px; }
+  </style>
+</head>
+<body class="admin">
+<main class="page-wrap fade-in">
+  <div class="page-crumb">系統管理 / 角色權限管理</div>
+
+
+  <!-- 篩選列 -->
+  <div class="sr-filter-bar">
+    <span class="sr-filter-label">搜尋</span>
+    <input class="sr-filter-input" id="sr-search" type="text" placeholder="請輸入角色權限名稱" />
+    <span class="sr-filter-label">狀態</span>
+    <select class="sr-filter-select" id="sr-status-filter">
+      <option value="">全部</option>
+      <option value="active">啟用</option>
+      <option value="inactive">停用</option>
+    </select>
+    <div class="sr-filter-actions">
+      <button class="btn-sr-query" id="btn-sr-query"><i class="fa-solid fa-magnifying-glass"></i> 查詢</button>
+      <button class="btn-sr-add" id="btn-sr-add"><i class="fa-solid fa-plus"></i> 新增角色權限</button>
+    </div>
+  </div>
+
+  <!-- 角色列表 -->
+  <div class="list-card">
+    <div style="overflow-x:auto;">
+      <table class="sr-table">
+        <thead>
+          <tr>
+            <th style="width:60px;">ID</th>
+            <th style="width:220px;">角色權限名稱</th>
+            <th style="width:90px;">狀態</th>
+            <th style="width:160px;">操作功能</th>
+          </tr>
+        </thead>
+        <tbody id="sr-tbody"></tbody>
+      </table>
+    </div>
+    <div id="sr-empty" class="sr-empty" style="display:none;">
+      <i class="fa-solid fa-inbox" style="font-size:28px;opacity:.25;display:block;margin-bottom:8px;"></i>
+      無符合的角色，請調整篩選條件
+    </div>
+  </div>
+</main>
+
+<!-- ── 新增 / 編輯 Modal ── -->
+<div class="sr-modal-ov" id="modal-role-edit">
+  <div class="sr-modal">
+    <div class="sr-modal-head">
+      <i class="fa-solid fa-shield-halved" style="color:var(--color-primary);font-size:16px;"></i>
+      <h3 id="modal-role-title">編輯角色權限</h3>
+      <button class="sr-close-btn" id="btn-modal-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="sr-modal-body">
+      <input type="hidden" id="modal-role-id" />
+
+      <!-- 角色名稱 -->
+      <div class="sr-name-row">
+        <span class="sr-name-label">角色名稱</span>
+        <input class="sr-name-input" id="modal-role-name" type="text" placeholder="請輸入角色名稱" maxlength="30" />
+      </div>
+
+      <!-- 狀態 -->
+      <div class="sr-status-row">
+        <span class="sr-name-label">狀態</span>
+        <select class="sr-status-select" id="modal-role-status">
+          <option value="active">啟用</option>
+          <option value="inactive">停用</option>
+        </select>
+      </div>
+
+      <!-- 權限模組（accordion） -->
+      <div id="perm-sections"></div>
+    </div>
+    <div class="sr-modal-foot">
+      <button class="btn-cancel" id="btn-modal-cancel">取消</button>
+      <button class="btn-ok" id="btn-modal-ok"><i class="fa-solid fa-check"></i> 確定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 刪除確認 Modal ── -->
+<div class="del-modal-ov" id="modal-delete">
+  <div class="del-modal">
+    <div class="del-modal-body">
+      <div class="del-modal-icon">
+        <i class="fa-solid fa-trash-can" style="color:#ef4444;font-size:22px;"></i>
+      </div>
+      <div style="font-size:14px;color:#374151;line-height:1.7;">
+        確定要刪除「<strong id="del-role-name"></strong>」嗎？<br/>此動作無法復原。
+      </div>
+    </div>
+    <div class="del-modal-foot">
+      <button class="btn-cancel" id="btn-del-cancel">取消</button>
+      <button class="btn-danger" id="btn-del-ok">確認刪除</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span id="toast-msg"></span></div>
+
+<script>
+'use strict';
+
+/* ──────────────────────────────────────────
+   MODULES — feature-based permission matrix
+─────────────────────────────────────────── */
+const MODULES = [
+  { id:'marketing', label:'行銷設定', icon:'fa-calendar-days', features:[
+    { name:'活動檔期管理',      actions:[{ key:'mkt_campaigns_view', label:'檢視' }, { key:'mkt_campaigns_edit', label:'編輯' }] },
+    { name:'分享制度說明維護',  actions:[{ key:'mkt_share_view',     label:'檢視' }, { key:'mkt_share_edit',     label:'編輯' }] },
+    { name:'常見問答維護',      actions:[{ key:'mkt_faq_view',       label:'檢視' }, { key:'mkt_faq_edit',       label:'編輯' }] },
+  ]},
+  { id:'members', label:'會員管理', icon:'fa-users', features:[
+    { name:'推薦人管理', actions:[{ key:'mbr_referrers_view', label:'檢視' }, { key:'mbr_referrers_edit', label:'編輯' }] },
+  ]},
+  { id:'notify', label:'推播管理', icon:'fa-paper-plane', features:[
+    { name:'發送推播',  actions:[{ key:'ntf_send',           label:'執行' }] },
+    { name:'人員管理',  actions:[{ key:'ntf_members_view',   label:'檢視' }, { key:'ntf_members_edit',   label:'編輯' }] },
+    { name:'群組管理',  actions:[{ key:'ntf_groups_view',    label:'檢視' }, { key:'ntf_groups_edit',    label:'編輯' }] },
+    { name:'標籤管理',  actions:[{ key:'ntf_tags_view',      label:'檢視' }, { key:'ntf_tags_edit',      label:'編輯' }] },
+    { name:'訊息樣板設定',  actions:[{ key:'ntf_settings_view',  label:'檢視' }, { key:'ntf_settings_edit',  label:'編輯' }] },
+    { name:'發送紀錄',  actions:[{ key:'ntf_log_view',       label:'檢視' }] },
+  ]},
+  { id:'cases', label:'案件管理', icon:'fa-file-lines', features:[
+    { name:'推薦案件管理', actions:[{ key:'case_records_view', label:'檢視' }, { key:'case_records_edit', label:'編輯' }] },
+    { name:'推薦案件報表', actions:[{ key:'case_reports_view', label:'檢視' }] },
+  ]},
+  { id:'finance', label:'財務管理', icon:'fa-file-invoice-dollar', features:[
+    { name:'獎金核款',              actions:[{ key:'fin_payout_view',    label:'檢視' }, { key:'fin_payout_approve', label:'核款' }] },
+    { name:'提領功能管理',          actions:[{ key:'fin_payments_view',  label:'檢視' }, { key:'fin_payments_edit',  label:'編輯' }] },
+    { name:'提領功能管理（現場）',  actions:[{ key:'fin_cash_view',      label:'檢視' }, { key:'fin_cash_edit',      label:'編輯' }] },
+    { name:'超量待審佇列',          actions:[{ key:'fin_pending_view',   label:'檢視' }, { key:'fin_pending_review', label:'審核' }] },
+  ]},
+  { id:'risk', label:'風控管理', icon:'fa-shield-halved', features:[
+    { name:'全站方案開關',      actions:[{ key:'risk_plan_view',      label:'檢視' }, { key:'risk_plan_edit',      label:'編輯' }] },
+    { name:'提領限制與時效',    actions:[{ key:'risk_limits_view',    label:'檢視' }, { key:'risk_limits_edit',    label:'編輯' }] },
+    { name:'空窗期獎金設定',    actions:[{ key:'risk_default_view',   label:'檢視' }, { key:'risk_default_edit',   label:'編輯' }] },
+    { name:'黑名單管理',        actions:[{ key:'risk_blacklist_view', label:'檢視' }, { key:'risk_blacklist_edit', label:'編輯' }] },
+  ]},
+  { id:'system', label:'系統管理', icon:'fa-gears', features:[
+    { name:'使用者管理',    actions:[{ key:'sys_users_view', label:'檢視' }, { key:'sys_users_edit', label:'編輯' }] },
+    { name:'角色權限管理',  actions:[{ key:'sys_roles_view', label:'檢視' }, { key:'sys_roles_edit', label:'編輯' }] },
+    { name:'操作紀錄查詢',  actions:[{ key:'sys_logs_view',  label:'檢視' }] },
+  ]},
+];
+const ALL_PERMS = MODULES.flatMap(m => m.features.flatMap(f => f.actions.map(a => a.key)));
+
+let ROLES = [
+  { id:'super_admin', label:'系統管理員', locked:true,  status:'active',   updatedAt:'2026/01/15 09:00', perms:[...ALL_PERMS] },
+  { id:'marketer',    label:'行銷管理員', locked:false, status:'active',   updatedAt:'2026/03/10 14:30', perms:['mkt_campaigns_view','mkt_campaigns_edit','mkt_share_view','mkt_share_edit','mkt_faq_view','mkt_faq_edit','ntf_send','ntf_members_view','ntf_members_edit','ntf_groups_view','ntf_groups_edit','ntf_tags_view','ntf_tags_edit','ntf_settings_view','ntf_settings_edit','ntf_log_view','mbr_referrers_view','case_reports_view'] },
+  { id:'finance_mgr', label:'財務管理員', locked:false, status:'active',   updatedAt:'2026/02/20 10:00', perms:['case_records_view','case_reports_view','fin_payout_view','fin_payout_approve','fin_payments_view','fin_payments_edit','fin_cash_view','fin_cash_edit','fin_pending_view','fin_pending_review'] },
+  { id:'risk_mgr',    label:'風控管理員', locked:false, status:'active',   updatedAt:'2026/04/05 16:45', perms:['mbr_referrers_view','case_records_view','case_reports_view','risk_plan_view','risk_plan_edit','risk_limits_view','risk_limits_edit','risk_default_view','risk_default_edit','risk_blacklist_view','risk_blacklist_edit'] },
+  { id:'viewer',      label:'唯讀用戶',   locked:false, status:'inactive', updatedAt:'2026/01/10 08:00', perms:['mkt_campaigns_view','mkt_share_view','mkt_faq_view','mbr_referrers_view','ntf_log_view','ntf_members_view','case_records_view','case_reports_view','fin_payout_view','fin_payments_view','fin_cash_view','fin_pending_view','risk_plan_view','risk_limits_view','risk_default_view','risk_blacklist_view','sys_logs_view'] },
+];
+
+/* ──────────────────────────────────────────
+   STATE
+─────────────────────────────────────────── */
+let filterName   = '';
+let filterStatus = '';
+let pendingDeleteId = null;
+
+/* ──────────────────────────────────────────
+   UTILITIES
+─────────────────────────────────────────── */
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.style.background = color || 'var(--color-success)';
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+function nowStr() { return new Date().toLocaleString('zh-TW',{hour12:false}).replace(/\//g,'/'); }
+
+/* ──────────────────────────────────────────
+   RENDER LIST
+─────────────────────────────────────────── */
+function getFilteredRoles() {
+  return ROLES.filter(r => {
+    if (filterName   && !r.label.includes(filterName))   return false;
+    if (filterStatus && r.status !== filterStatus)        return false;
+    return true;
+  });
+}
+
+function renderRoleList() {
+  const list  = getFilteredRoles();
+  const tbody = document.getElementById('sr-tbody');
+  const empty = document.getElementById('sr-empty');
+  if (!list.length) {
+    tbody.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  tbody.innerHTML = list.map((r, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td class="td-name">
+        ${r.label}
+        ${r.locked ? '<i class="fa-solid fa-lock locked-badge" title="系統鎖定"></i>' : ''}
+      </td>
+      <td>
+        <span class="status-badge ${r.status === 'active' ? 'status-badge--on' : 'status-badge--off'}">
+          ${r.status === 'active' ? '啟用' : '停用'}
+        </span>
+      </td>
+      <td style="white-space:nowrap;">
+        <button class="btn-tbl-edit" data-edit="${r.id}"> 編輯</button>
+        ${r.locked ? '' : `<button class="btn-tbl-del" data-del="${r.id}"></i> 刪除</button>`}
+      </td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('[data-edit]').forEach(btn =>
+    btn.addEventListener('click', () => openEditModal(btn.dataset.edit))
+  );
+  tbody.querySelectorAll('[data-del]').forEach(btn =>
+    btn.addEventListener('click', () => openDeleteConfirm(btn.dataset.del))
+  );
+}
+
+/* ──────────────────────────────────────────
+   PERMISSION ACCORDION
+─────────────────────────────────────────── */
+function renderPermSections(rolePerms, isLocked) {
+  const container = document.getElementById('perm-sections');
+  container.innerHTML = MODULES.map(m => `
+    <div class="perm-section is-open" id="section-${m.id}">
+      <div class="perm-section-hd" data-toggle="${m.id}">
+        <i class="fa-solid ${m.icon} perm-section-icon"></i>
+        <span class="perm-section-title">${esc(m.label)}</span>
+        <i class="fa-solid fa-chevron-down perm-section-arrow"></i>
+      </div>
+      <div class="perm-section-body">
+        <table class="perm-matrix">
+          <tbody>
+            ${m.features.map(f => `
+              <tr>
+                <td class="td-feature">${esc(f.name)}</td>
+                <td>
+                  <div class="td-actions">
+                    ${f.actions.map(a => `
+                      <label class="perm-cb-row${isLocked ? ' disabled' : ''}">
+                        <input type="checkbox" class="perm-cb" data-key="${a.key}"
+                          ${rolePerms.includes(a.key) ? 'checked' : ''}
+                          ${isLocked ? 'disabled' : ''} />
+                        ${esc(a.label)}
+                      </label>
+                    `).join('')}
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `).join('');
+
+  // Bind accordion toggles — click header: toggle open + select all in section
+  container.querySelectorAll('[data-toggle]').forEach(hd => {
+    hd.addEventListener('click', () => {
+      const section = document.getElementById('section-' + hd.dataset.toggle);
+      const wasOpen = section.classList.contains('is-open');
+      section.classList.toggle('is-open');
+      // If opening (was closed), select all checkboxes in this module
+      if (!wasOpen && !isLocked) {
+        section.querySelectorAll('.perm-cb:not(:disabled)').forEach(cb => { cb.checked = true; });
+      }
+    });
+  });
+}
+
+/* ──────────────────────────────────────────
+   MODAL — OPEN / SAVE
+─────────────────────────────────────────── */
+function openEditModal(roleId) {
+  const role = ROLES.find(r => r.id === roleId);
+  if (!role) return;
+  document.getElementById('modal-role-title').textContent = '編輯角色權限';
+  document.getElementById('modal-role-id').value          = roleId;
+  document.getElementById('modal-role-name').value        = role.label;
+  document.getElementById('modal-role-status').value      = role.status;
+  document.getElementById('modal-role-name').disabled     = role.locked;
+  renderPermSections(role.perms, role.locked);
+  openModal('modal-role-edit');
+}
+
+function openAddModal() {
+  document.getElementById('modal-role-title').textContent = '新增角色權限';
+  document.getElementById('modal-role-id').value          = '';
+  document.getElementById('modal-role-name').value        = '';
+  document.getElementById('modal-role-status').value      = 'active';
+  document.getElementById('modal-role-name').disabled     = false;
+  renderPermSections([], false);
+  openModal('modal-role-edit');
+}
+
+function saveRole() {
+  const id     = document.getElementById('modal-role-id').value;
+  const label  = document.getElementById('modal-role-name').value.trim();
+  const status = document.getElementById('modal-role-status').value;
+  if (!label) { alert('請填寫角色名稱'); return; }
+
+  const perms = [...document.querySelectorAll('#perm-sections .perm-cb:checked')].map(cb => cb.dataset.key);
+
+  if (id) {
+    // Edit
+    const role = ROLES.find(r => r.id === id);
+    if (role) {
+      if (!role.locked) role.label = label;
+      role.status    = status;
+      role.perms     = role.locked ? role.perms : perms;
+      role.updatedAt = nowStr();
+    }
+    showToast(`「${label}」已儲存`);
+  } else {
+    // Add
+    if (ROLES.find(r => r.label === label)) { alert('角色名稱已存在'); return; }
+    ROLES.push({ id:'role-' + Date.now(), label, locked:false, status, updatedAt:nowStr(), perms });
+    showToast(`已新增角色「${label}」`);
+  }
+  closeModal('modal-role-edit');
+  renderRoleList();
+}
+
+/* ──────────────────────────────────────────
+   DELETE
+─────────────────────────────────────────── */
+function openDeleteConfirm(roleId) {
+  const role = ROLES.find(r => r.id === roleId);
+  if (!role) return;
+  pendingDeleteId = roleId;
+  document.getElementById('del-role-name').textContent = role.label;
+  openModal('modal-delete');
+}
+
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  const role = ROLES.find(r => r.id === pendingDeleteId);
+  ROLES = ROLES.filter(r => r.id !== pendingDeleteId);
+  pendingDeleteId = null;
+  closeModal('modal-delete');
+  renderRoleList();
+  showToast(`已刪除「${role?.label || ''}」`, '#ef4444');
+}
+
+/* ──────────────────────────────────────────
+   MODAL HELPERS
+─────────────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('is-open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('is-open'); }
+
+/* ──────────────────────────────────────────
+   INIT
+─────────────────────────────────────────── */
+function init() {
+  renderRoleList();
+
+  document.getElementById('btn-sr-query').addEventListener('click', () => {
+    filterName   = document.getElementById('sr-search').value.trim();
+    filterStatus = document.getElementById('sr-status-filter').value;
+    renderRoleList();
+  });
+  document.getElementById('sr-search').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btn-sr-query').click();
+  });
+
+  document.getElementById('btn-sr-add').addEventListener('click', openAddModal);
+  document.getElementById('btn-modal-close').addEventListener('click', () => closeModal('modal-role-edit'));
+  document.getElementById('btn-modal-cancel').addEventListener('click', () => closeModal('modal-role-edit'));
+  document.getElementById('btn-modal-ok').addEventListener('click', saveRole);
+
+  document.getElementById('btn-del-cancel').addEventListener('click', () => closeModal('modal-delete'));
+  document.getElementById('btn-del-ok').addEventListener('click', confirmDelete);
+
+  // Close modals on backdrop click
+  document.getElementById('modal-role-edit').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-role-edit')) closeModal('modal-role-edit');
+  });
+  document.getElementById('modal-delete').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-delete')) closeModal('modal-delete');
+  });
+
+  // ESC to close
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeModal('modal-role-edit');
+      closeModal('modal-delete');
+    }
+  });
+}
+init();
+</script>
+</body>
+</html>

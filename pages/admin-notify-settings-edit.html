@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>訊息樣板設定 - 訊息編輯</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/admin-notify.css" />
+  </head>
+  <body class="admin" data-notify-page="settings-edit">
+  <div class="page-wrap fade-in">
+
+    <!-- 由 JS 填充 (renderNsSystemDetail / renderNsCustomDetail) -->
+    <div id="ns-detail-view"></div>
+
+    <!-- ════════════════ CUSTOM EVENT MODAL ════════════════ -->
+    <div class="m-ov" id="modal-custom-event" hidden>
+      <div class="m-backdrop" data-close="modal-custom-event"></div>
+      <div class="m-panel m-panel--lg" role="dialog" style="max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">
+        <div class="m-head">
+          <span id="modal-custom-title">編輯自訂通知</span>
+          <button class="m-close" data-close="modal-custom-event"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- 固定變數資訊列 -->
+        <div class="ce-vars-bar">
+          <span class="ce-vars-label">可用變數：</span>
+          <span class="var-chip" data-cevar-modal="{姓名}">{姓名}</span>
+          <span class="var-chip" data-cevar-modal="{URL}">{URL}</span>
+          <span class="var-chip" data-cevar-modal="{效期}">{效期}</span>
+          <span class="var-chip" data-cevar-modal="{案號}">{案號}</span>
+          <span class="var-chip" data-cevar-modal="{筆數}">{筆數}</span>
+          <span class="var-chip" data-cevar-modal="{提領URL}">{提領URL}</span>
+          <span class="var-chip" data-cevar-modal="{紀錄URL}">{紀錄URL}</span>
+          <span class="var-chip" data-cevar-modal="{MGMURL}">{MGMURL}</span>
+        </div>
+
+        <div class="m-body ce-scroll-body">
+          <div class="ce-form">
+
+            <!-- 事件名稱 -->
+            <div class="ce-form-row">
+              <label class="cf-label">事件名稱 <span style="color:#ef4444;">*</span></label>
+              <input class="cf-input" id="ce-name" placeholder="例：週年慶優惠通知" maxlength="30" autocomplete="off" />
+              <div class="ce-err" id="ce-name-err" style="display:none;">請填寫事件名稱</div>
+            </div>
+
+            <!-- 管道選擇 -->
+            <div class="ce-form-row">
+              <label class="cf-label">推播管道</label>
+              <div class="ce-ch-row">
+                <label class="ce-ch-opt">
+                  <input type="checkbox" id="ce-ch-line" checked />
+                  <i class="fa-brands fa-line" style="color:#06c755;"></i> LINE OA
+                </label>
+                <label class="ce-ch-opt">
+                  <input type="checkbox" id="ce-ch-sms" />
+                  <i class="fa-solid fa-comment-sms" style="color:#6366f1;"></i> SMS
+                </label>
+              </div>
+            </div>
+
+            <!-- LINE 訊息格式 -->
+            <div class="ce-form-row" id="ce-line-type-row">
+              <label class="cf-label">LINE 訊息格式</label>
+              <div class="ce-lt-row">
+                <label class="ce-lt-opt">
+                  <input type="radio" name="ce-line-type" id="ce-lt-text" value="text" checked />
+                  純文字
+                </label>
+                <label class="ce-lt-opt">
+                  <input type="radio" name="ce-line-type" id="ce-lt-image" value="image" />
+                  圖片卡片
+                </label>
+              </div>
+            </div>
+
+            <!-- 分頁內容 tabs -->
+            <div class="ce-tpl-section">
+              <div class="ce-tpl-tabs">
+                <button class="ce-tpl-tab active" data-cetab="line" id="ce-tab-line">
+                  <i class="fa-brands fa-line"></i> LINE 內容
+                </button>
+                <button class="ce-tpl-tab" data-cetab="sms" id="ce-tab-sms">
+                  <i class="fa-solid fa-comment-sms"></i> SMS 內容
+                </button>
+              </div>
+
+              <!-- LINE 純文字 -->
+              <div id="ce-panel-line">
+                <div id="ce-panel-line-text">
+                  <textarea class="cf-textarea" id="ce-line-text" rows="5"
+                    placeholder="LINE 推播訊息文字…"></textarea>
+                </div>
+                <!-- LINE 圖片卡片 -->
+                <div id="ce-panel-line-image" style="display:none;">
+                  <div class="ce-form-row">
+                    <label class="cf-label">圖片網址</label>
+                    <input class="cf-input" id="ce-li-imgurl" placeholder="https://…" />
+                  </div>
+                  <div class="ce-form-row">
+                    <label class="cf-label">標題</label>
+                    <input class="cf-input" id="ce-li-title" maxlength="30" placeholder="卡片標題（最多 30 字）" />
+                  </div>
+                  <div class="ce-form-row">
+                    <label class="cf-label">說明文字</label>
+                    <textarea class="cf-textarea" id="ce-li-body" rows="2" maxlength="60" placeholder="說明文字（最多 60 字）"></textarea>
+                  </div>
+                  <div class="ce-form-2col">
+                    <div class="ce-form-row">
+                      <label class="cf-label">按鈕文字</label>
+                      <input class="cf-input" id="ce-li-btnlabel" maxlength="20" placeholder="例：立即前往" />
+                    </div>
+                    <div class="ce-form-row">
+                      <label class="cf-label">按鈕連結</label>
+                      <input class="cf-input" id="ce-li-btnurl" placeholder="https://…" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SMS -->
+              <div id="ce-panel-sms" style="display:none;">
+                <textarea class="cf-textarea" id="ce-sms-text" rows="4"
+                  placeholder="SMS 訊息內容…（建議 60 字以內）"></textarea>
+                <div class="ce-char-hint" id="ce-sms-char">0 字</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="m-foot">
+          <button class="btn-s" data-close="modal-custom-event">取消</button>
+          <button class="btn-p" id="btn-save-custom-event">
+            <i class="fa-solid fa-floppy-disk"></i> 儲存
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ DELETE CONFIRM MODAL ════════════════ -->
+    <div class="m-ov" id="modal-delete-confirm" hidden>
+      <div class="m-backdrop" data-close="modal-delete-confirm"></div>
+      <div class="m-panel m-panel--sm" role="dialog" style="text-align:center;">
+        <div class="m-head">
+          <span>確認刪除</span>
+          <button class="m-close" data-close="modal-delete-confirm"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="m-body" style="padding:28px 24px;">
+          <div style="width:56px;height:56px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <i class="fa-solid fa-trash-can" style="color:#ef4444;font-size:22px;"></i>
+          </div>
+          <div style="font-size:14px;color:#374151;line-height:1.7;">
+            確定要刪除「<strong id="del-confirm-name"></strong>」嗎？<br/>此動作無法復原。
+          </div>
+        </div>
+        <div class="m-foot">
+          <button class="btn-s" data-close="modal-delete-confirm">取消</button>
+          <button class="btn-danger" id="btn-confirm-delete">確認刪除</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-wrap -->
+  <script src="../js/admin-notify.js"></script>
+  </body>
+</html>

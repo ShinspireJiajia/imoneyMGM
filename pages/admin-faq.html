@@ -42,8 +42,9 @@
         <div class="page-alert">
           <i class="fa-solid fa-circle-info"></i>
           <div>
-            拖曳「<i class="fa-solid fa-up-down" style="margin: 0 2px;"></i>」手把可調整顯示順序。
-            停用的問答不會出現在前台。儲存後前台於下次重新整理時更新。
+            拖曳「<i class="fa-solid fa-up-down" style="margin: 0 2px;"></i>」手把可調整同層順序。
+            分類群組的「<i class="fa-solid fa-plus" style="margin: 0 2px;"></i>」可新增子項目（最多三層）。
+            停用的項目不會出現在前台。
           </div>
         </div>
 
@@ -58,9 +59,9 @@
           <div>
             <h3 id="faq-modal-title">
               <i class="fa-solid fa-pen-to-square"></i>
-              <span id="faq-modal-mode">新增問答</span>
+              <span id="faq-modal-mode">新增</span>
             </h3>
-            <div class="faq-modal-subtitle">問題與答案均為必填欄位</div>
+            <div class="faq-modal-subtitle" id="faq-modal-subtitle">問題與答案均為必填欄位</div>
           </div>
           <button type="button" class="faq-modal-close" data-close aria-label="關閉">
             <i class="fa-solid fa-xmark"></i>
@@ -68,8 +69,52 @@
         </header>
 
         <div class="faq-modal-body">
-          <!-- 問題 -->
-          <div class="faq-field">
+
+          <!-- 類型選擇（新增時顯示，編輯時隱藏） -->
+          <div class="faq-field" id="faq-type-field">
+            <label class="faq-field-label">
+              <i class="fa-solid fa-shapes"></i>類型
+            </label>
+            <div class="faq-type-switch" role="radiogroup">
+              <label class="faq-type-opt selected" id="faq-type-opt-item">
+                <input type="radio" name="faq-type" value="item" checked />
+                <i class="fa-solid fa-circle-question"></i>
+                <span>問與答</span>
+              </label>
+              <label class="faq-type-opt" id="faq-type-opt-group">
+                <input type="radio" name="faq-type" value="group" />
+                <i class="fa-solid fa-folder"></i>
+                <span>分類群組</span>
+              </label>
+            </div>
+            <div class="faq-field-hint">問與答：可展開的 Q&amp;A；分類群組：可包含子項目的分類容器</div>
+          </div>
+
+          <!-- 上層分類路徑（有父節點時顯示） -->
+          <div class="faq-field" id="faq-parent-field" hidden>
+            <label class="faq-field-label">
+              <i class="fa-solid fa-sitemap"></i>上層分類
+            </label>
+            <div class="faq-parent-path" id="faq-parent-path">—</div>
+          </div>
+
+          <!-- 分類標題（group 類型） -->
+          <div class="faq-field" id="faq-title-field" hidden>
+            <label class="faq-field-label" for="faq-title">
+              <i class="fa-solid fa-folder"></i>分類標題
+            </label>
+            <input
+              type="text"
+              id="faq-title"
+              class="faq-field-input"
+              placeholder="例：獎金與提領"
+              maxlength="40"
+            />
+            <div class="faq-field-hint">建議 20 字以內</div>
+          </div>
+
+          <!-- 問題（item 類型） -->
+          <div class="faq-field" id="faq-question-field">
             <label class="faq-field-label" for="faq-question">
               <i class="fa-solid fa-circle-question"></i>問題
             </label>
@@ -83,12 +128,11 @@
             <div class="faq-field-hint">建議 50 字以內，簡明描述使用者的疑問</div>
           </div>
 
-          <!-- 答案 -->
-          <div class="faq-field">
+          <!-- 答案（item 類型） -->
+          <div class="faq-field" id="faq-answer-field">
             <label class="faq-field-label" for="faq-answer">
               <i class="fa-solid fa-comment-dots"></i>答案
             </label>
-            <!-- 簡易工具列 -->
             <div class="faq-toolbar" id="faq-toolbar" aria-label="格式工具列">
               <button type="button" class="faq-tb-btn" data-cmd="bold" title="粗體">
                 <i class="fa-solid fa-bold"></i>
@@ -125,7 +169,7 @@
             <label class="faq-field-label" for="faq-enabled">
               <i class="fa-solid fa-toggle-on"></i>前台顯示
             </label>
-            <label class="faq-toggle" aria-label="啟用後前台顯示此問答">
+            <label class="faq-toggle" aria-label="啟用後前台顯示此項目">
               <input type="checkbox" id="faq-enabled" checked />
               <span class="faq-toggle-track">
                 <span class="faq-toggle-thumb"></span>
@@ -157,7 +201,8 @@
           </button>
         </header>
         <div class="faq-modal-body">
-          <p class="faq-delete-text">確定要刪除這筆問答嗎？刪除後無法復原。</p>
+          <p class="faq-delete-text">確定要刪除這筆資料嗎？刪除後無法復原。</p>
+          <p class="faq-delete-warn" id="faq-delete-warn" hidden></p>
           <blockquote class="faq-delete-preview" id="faq-delete-preview"></blockquote>
         </div>
         <footer class="faq-modal-footer">

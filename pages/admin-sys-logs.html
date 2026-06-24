@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>操作紀錄查詢 - 系統管理</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/common.css" />
+  <link rel="stylesheet" href="../css/admin-matrix.css" />
+  <link rel="stylesheet" href="../css/admin-campaigns.css" />
+  <style>
+    .logs-table { width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed; }
+    .logs-table thead tr { background:var(--admin-table-head-bg); color:var(--admin-table-head-fg); }
+    .logs-table th { padding:10px 14px; text-align:left; font-weight:600; white-space:nowrap; }
+    .logs-table tbody tr { border-bottom:1px solid var(--color-border-light); transition:background .1s; }
+    .logs-table tbody tr:hover { background:var(--admin-row-hover); }
+    .logs-table td { padding:9px 14px; vertical-align:middle; white-space:nowrap; }
+
+    .op-badge { display:inline-block; border-radius:5px; padding:2px 8px; font-size:11px; font-weight:600; white-space:nowrap; }
+    .op-view   { background:#e0f2fe; color:#0369a1; }
+    .op-edit   { background:#dcfce7; color:#15803d; }
+    .op-delete { background:#fee2e2; color:#991b1b; }
+    .op-exec   { background:#fef3c7; color:#92400e; }
+    .op-login  { background:#f3e8ff; color:#6d28d9; }
+
+    .filter-grid-4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; }
+    @media (max-width:900px) { .filter-grid-4 { grid-template-columns:1fr 1fr; } }
+    @media (max-width:600px) { .filter-grid-4 { grid-template-columns:1fr; } }
+
+  </style>
+</head>
+<body class="admin">
+<main class="page-wrap fade-in">
+  <div class="page-crumb">系統管理 / 操作紀錄查詢</div>
+  <!-- 篩選 -->
+  <section class="filter-card">
+    <div class="filter-card-head">
+      <button type="button" class="btn-outline btn-sm" id="btn-toggle-filter">
+        <i class="fa-solid fa-chevron-up"></i>收合篩選
+      </button>
+    </div>
+    <div class="filter-grid-4" id="filter-grid">
+      <div class="field-row">
+        <label class="field-label">帳號 (Email)</label>
+        <input class="field-input" id="f-email" type="text" placeholder="搜尋帳號" />
+      </div>
+      <div class="field-row">
+        <label class="field-label">紀錄時間（起）</label>
+        <input class="field-input" id="f-date-from" type="date" />
+      </div>
+      <div class="field-row">
+        <label class="field-label">紀錄時間（訖）</label>
+        <input class="field-input" id="f-date-to" type="date" />
+      </div>
+      <div class="field-row">
+        <label class="field-label">操作模組</label>
+        <select class="field-select" id="f-module"><option value="">全部模組</option></select>
+      </div>
+      <div class="field-row">
+        <label class="field-label">操作類型</label>
+        <select class="field-select" id="f-action">
+          <option value="">全部類型</option>
+          <option value="檢視">檢視</option>
+          <option value="編輯">編輯</option>
+          <option value="刪除">刪除</option>
+          <option value="執行">執行</option>
+          <option value="登入">登入</option>
+          <option value="核款">核款</option>
+          <option value="審核">審核</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-card-actions">
+      <button type="button" class="btn-outline" id="btn-clear-filter">清除篩選</button>
+      <button type="button" class="btn-primary" id="btn-search">查詢</button>
+      <button type="button" class="btn-outline" id="btn-export">
+        <i class="fa-solid fa-file-csv"></i>匯出 CSV
+      </button>
+    </div>
+  </section>
+
+  <!-- 紀錄清單 -->
+  <section class="matrix-card" style="margin-top:0;">
+    <div class="matrix-card-head">
+      <h3><i class="fa-solid fa-clock-rotate-left"></i>操作紀錄</h3>
+      <span id="logs-count" style="font-size:13px;color:var(--color-text-secondary);">共 0 筆</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="logs-table">
+        <colgroup>
+          <col style="width:5%">
+          <col style="width:24%">
+          <col style="width:18%">
+          <col style="width:13%">
+          <col>
+        </colgroup>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>帳號</th>
+            <th>紀錄時間</th>
+            <th>操作模組</th>
+            <th>操作功能</th>
+          </tr>
+        </thead>
+        <tbody id="logs-tbody"></tbody>
+      </table>
+    </div>
+    <div class="pagination-bar">
+      <div class="pg-size">
+        每頁
+        <select id="page-size">
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+        筆
+      </div>
+      <div class="pagination" id="logs-pagination"></div>
+      <div class="pg-total">共 <span id="logs-total">0</span> 筆</div>
+    </div>
+  </section>
+</main>
+
+
+<script>
+'use strict';
+
+const MODULES_LIST = ['行銷設定','會員管理','推播管理','案件管理','財務管理','風控管理','系統管理','帳號'];
+
+const LOGS = [
+  { id:'L0001', email:'admin@shinda.com.tw', name:'系統管理員', time:'2026-06-24 10:32:15', module:'系統管理', action:'編輯', func:'使用者管理 [編輯]', target:'陳小明 (E023) 角色變更', ip:'192.168.1.100', detail:'將使用者 chen.xiaoming@shinda.com.tw 的角色從「唯讀用戶」變更為「行銷管理員」。' },
+  { id:'L0002', email:'chen.xiaoming@shinda.com.tw', name:'陳小明', time:'2026-06-24 10:15:03', module:'推播管理', action:'執行', func:'發送推播 [執行]', target:'推播 #PB2406240012', ip:'192.168.1.52', detail:'發送推播至群組「VIP會員」，共 248 位收件人。' },
+  { id:'L0003', email:'lin.yaling@shinda.com.tw', name:'林雅玲', time:'2026-06-24 09:58:44', module:'財務管理', action:'核款', func:'推薦案件獎金核款 [核款]', target:'批次核款 #PAY20240003', ip:'192.168.1.73', detail:'批次核款 3 筆案件，總金額 NT$15,000。' },
+  { id:'L0004', email:'wang.dehua@shinda.com.tw', name:'王德華', time:'2026-06-24 09:45:22', module:'風控管理', action:'編輯', func:'黑名單管理 [編輯]', target:'事件 #BL-2024-0089', ip:'10.0.0.15', detail:'將帳號 U240088 標記為黑名單，原因：重複推薦碼使用。' },
+  { id:'L0005', email:'admin@shinda.com.tw', name:'系統管理員', time:'2026-06-24 09:15:32', module:'帳號', action:'登入', func:'帳號 [登入]', target:'後台登入成功', ip:'192.168.1.100', detail:'使用者從 IP 192.168.1.100 成功登入後台。瀏覽器：Chrome 125。' },
+  { id:'L0006', email:'huang.jing@shinda.com.tw', name:'黃靜', time:'2026-06-23 17:55:09', module:'財務管理', action:'審核', func:'超量待審佇列 [審核]', target:'案件 #CJ-2024-1102', ip:'192.168.2.21', detail:'審核通過超量案件，備註：已確認非異常推薦行為。' },
+  { id:'L0007', email:'chen.xiaoming@shinda.com.tw', name:'陳小明', time:'2026-06-23 16:30:00', module:'行銷設定', action:'編輯', func:'活動檔期管理 [編輯]', target:'活動 #ACT-2024-06', ip:'192.168.1.52', detail:'修改活動名稱為「2026夏季推薦活動」，更新獎金方案設定。' },
+  { id:'L0008', email:'lin.yaling@shinda.com.tw', name:'林雅玲', time:'2026-06-23 15:48:33', module:'財務管理', action:'檢視', func:'提領功能管理 [檢視]', target:'提領申請列表', ip:'192.168.1.73', detail:'查詢 2026-06-01 至 2026-06-23 的提領申請，共 45 筆。' },
+  { id:'L0009', email:'wang.dehua@shinda.com.tw', name:'王德華', time:'2026-06-23 14:20:11', module:'風控管理', action:'編輯', func:'提領限制與時效 [編輯]', target:'提領上限設定', ip:'10.0.0.15', detail:'將月提領上限從 NT$50,000 調整為 NT$60,000。' },
+  { id:'L0010', email:'liu.fang@shinda.com.tw', name:'劉芳', time:'2026-06-23 13:05:44', module:'案件管理', action:'檢視', func:'推薦案件報表 [檢視]', target:'2026-06 月報', ip:'192.168.3.10', detail:'查詢 2026 年 6 月推薦案件報表，匯出 PDF。' },
+  { id:'L0011', email:'admin@shinda.com.tw', name:'系統管理員', time:'2026-06-23 11:00:00', module:'系統管理', action:'編輯', func:'角色權限管理 [編輯]', target:'財務管理員', ip:'192.168.1.100', detail:'更新「財務管理員」角色權限：移除「提領功能管理 [編輯]」，新增「超量待審佇列 [審核]」。' },
+  { id:'L0012', email:'chen.xiaoming@shinda.com.tw', name:'陳小明', time:'2026-06-23 10:22:33', module:'推播管理', action:'編輯', func:'群組管理 [編輯]', target:'群組「高資產客戶」', ip:'192.168.1.52', detail:'新增 12 位成員至群組「高資產客戶」。' },
+  { id:'L0013', email:'huang.jing@shinda.com.tw', name:'黃靜', time:'2026-06-22 16:44:00', module:'財務管理', action:'核款', func:'推薦案件獎金核款 [核款]', target:'批次核款 #PAY20240002', ip:'192.168.2.21', detail:'批次核款 7 筆案件，總金額 NT$28,500。' },
+  { id:'L0014', email:'wang.dehua@shinda.com.tw', name:'王德華', time:'2026-06-22 15:10:05', module:'會員管理', action:'檢視', func:'推薦人管理 [檢視]', target:'推薦人列表', ip:'10.0.0.15', detail:'查詢推薦人列表，篩選條件：狀態=系統警示，共 4 筆。' },
+  { id:'L0015', email:'admin@shinda.com.tw', name:'系統管理員', time:'2026-06-22 11:20:18', module:'系統管理', action:'編輯', func:'使用者管理 [編輯]', target:'張偉 (E102) 停用', ip:'192.168.1.100', detail:'停用帳號 zhang.wei@shinda.com.tw，原因：離職。' },
+  { id:'L0016', email:'lin.yaling@shinda.com.tw', name:'林雅玲', time:'2026-06-22 09:30:22', module:'帳號', action:'登入', func:'帳號 [登入]', target:'後台登入成功', ip:'192.168.1.73', detail:'使用者從 IP 192.168.1.73 成功登入後台。' },
+  { id:'L0017', email:'chen.xiaoming@shinda.com.tw', name:'陳小明', time:'2026-06-21 17:05:11', module:'行銷設定', action:'編輯', func:'常見問答維護 [編輯]', target:'FAQ #Q035', ip:'192.168.1.52', detail:'新增常見問題「如何查詢推薦獎金？」。' },
+  { id:'L0018', email:'huang.jing@shinda.com.tw', name:'黃靜', time:'2026-06-21 14:55:30', module:'財務管理', action:'檢視', func:'推薦案件獎金核款 [檢視]', target:'待核款列表', ip:'192.168.2.21', detail:'查詢待核款清單，共 11 筆待處理。' },
+  { id:'L0019', email:'wang.dehua@shinda.com.tw', name:'王德華', time:'2026-06-21 10:40:00', module:'風控管理', action:'編輯', func:'黑名單管理 [編輯]', target:'事件 #BL-2024-0088', ip:'10.0.0.15', detail:'解除凍結帳號 U230155，已確認為誤判。' },
+  { id:'L0020', email:'liu.fang@shinda.com.tw', name:'劉芳', time:'2026-06-20 16:00:00', module:'推播管理', action:'檢視', func:'發送紀錄 [檢視]', target:'推播發送紀錄', ip:'192.168.3.10', detail:'查詢 2026-06-01 至 2026-06-20 發送紀錄，共 32 筆。' },
+];
+
+const ACTION_CLASS = { '檢視':'op-view', '編輯':'op-edit', '刪除':'op-delete', '執行':'op-exec', '登入':'op-login', '核款':'op-exec', '審核':'op-exec' };
+
+let filtered = [...LOGS];
+let currentPage = 1;
+let pageSize = 10;
+
+function applyFilter() {
+  const email = document.getElementById('f-email').value.trim().toLowerCase();
+  const dateFrom = document.getElementById('f-date-from').value;
+  const dateTo = document.getElementById('f-date-to').value;
+  const module_ = document.getElementById('f-module').value;
+  const action = document.getElementById('f-action').value;
+
+  filtered = LOGS.filter(l => {
+    if (email && !l.email.toLowerCase().includes(email)) return false;
+    if (dateFrom && l.time < dateFrom) return false;
+    if (dateTo && l.time > dateTo + ' 23:59:59') return false;
+    if (module_ && l.module !== module_) return false;
+    if (action && l.action !== action) return false;
+    return true;
+  });
+  currentPage = 1;
+  renderTable();
+}
+
+function renderTable() {
+  const total = filtered.length;
+  document.getElementById('logs-total').textContent = total;
+  document.getElementById('logs-count').textContent = `共 ${total} 筆`;
+  const slice = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const tbody = document.getElementById('logs-tbody');
+  if (!slice.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:#9ca3af;">查無紀錄</td></tr>';
+    document.getElementById('logs-pagination').innerHTML = '';
+    return;
+  }
+  tbody.innerHTML = slice.map((l, i) => {
+    const cls = ACTION_CLASS[l.action] || 'op-view';
+    return `<tr>
+      <td style="color:#9ca3af;">${(currentPage - 1) * pageSize + i + 1}</td>
+      <td style="font-size:12px;">${l.email}</td>
+      <td style="font-size:12px;color:var(--color-text-secondary);">${l.time}</td>
+      <td><span style="font-size:12px;font-weight:600;">${l.module}</span></td>
+      <td style="font-size:12px;">${l.func}</td>
+    </tr>`;
+  }).join('');
+  renderPagination(total);
+}
+
+function renderPagination(total) {
+  const pages = Math.ceil(total / pageSize);
+  const pg = document.getElementById('logs-pagination');
+  if (pages <= 1) { pg.innerHTML = ''; return; }
+  pg.innerHTML = Array.from({ length: pages }, (_, i) =>
+    `<button class="pg-btn${i + 1 === currentPage ? ' active' : ''}" onclick="goPage(${i + 1})">${i + 1}</button>`
+  ).join('');
+}
+
+function goPage(p) { currentPage = p; renderTable(); }
+
+
+function exportCsv() {
+  const headers = ['紀錄ID','帳號','紀錄時間','操作模組','操作功能','操作對象'];
+  const rows = filtered.map(l => [l.id, l.email, l.time, l.module, l.func, l.target]);
+  const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿' + csv], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `操作紀錄_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function init() {
+  const fModule = document.getElementById('f-module');
+  MODULES_LIST.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    fModule.appendChild(opt);
+  });
+
+  applyFilter();
+
+  document.getElementById('btn-search').addEventListener('click', applyFilter);
+  document.getElementById('btn-clear-filter').addEventListener('click', () => {
+    ['f-email','f-date-from','f-date-to'].forEach(id => document.getElementById(id).value = '');
+    ['f-module','f-action'].forEach(id => document.getElementById(id).value = '');
+    applyFilter();
+  });
+  document.getElementById('page-size').addEventListener('change', e => { pageSize = +e.target.value; applyFilter(); });
+  document.getElementById('btn-export').addEventListener('click', exportCsv);
+  document.getElementById('btn-toggle-filter').addEventListener('click', function() {
+    const fg = document.getElementById('filter-grid');
+    fg.classList.toggle('collapsed');
+    const col = fg.classList.contains('collapsed');
+    this.innerHTML = col ? '<i class="fa-solid fa-chevron-down"></i>展開篩選' : '<i class="fa-solid fa-chevron-up"></i>收合篩選';
+  });
+}
+init();
+</script>
+</body>
+</html>

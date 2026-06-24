@@ -188,9 +188,13 @@
               <option value="has_warn">有警示</option>
               <option value="no_warn">無警示</option>
               <option value="E-120">E-120</option>
-              <option value="E-180">E-180</option>
+              <option value="E-NBK">E-NBK</option>
+              <option value="E-WDL">E-WDL</option>
               <option value="E-OLD">E-OLD</option>
               <option value="E-BLK">E-BLK</option>
+              <option value="E-OVA">E-OVA</option>
+              <option value="E-OVC">E-OVC</option>
+              <option value="E-NEG">E-NEG</option>
             </select>
           </div>
         </div>
@@ -422,8 +426,13 @@
                 <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
               </tr>
               <tr>
-                <td><span class="warn-chip">E-180</span></td>
-                <td id="legend-desc-e180">獎金核發後超過 180 天未提領</td>
+                <td><span class="warn-chip">E-NBK</span></td>
+                <td id="legend-desc-enbk">獎金核發後超過 180 天未填寫匯款資料</td>
+                <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
+              </tr>
+              <tr>
+                <td><span class="warn-chip">E-WDL</span></td>
+                <td id="legend-desc-ewdl">申請提領後超過 30 天仍未完成匯款</td>
                 <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
               </tr>
               <tr>
@@ -436,12 +445,28 @@
                 <td>帳號被列為黑名單</td>
                 <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
               </tr>
+              <tr>
+                <td><span class="warn-chip">E-OVA</span></td>
+                <td id="legend-desc-eova">超過每月提領金額上限</td>
+                <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
+              </tr>
+              <tr>
+                <td><span class="warn-chip">E-OVC</span></td>
+                <td id="legend-desc-eovc">超過每月推薦件數上限</td>
+                <td style="text-align:center;color:var(--color-danger);font-size:12px;">不建議核發</td>
+              </tr>
+              <tr>
+                <td><span class="warn-chip">E-NEG</span></td>
+                <td>協商案件服務費未達核款條件（累積未到 $6,000 或啟動後不足兩期）</td>
+                <td style="text-align:center;color:var(--color-danger);font-weight:600;font-size:12px;">不可核款</td>
+              </tr>
 
             </tbody>
           </table>
           <p style="font-size:12px;color:var(--color-text-muted);margin-top:12px;line-height:1.6;">
             ※ 以上警示由系統自動偵測，不代表必然違規。<br>
-            後台人員可依實際情況人工審核，仍可選擇核准或拒絕。
+            後台人員可依實際情況人工審核，仍可選擇核准或拒絕。<br>
+            ※ <strong style="color:var(--color-danger);">E-NEG</strong> 為強制阻擋，協商案件在服務費條件未達標前系統將拒絕執行核款動作。
           </p>
         </div>
         <footer class="rec-modal-foot">

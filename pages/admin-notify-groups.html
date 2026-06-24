@@ -63,6 +63,26 @@
           <div id="gcb-member-stat" style="margin:6px 0 8px;"></div>
           <div class="gcb-badges" id="group-conditions-badges"></div>
         </div>
+        <!-- Members section -->
+        <div class="group-members-section" id="group-members-section" style="padding:12px 20px 0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+            <span class="gcb-title" style="font-size:11px;font-weight:700;color:#6366f1;display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.04em;">
+              <i class="fa-solid fa-users"></i> 群組成員
+            </span>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <div style="position:relative;">
+                <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:11px;pointer-events:none;"></i>
+                <input type="text" id="group-member-search" placeholder="搜尋成員…"
+                  style="padding:5px 8px 5px 26px;border:1px solid #e5e7eb;border-radius:7px;font-size:12px;font-family:'Noto Sans TC',sans-serif;outline:none;width:150px;" />
+              </div>
+              <button class="btn-s" id="btn-group-add-members" style="font-size:12px;padding:5px 12px;white-space:nowrap;">
+                <i class="fa-solid fa-user-plus"></i> 新增成員
+              </button>
+            </div>
+          </div>
+          <div id="group-member-list" style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;"></div>
+        </div>
+
         <!-- hidden for JS compat -->
         <span id="group-d-count" style="display:none;"></span>
         <div class="history-section">
@@ -217,6 +237,37 @@
       <footer class="m-foot">
         <button class="m-btn-cancel" data-close="modal-remove-note">取消</button>
         <button class="m-btn-danger" id="btn-remove-note-ok">確認移除</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal: 指定對象加入群組 -->
+  <div id="modal-add-to-group" class="m-ov" hidden>
+    <div class="m-backdrop" data-close="modal-add-to-group"></div>
+    <div class="m-panel m-panel--lg" role="dialog">
+      <header class="m-head">
+        <div class="m-title"><i class="fa-solid fa-user-plus" style="color:#6366f1;"></i>指定對象加入群組</div>
+        <button class="m-close" data-close="modal-add-to-group"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="m-body" style="padding:0;">
+        <div style="padding:10px 16px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div style="position:relative;flex:1;min-width:180px;">
+            <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:12px;pointer-events:none;"></i>
+            <input id="atg-search" type="text" placeholder="搜尋姓名、手機號碼…"
+              style="width:100%;box-sizing:border-box;padding:7px 9px 7px 29px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:'Noto Sans TC',sans-serif;outline:none;" />
+          </div>
+          <span id="atg-sel-count" style="font-size:12px;color:#6366f1;font-weight:600;white-space:nowrap;min-width:52px;text-align:right;"></span>
+        </div>
+        <div id="atg-member-list" style="max-height:280px;overflow-y:auto;"></div>
+      </div>
+      <div style="padding:10px 16px;background:#fafafa;border-top:1px solid #f3f4f6;">
+        <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:5px;">備註（選填）</label>
+        <input id="atg-note" type="text" placeholder="例：VIP邀請名單、客服轉介…"
+          style="width:100%;box-sizing:border-box;padding:7px 11px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:'Noto Sans TC',sans-serif;outline:none;" />
+      </div>
+      <footer class="m-foot">
+        <button class="m-btn-cancel" data-close="modal-add-to-group">取消</button>
+        <button class="m-btn-ok" id="btn-atg-ok"><i class="fa-solid fa-user-plus"></i> 加入群組</button>
       </footer>
     </div>
   </div>

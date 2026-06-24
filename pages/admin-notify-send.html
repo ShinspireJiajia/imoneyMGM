@@ -61,16 +61,30 @@
       <!-- RIGHT: compose -->
       <div class="compose-panel">
 
-        <!-- Channel -->
+        <!-- Step 1: Template -->
         <div class="cs">
-          <div class="cs-label">推播管道</div>
+          <div class="cs-label"><span class="send-step">步驟 1</span>選擇樣板</div>
+          <select class="tpl-select" id="tpl-picker">
+            <option value="">── 自訂訊息（不套用母版）──</option>
+          </select>
+        </div>
+
+        <!-- Locked channels — visible when template is selected -->
+        <div class="cs tpl-ch-locked-row" id="tpl-ch-locked-row" style="display:none;">
+          <div class="cs-label"><i class="fa-solid fa-lock" style="font-size:10px;margin-right:4px;color:#9ca3af;"></i>推播管道（由樣板決定，不可更改）</div>
+          <div class="tpl-locked-channels" id="tpl-locked-channels"></div>
+        </div>
+
+        <!-- Step 2: Channel — only for 自訂訊息 -->
+        <div class="cs" id="ch-select-section">
+          <div class="cs-label"><span class="send-step">步驟 2</span>推播管道</div>
           <div class="ch-row">
             <label class="ch-option" id="ch-line-opt">
-              <input type="checkbox" id="ch-line" />
+              <input type="radio" name="ch-group" id="ch-line" />
               <i class="fa-brands fa-line ch-icon" style="color:#15803d;"></i> LINE 推播
             </label>
             <label class="ch-option" id="ch-sms-opt">
-              <input type="checkbox" id="ch-sms" />
+              <input type="radio" name="ch-group" id="ch-sms" />
               <i class="fa-solid fa-comment-sms ch-icon" style="color:#0284c7;"></i> 簡訊 SMS
             </label>
           </div>
@@ -78,14 +92,6 @@
             <i class="fa-solid fa-triangle-exclamation"></i>
             已選對象中有 <strong id="no-line-count">0</strong> 人尚未綁定 LINE，將僅透過 SMS 發送
           </div>
-        </div>
-
-        <!-- Template -->
-        <div class="cs">
-          <div class="cs-label">套用母版</div>
-          <select class="tpl-select" id="tpl-picker">
-            <option value="">── 自訂訊息（不套用母版）──</option>
-          </select>
         </div>
 
         <!-- Message -->
@@ -232,7 +238,7 @@
           </div>
 
           <div id="compose-placeholder" style="padding:28px;text-align:center;color:#c0c4cc;font-size:13px;border:1px dashed #e5e7eb;border-radius:8px;">
-            請先選擇推播管道（LINE 或 SMS）
+            請先完成步驟 1（選擇樣板）或步驟 2（選擇管道）
           </div>
         </div>
 

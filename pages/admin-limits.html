@@ -78,28 +78,37 @@
 
           <div class="limit-row">
             <div>
-              <div class="limit-label">獎金核發後未提領失效期限</div>
+              <div class="limit-label">未填寫匯款資料失效期限</div>
               <div class="limit-hint">
-                系統已核發獎金後，推薦人未填寫匯款資料或申請提領的最長保留天數。超過此期限將自動失效歸零。
+                系統已核發獎金後，推薦人尚未填寫匯款資料的最長保留天數。超過此期限將自動失效歸零（警示代碼 E-NBK）。
               </div>
             </div>
             <div class="limit-input-wrap">
-              <input id="lim-unclaimed-days" class="limit-number-input" type="number"
+              <input id="lim-no-bank-days" class="limit-number-input" type="number"
                 step="1" min="1" inputmode="numeric" value="180" />
               <span class="limit-unit-label">天</span>
             </div>
           </div>
 
-          <div class="limit-actions">
-            <button id="btn-save-expiry" type="button" class="btn btn-primary">
-              <i class="fa-regular fa-floppy-disk"></i>儲存效期設定
-            </button>
+          <div class="limit-row">
+            <div>
+              <div class="limit-label">申請提領最長保留天數</div>
+              <div class="limit-hint">
+                推薦人已申請提領但尚未完成匯款的最長等待天數。超過此期限將自動失效歸零（警示代碼 E-WDL）。
+              </div>
+            </div>
+            <div class="limit-input-wrap">
+              <input id="lim-withdraw-days" class="limit-number-input" type="number"
+                step="1" min="1" inputmode="numeric" value="30" />
+              <span class="limit-unit-label">天</span>
+            </div>
           </div>
+
         </div>
 
         <!-- ── 每月提領上限 ── -->
         <div class="risk-card">
-          <h3><i class="fa-solid fa-gauge-high"></i>每月提領上限設定</h3>
+          <h3><i class="fa-solid fa-gauge-high"></i>每人每月提領上限設定</h3>
           <p class="desc">
             設定後立即生效；歷史已產生之快照不受影響。所有設定異動皆寫入稽核軌跡。
           </p>
@@ -172,12 +181,18 @@
             </div>
           </div> -->
 
-          <div class="limit-actions">
-            <button id="btn-save-limits" type="button" class="btn btn-primary">
-              <i class="fa-regular fa-floppy-disk"></i>儲存上限設定
-            </button>
-          </div>
         </div>
+
+        <!-- ── 儲存按鈕列 ── -->
+        <div class="limit-actions" style="gap:10px;">
+          <button id="btn-save-expiry" type="button" class="btn btn-primary">
+            <i class="fa-regular fa-floppy-disk"></i>儲存效期設定
+          </button>
+          <button id="btn-save-limits" type="button" class="btn btn-primary">
+            <i class="fa-regular fa-floppy-disk"></i>儲存上限設定
+          </button>
+        </div>
+
         <!-- ── 異動歷程 ── -->
         <div class="risk-card">
           <h3><i class="fa-solid fa-clock-rotate-left"></i>異動歷程</h3>
