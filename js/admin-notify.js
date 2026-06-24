@@ -7,7 +7,10 @@
   /* ══════════════════════════════════════════════
      CONSTANTS & DEMO DATA
   ══════════════════════════════════════════════ */
-  const CLAIM_URL   = 'https://mgm.shinda.com.tw/';
+  const CLAIM_URL      = 'https://mgm.shinda.com.tw/';
+  const WITHDRAWAL_URL = 'https://mgm.shinda.com.tw/withdrawal';
+  const RECORDS_URL    = 'https://mgm.shinda.com.tw/records';
+  const MGM_URL        = 'https://mgm.shinda.com.tw/';
   const DEMO_EXPIRE = '2026/07/31';
   const LOG_KEY     = 'mgm_notify_log';
   const TPL_KEY     = 'mgm_notify_templates';
@@ -55,8 +58,8 @@
       memberIds:['U250310001','U240105002','U250115004','U240328005','U240715010'],
       createdAt:'2026-05-01',
       history:[
-        { actor:'Admin', time:'2026-05-01 10:30', action:'建立群組，初始成員 5 人', note:'' },
-        { actor:'Admin', time:'2026-05-15 14:20', action:'從標籤「VIP」同步，新增 3 人', note:'月度活動前更新名單' },
+        { actor:'Admin', time:'2026-05-01 10:30', action:'建立群組', note:'' },
+        { actor:'Admin', time:'2026-05-15 14:20', action:'從標籤「VIP」同步', note:'月度活動前更新名單' },
       ],
     },
     {
@@ -64,7 +67,7 @@
       memberIds:['U250310001','U250601011','U250602012','U250604014','U250605015','U250608018'],
       createdAt:'2026-06-01',
       history:[
-        { actor:'Admin', time:'2026-06-01 09:00', action:'建立群組，初始成員 6 人', note:'6月活動通知' },
+        { actor:'Admin', time:'2026-06-01 09:00', action:'建立群組', note:'6月活動通知' },
       ],
     },
     {
@@ -72,7 +75,7 @@
       memberIds:['U250401007','U240603008','U250604014','U250608018'],
       createdAt:'2026-04-01',
       history:[
-        { actor:'Admin', time:'2026-04-01 08:00', action:'建立群組，初始成員 4 人', note:'' },
+        { actor:'Admin', time:'2026-04-01 08:00', action:'建立群組', note:'' },
       ],
     },
   ];
@@ -290,6 +293,7 @@
   let batchGroupsSelected = new Set();
   let pickMembersFilter   = '';
   let syncTagsSelected    = new Set();
+  let grpAddSelected      = new Set();
   let pendingRemoveMemberId = null;
   let selectedGroupMemberIds = new Set();
   let cfEditingGroupId = null;
@@ -312,7 +316,7 @@
     setTimeout(() => t.remove(), 2600);
   }
   function previewText(raw, name) {
-    return (raw || '').replace(/\{姓名\}/g, name).replace(/\{URL\}/g, CLAIM_URL).replace(/\{效期\}/g, DEMO_EXPIRE).replace(/\{案號\}/g, 'M2026052301').replace(/\{筆數\}/g, '3');
+    return (raw || '').replace(/\{姓名\}/g, name).replace(/\{URL\}/g, CLAIM_URL).replace(/\{效期\}/g, DEMO_EXPIRE).replace(/\{案號\}/g, 'M2026052301').replace(/\{筆數\}/g, '3').replace(/\{提領URL\}/g, WITHDRAWAL_URL).replace(/\{紀錄URL\}/g, RECORDS_URL).replace(/\{MGMURL\}/g, MGM_URL);
   }
   function insertAtCursor(ta, text) {
     const s = ta.selectionStart, e = ta.selectionEnd;
@@ -729,7 +733,7 @@
         <input class="pick-cb" type="checkbox" ${sel?'checked':''} data-gpick="${g.id}" />
         <div class="pick-info">
           <div class="pick-name">${esc(g.name)}</div>
-          <div class="pick-meta">${g.memberIds.length} 人・建立 ${g.createdAt}</div>
+          <div class="pick-meta">建立 ${g.createdAt}</div>
         </div>
       </div>`;
     }).join('');
@@ -738,10 +742,29 @@
         const id = el.dataset.gpick;
         if (pickGroupsSelected.has(id)) pickGroupsSelected.delete(id); else pickGroupsSelected.add(id);
         renderPickGroupsList();
-        document.getElementById('pick-groups-sel-count').textContent = pickGroupsSelected.size ? `已選 ${pickGroupsSelected.size} 個` : '';
+        updatePickGroupsFooter();
       });
     });
-    document.getElementById('pick-groups-sel-count').textContent = pickGroupsSelected.size ? `已選 ${pickGroupsSelected.size} 個` : '';
+    updatePickGroupsFooter();
+  }
+
+  function updatePickGroupsFooter() {
+    const resolvedIds = new Set();
+    pickGroupsSelected.forEach((gid) => {
+      const g = getGroupById(gid);
+      if (g) g.memberIds.forEach((id) => resolvedIds.add(id));
+    });
+    sendTags.forEach((tid) => {
+      MEMBERS.forEach((m) => { if (getUserTagIds(m.id).includes(tid)) resolvedIds.add(m.id); });
+    });
+    sendPersons.forEach((id) => resolvedIds.add(id));
+    const selEl = document.getElementById('pick-groups-sel-count');
+    if (!selEl) return;
+    if (!pickGroupsSelected.size) {
+      selEl.textContent = '';
+    } else {
+      selEl.innerHTML = `已選 ${pickGroupsSelected.size} 個・<strong style="color:#6366f1;">符合 ${resolvedIds.size} 人</strong>`;
+    }
   }
 
   function openPickTags() {
@@ -754,12 +777,12 @@
     if (!tags.length) { list.innerHTML = '<div style="padding:28px;text-align:center;color:#c0c4cc;font-size:13px;">尚無標籤</div>'; return; }
     list.innerHTML = tags.map((t) => {
       const sel = pickTagsSelected.has(t.id);
-      const cnt = MEMBERS.filter((m) => getUserTagIds(m.id).includes(t.id)).length;
       return `<div class="pick-item${sel?' is-picked':''}" data-tpick="${t.id}">
         <input class="pick-cb" type="checkbox" ${sel?'checked':''} data-tpick="${t.id}" />
         <div class="pick-info">
-          <div class="pick-name">${esc(t.name)}</div>
-          <div class="pick-meta">${cnt} 人</div>
+          <div class="pick-name">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${t.color};margin-right:6px;vertical-align:middle;"></span>${esc(t.name)}
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -768,10 +791,29 @@
         const id = el.dataset.tpick;
         if (pickTagsSelected.has(id)) pickTagsSelected.delete(id); else pickTagsSelected.add(id);
         renderPickTagsList();
-        document.getElementById('pick-tags-sel-count').textContent = pickTagsSelected.size ? `已選 ${pickTagsSelected.size} 個` : '';
+        updatePickTagsFooter();
       });
     });
-    document.getElementById('pick-tags-sel-count').textContent = pickTagsSelected.size ? `已選 ${pickTagsSelected.size} 個` : '';
+    updatePickTagsFooter();
+  }
+
+  function updatePickTagsFooter() {
+    const resolvedIds = new Set();
+    sendGroups.forEach((gid) => {
+      const g = getGroupById(gid);
+      if (g) g.memberIds.forEach((id) => resolvedIds.add(id));
+    });
+    pickTagsSelected.forEach((tid) => {
+      MEMBERS.forEach((m) => { if (getUserTagIds(m.id).includes(tid)) resolvedIds.add(m.id); });
+    });
+    sendPersons.forEach((id) => resolvedIds.add(id));
+    const selEl = document.getElementById('pick-tags-sel-count');
+    if (!selEl) return;
+    if (!pickTagsSelected.size) {
+      selEl.textContent = '';
+    } else {
+      selEl.innerHTML = `已選 ${pickTagsSelected.size} 個・<strong style="color:#6366f1;">符合 ${resolvedIds.size} 人</strong>`;
+    }
   }
 
   function openPickMembers() {
@@ -1106,7 +1148,7 @@
           </div>
         </td>
         <td>
-          <button class="btn-icon" data-edit-member="${m.id}" title="編輯"><i class="fa-solid fa-pen-to-square"></i></button>
+          <button class="btn-s" data-edit-member="${m.id}">編輯</button>
         </td>
       </tr>`;
     }).join('');
@@ -1181,7 +1223,6 @@
       list.innerHTML = '<div style="padding:28px;text-align:center;color:#c0c4cc;font-size:13px;">尚無標籤，請先建立</div>';
     } else {
       list.innerHTML = tags.map((t) => {
-        const cnt = MEMBERS.filter((m) => getUserTagIds(m.id).includes(t.id)).length;
         return `<div class="pick-item" data-btpick="${t.id}">
           <input class="pick-cb" type="checkbox" data-btpick="${t.id}" />
           <div class="pick-info">
@@ -1189,7 +1230,6 @@
               <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${t.color};margin-right:6px;vertical-align:middle;"></span>
               ${esc(t.name)}
             </div>
-            <div class="pick-meta">${cnt} 人已貼此標籤</div>
           </div>
         </div>`;
       }).join('');
@@ -1235,7 +1275,7 @@
           <input class="pick-cb" type="checkbox" data-bgpick="${g.id}" />
           <div class="pick-info">
             <div class="pick-name">${esc(g.name)}</div>
-            <div class="pick-meta">${g.memberIds.length} 人 · 建立 ${g.createdAt}</div>
+            <div class="pick-meta">建立 ${g.createdAt}</div>
           </div>
         </div>`).join('');
       list.querySelectorAll('[data-bgpick]').forEach((el) => {
@@ -1492,21 +1532,21 @@
         const idx = +sel.dataset.cfrow;
         const newField = getCfField(sel.value) || CF_FIELDS[0];
         conditionRows[idx] = { field: newField.key, op: newField.ops[0].key, value: newField.valType === 'select' ? (newField.opts[0]?.key || '') : '' };
-        renderCfRows(); renderConditionFilterResult();
+        renderCfRows(); resetCfPreview();
       });
     });
     // Bind op change
     container.querySelectorAll('[data-cfop]').forEach((sel) => {
-      sel.addEventListener('change', () => { conditionRows[+sel.dataset.cfop].op = sel.value; renderConditionFilterResult(); });
+      sel.addEventListener('change', () => { conditionRows[+sel.dataset.cfop].op = sel.value; resetCfPreview(); });
     });
     // Bind value change
     container.querySelectorAll('[data-cfval]').forEach((el) => {
-      el.addEventListener('change', () => { conditionRows[+el.dataset.cfval].value = el.value; renderConditionFilterResult(); });
-      el.addEventListener('input',  () => { conditionRows[+el.dataset.cfval].value = el.value; renderConditionFilterResult(); });
+      el.addEventListener('change', () => { conditionRows[+el.dataset.cfval].value = el.value; resetCfPreview(); });
+      el.addEventListener('input',  () => { conditionRows[+el.dataset.cfval].value = el.value; resetCfPreview(); });
     });
     // Bind delete
     container.querySelectorAll('[data-cfdel]').forEach((btn) => {
-      btn.addEventListener('click', () => { conditionRows.splice(+btn.dataset.cfdel, 1); renderCfRows(); renderConditionFilterResult(); });
+      btn.addEventListener('click', () => { conditionRows.splice(+btn.dataset.cfdel, 1); renderCfRows(); resetCfPreview(); });
     });
   }
 
@@ -1654,6 +1694,15 @@
     return labels;
   }
 
+  function resetCfPreview() {
+    const area = document.getElementById('cf-preview-area');
+    if (area) area.style.display = 'none';
+    const btn = document.getElementById('btn-cf-preview');
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-eye"></i> 預覽名單';
+    const countEl = document.getElementById('cf-result-count');
+    if (countEl) countEl.textContent = '—';
+  }
+
   function renderConditionFilterResult() {
     const cond    = readConditionsFromModal();
     const matched = filterByConditions(cond);
@@ -1696,11 +1745,7 @@
     if (excDnd) excDnd.checked = true;
     const timeEl = document.getElementById('cf-time-unlimited');
     if (timeEl) { timeEl.checked = true; const dr = document.getElementById('cfb-date-range'); if (dr) dr.style.display = 'none'; }
-    document.getElementById('cf-result-count').textContent = '0';
-    const previewArea = document.getElementById('cf-preview-area');
-    if (previewArea) previewArea.style.display = 'none';
-    const previewBtn = document.getElementById('btn-cf-preview');
-    if (previewBtn) previewBtn.innerHTML = '<i class="fa-solid fa-eye"></i> 預覽名單';
+    resetCfPreview();
     const toSendBtn = document.getElementById('btn-cf-to-send');
     if (toSendBtn) toSendBtn.style.display = fromGroupsTab ? 'none' : '';
     const saveBtn = document.getElementById('btn-cf-save-group');
@@ -1724,7 +1769,7 @@
       createdAt: new Date().toISOString().slice(0, 10),
       history: [{
         actor: 'Admin', time: nowStr(),
-        action: `從條件篩選建立，共 ${ids.length} 人${labels.length ? `（${labels.join('、')}）` : ''}`,
+        action: `從條件篩選建立${labels.length ? `（${labels.join('、')}）` : ''}`,
         note: '',
       }],
     };
@@ -1749,9 +1794,9 @@
     const removed = g.memberIds.filter((id) => !newIds.includes(id)).length;
     const labels  = conditionsToLabels(g.conditions);
     g.memberIds = newIds;
-    addGroupHistory(g, `重新套用條件，更新後共 ${newIds.length} 人（新增 ${added}，移除 ${removed}）${labels.length ? `（${labels.join('、')}）` : ''}`, '');
+    addGroupHistory(g, `重新套用條件（新增 ${added}，移除 ${removed}）${labels.length ? `（${labels.join('、')}）` : ''}`, '');
     saveGroups();
-    renderGroupConditionsBlock(g); renderGroupHistory(g); renderGroupList();
+    renderGroupConditionsBlock(g); renderGroupMemberList(g); renderGroupHistory(g); renderGroupList();
     toast(`條件已重新套用，共 ${newIds.length} 人（+${added} / -${removed}）`);
   }
 
@@ -1762,10 +1807,7 @@
     if (excDnd) excDnd.checked = g.conditions?.excludeDND ?? true;
     const timeEl = document.getElementById('cf-time-unlimited');
     if (timeEl) { timeEl.checked = true; const dr = document.getElementById('cfb-date-range'); if (dr) dr.style.display = 'none'; }
-    const previewArea = document.getElementById('cf-preview-area');
-    if (previewArea) previewArea.style.display = 'none';
-    const previewBtn = document.getElementById('btn-cf-preview');
-    if (previewBtn) previewBtn.innerHTML = '<i class="fa-solid fa-eye"></i> 預覽名單';
+    resetCfPreview();
     const toSendBtn = document.getElementById('btn-cf-to-send');
     if (toSendBtn) toSendBtn.style.display = 'none';
     const saveBtn = document.getElementById('btn-cf-save-group');
@@ -1784,7 +1826,7 @@
     const labels  = conditionsToLabels(cond);
     g.conditions = cond;
     g.memberIds  = newIds;
-    addGroupHistory(g, `修改條件並重新套用，共 ${newIds.length} 人${labels.length ? `（${labels.join('、')}）` : ''}`, '');
+    addGroupHistory(g, `修改條件並重新套用${labels.length ? `（${labels.join('、')}）` : ''}`, '');
     saveGroups();
     cfEditingGroupId = null;
     const saveBtn = document.getElementById('btn-cf-save-group');
@@ -1860,6 +1902,7 @@
     if (detailView) detailView.style.display = '';
     document.getElementById('group-d-name').textContent = g.name;
     renderGroupConditionsBlock(g);
+    renderGroupMemberList(g);
     renderGroupHistory(g);
   }
 
@@ -1886,11 +1929,10 @@
       return `<tr class="gl-row" data-group-open="${g.id}">
         <td class="gl-td gl-td--no">${start + i + 1}</td>
         <td class="gl-td gl-td--name">${esc(g.name)}</td>
-        <td class="gl-td gl-td--count">${g.memberIds.length}</td>
         <td class="gl-td gl-td--type">${condLabel}</td>
         <td class="gl-td gl-td--date">${esc(g.createdAt)}</td>
         <td class="gl-td gl-td--updated">${lastUpdate}</td>
-        <td class="gl-td gl-td--arrow"><i class="fa-solid fa-chevron-right"></i></td>
+        <td class="gl-td gl-td--action"><button class="gl-edit-btn">查看</button></td>
       </tr>`;
     }).join('');
     container.innerHTML = `<table class="group-table">
@@ -1898,11 +1940,10 @@
         <tr>
           <th class="gl-th gl-th--no">項次</th>
           <th class="gl-th gl-th--name">群組名稱</th>
-          <th class="gl-th gl-th--count">人數</th>
           <th class="gl-th gl-th--type">管理方式</th>
           <th class="gl-th gl-th--date">建立日期</th>
           <th class="gl-th gl-th--updated">最後更新</th>
-          <th class="gl-th gl-th--arrow"></th>
+          <th class="gl-th gl-th--action"></th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
@@ -1931,6 +1972,7 @@
     const nameEl = document.getElementById('group-d-name');
     if (nameEl) nameEl.textContent = g.name;
     renderGroupConditionsBlock(g);
+    renderGroupMemberList(g);
     renderGroupHistory(g);
   }
 
@@ -1980,17 +2022,16 @@
       !q || m.name.toLowerCase().includes(q) || m.mobile.includes(q)
     );
     if (!members.length) {
-      list.innerHTML = '<div style="padding:24px;text-align:center;color:#c0c4cc;font-size:13px;">無符合條件的成員</div>';
+      list.innerHTML = `<div style="padding:24px;text-align:center;color:#c0c4cc;font-size:13px;">${q ? '無符合條件的成員' : '尚無成員，點選「新增成員」加入指定對象'}</div>`;
       return;
     }
-    // Read-only — no checkboxes; membership is managed from the 人員管理 page
     list.innerHTML = members.map((m) => {
       const tagHtml = getUserTagIds(m.id).map((tid) => {
         const t = getTagById(tid);
         return t ? `<span class="gm-tag-sm" style="background:${hexRgba(t.color,0.09)};color:${t.color};border:1px solid ${hexRgba(t.color,0.22)};">${esc(t.name)}</span>` : '';
       }).join('');
       const idBadges = m.identities.slice(0, 2).map(identityBadge).join('');
-      return `<div class="gm-cpt" style="grid-template-columns:26px 138px 104px 56px 76px 1fr;" data-gmcpt="${m.id}">
+      return `<div class="gm-cpt" style="grid-template-columns:26px 138px 104px 56px 76px 1fr auto;" data-gmcpt="${m.id}">
         <div class="m-avatar" style="width:26px;height:26px;font-size:11px;flex-shrink:0;">${esc(m.name.charAt(0))}</div>
         <div class="gm-c-info">
           <div class="gm-c-name">${esc(m.name)}</div>
@@ -2000,8 +2041,88 @@
         <div class="gm-c-line">${m.line ? '<span class="gm-line-yes"><i class="fa-brands fa-line"></i> 已加</span>' : '<span class="gm-line-no">—</span>'}</div>
         <div class="gm-c-badges">${idBadges}</div>
         <div class="gm-c-tags">${tagHtml}</div>
+        <button class="gm-rm-btn" data-gmrm="${m.id}" title="移除" style="background:none;border:none;cursor:pointer;color:#d1d5db;padding:2px 4px;font-size:13px;line-height:1;border-radius:4px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#d1d5db'"><i class="fa-solid fa-xmark"></i></button>
       </div>`;
     }).join('');
+    list.querySelectorAll('[data-gmrm]').forEach((btn) =>
+      btn.addEventListener('click', (e) => { e.stopPropagation(); openRemoveNote(btn.dataset.gmrm); })
+    );
+  }
+
+  function openAddToGroupModal() {
+    const g = getGroupById(activeGroupId);
+    if (!g) return;
+    grpAddSelected = new Set();
+    const searchEl = document.getElementById('atg-search');
+    const noteEl   = document.getElementById('atg-note');
+    if (searchEl) searchEl.value = '';
+    if (noteEl)   noteEl.value   = '';
+    document.getElementById('atg-sel-count').textContent = '';
+    renderAtgList(g);
+    openModal('modal-add-to-group');
+    setTimeout(() => searchEl?.focus(), 100);
+  }
+
+  function renderAtgList(g) {
+    const q        = (document.getElementById('atg-search')?.value || '').toLowerCase();
+    const existing = new Set(g.memberIds);
+    const candidates = MEMBERS.filter((m) => {
+      if (existing.has(m.id)) return false;
+      if (q && !m.name.toLowerCase().includes(q) && !m.mobile.replace(/-/g, '').includes(q.replace(/-/g, ''))) return false;
+      return true;
+    });
+    const list = document.getElementById('atg-member-list');
+    if (!list) return;
+    if (!candidates.length) {
+      list.innerHTML = `<div style="padding:28px;text-align:center;color:#c0c4cc;font-size:13px;">${q ? '無符合條件的人員' : '所有人員皆已在群組中'}</div>`;
+      return;
+    }
+    list.innerHTML = candidates.map((m) => {
+      const sel = grpAddSelected.has(m.id);
+      return `<div class="pick-item-m${sel ? ' is-picked' : ''}" data-atgpick="${m.id}">
+        <input class="pick-cb-m" type="checkbox" ${sel ? 'checked' : ''} data-atgpick="${m.id}" />
+        <div class="pick-m-info">
+          <div class="pick-m-main">
+            <span class="pick-m-name">${esc(m.name)}</span>
+            <span class="pick-m-id">${m.id}</span>
+          </div>
+          <div class="pick-m-meta">
+            <span class="pick-m-phone">${m.mobile}</span>
+            ${m.identities.map((i) => identityBadge(i)).join('')}
+            ${m.line ? '<span class="gm-line-yes" style="font-size:10px;"><i class="fa-brands fa-line"></i> LINE</span>' : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('[data-atgpick]').forEach((el) => {
+      el.addEventListener('click', () => {
+        const id = el.dataset.atgpick;
+        if (grpAddSelected.has(id)) grpAddSelected.delete(id); else grpAddSelected.add(id);
+        const g2 = getGroupById(activeGroupId);
+        if (g2) renderAtgList(g2);
+        document.getElementById('atg-sel-count').textContent = grpAddSelected.size ? `已選 ${grpAddSelected.size} 人` : '';
+      });
+    });
+    document.getElementById('atg-sel-count').textContent = grpAddSelected.size ? `已選 ${grpAddSelected.size} 人` : '';
+  }
+
+  function confirmAddToGroup() {
+    const g = getGroupById(activeGroupId);
+    if (!g) return;
+    if (!grpAddSelected.size) { toast('請先選擇要加入的成員', '#f59e0b'); return; }
+    const note = document.getElementById('atg-note')?.value.trim() || '';
+    let added = 0;
+    grpAddSelected.forEach((id) => {
+      if (!g.memberIds.includes(id)) { g.memberIds.push(id); added++; }
+    });
+    addGroupHistory(g, `手動新增 ${added} 人`, note);
+    saveGroups();
+    closeModal('modal-add-to-group');
+    renderGroupConditionsBlock(g);
+    renderGroupMemberList(g);
+    renderGroupHistory(g);
+    renderGroupList();
+    toast(`已新增 ${added} 人至群組`);
   }
 
   function renderGroupHistory(g) {
@@ -2059,6 +2180,7 @@
     saveGroups();
     closeModal('modal-remove-note');
     renderGroupConditionsBlock(g);
+    renderGroupMemberList(g);
     renderGroupHistory(g);
     renderGroupList();
     toast('成員已移除', '#ef4444');
@@ -2083,7 +2205,7 @@
       name:     g.name + ' (複本)',
       memberIds:[...g.memberIds],
       createdAt: new Date().toISOString().slice(0,10),
-      history:  [{ actor:'Admin', time:nowStr(), action:`從「${g.name}」複製，共 ${g.memberIds.length} 人`, note:'' }],
+      history:  [{ actor:'Admin', time:nowStr(), action:`從「${g.name}」複製`, note:'' }],
     };
     groups.push(newGroup);
     saveGroups();
@@ -2137,6 +2259,7 @@
     saveGroups();
     closeModal('modal-group-sync');
     renderGroupConditionsBlock(g);
+    renderGroupMemberList(g);
     renderGroupHistory(g);
     renderGroupList();
     toast(`同步完成，新增 ${added} 人`);
@@ -2250,28 +2373,16 @@
     const start    = tagPage * TAGS_PER_PAGE;
     const pageTags = tags.slice(start, start + TAGS_PER_PAGE);
     c.innerHTML = `
-      <table class="tag-table">
-        <thead>
-          <tr>
-            <th class="tag-th-no">#</th>
-            <th class="tag-th-name">標籤名稱</th>
-            <th class="tag-th-count">人數</th>
-            <th class="tag-th-acts">操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${pageTags.map((t, i) => `
-            <tr class="tag-tr">
-              <td class="tag-td-no">${start + i + 1}</td>
-              <td class="tag-td-name">${esc(t.name)}</td>
-              <td class="tag-td-count">${getTagUserCount(t.id)} 人</td>
-              <td class="tag-td-acts">
-                <button class="tag-act-btn" data-action="edit-tag" data-id="${t.id}" title="編輯"><i class="fa-solid fa-pen"></i></button>
-                <button class="tag-act-btn del" data-action="delete-tag" data-id="${t.id}" title="刪除"><i class="fa-solid fa-trash"></i></button>
-              </td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
+      <div class="tag-chips-wrap">
+        ${pageTags.map((t) => `
+          <div class="tag-chip-card">
+            <span class="tag-chip-name">${esc(t.name)}</span>
+            <div class="tag-chip-acts">
+              <button class="tag-act-btn" data-action="edit-tag" data-id="${t.id}" title="編輯"><i class="fa-solid fa-pen"></i></button>
+              <button class="tag-act-btn del" data-action="delete-tag" data-id="${t.id}" title="刪除"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>`).join('')}
+      </div>
       <div class="tag-pagination">
         <span class="tag-pg-info">第 ${tagPage + 1} / ${totalPages} 頁，共 ${tags.length} 筆</span>
         <div class="tag-pg-btns">
@@ -2398,7 +2509,7 @@
             <div class="tpl-var-row">
               <div class="tpl-var-label">可用變數（點擊插入）：</div>
               <div class="var-chips">
-                ${['{姓名}','{URL}','{效期}','{案號}','{筆數}'].map((v) =>
+                ${['{姓名}','{URL}','{效期}','{案號}','{筆數}','{提領URL}','{紀錄URL}','{MGMURL}'].map((v) =>
                   `<span class="var-chip" data-tplid="${t.id}" data-v="${v}" data-vch="sms">${v}</span>`
                 ).join('')}
               </div>
@@ -2420,7 +2531,7 @@
               <div class="tpl-var-row">
                 <div class="tpl-var-label">可用變數：</div>
                 <div class="var-chips">
-                  ${['{姓名}','{URL}','{效期}'].map((v) =>
+                  ${['{姓名}','{URL}','{效期}','{提領URL}','{紀錄URL}','{MGMURL}'].map((v) =>
                     `<span class="var-chip" data-tplid="${t.id}" data-v="${v}" data-vch="lineText">${v}</span>`
                   ).join('')}
                 </div>
@@ -2567,13 +2678,15 @@
     let html = '<option value="">── 自訂訊息（不套用母版）──</option>';
     html += '<optgroup label="系統通知事件（N01–N13）">';
     SYSTEM_NOTIFY_EVENTS.forEach((ev) => {
-      html += `<option value="${ev.tplId}">${esc(ev.id)} | ${esc(ev.name)}</option>`;
+      const chLabel = ev.channels.join(' / ');
+      html += `<option value="${ev.tplId}">${esc(ev.id)} | ${esc(ev.name)}（${chLabel}）</option>`;
     });
     html += '</optgroup>';
     if (customs.length) {
       html += '<optgroup label="自訂通知">';
       customs.forEach((ev) => {
-        html += `<option value="${ev.id}">${esc(ev.name)}</option>`;
+        const chLabel = ev.channels && ev.channels.length ? `（${ev.channels.join(' / ')}）` : '';
+        html += `<option value="${ev.id}">${esc(ev.name)}${chLabel}</option>`;
       });
       html += '</optgroup>';
     }
@@ -2585,8 +2698,8 @@
   let editingCustomId = null;
 
   function nsChannelBadge(ch) {
-    if (ch === 'LINE') return `<span class="ns-ch-badge ns-ch-line"><i class="fa-brands fa-line"></i> LINE</span>`;
-    if (ch === 'SMS')  return `<span class="ns-ch-badge ns-ch-sms"><i class="fa-solid fa-comment-sms"></i> SMS</span>`;
+    if (ch === 'LINE') return `<span class="ns-ch-badge ns-ch-line">LINE</span>`;
+    if (ch === 'SMS')  return `<span class="ns-ch-badge ns-ch-sms">SMS</span>`;
     return '';
   }
 
@@ -2604,6 +2717,8 @@
   function renderNsList() {
     const listEl   = document.getElementById('ns-list-view');
     const detailEl = document.getElementById('ns-detail-view');
+    // On standalone edit page, navigate back to list
+    if (!listEl) { location.href = 'admin-notify-settings.html'; return; }
     if (listEl)   listEl.style.display   = '';
     if (detailEl) detailEl.style.display = 'none';
     renderNsSystemList();
@@ -2635,7 +2750,7 @@
         <div class="ns-timing">${esc(ev.triggerTiming)}</div>
         <div class="ns-actions">
           <button class="btn-s ns-btn-edit" data-ns-edit="${ev.id}">
-            <i class="fa-solid fa-pen-to-square"></i> 編輯訊息
+             編輯
           </button>
         </div>
       </div>`).join('');
@@ -2688,7 +2803,7 @@
         <div class="ns-timing">${esc(ltLabel)}</div>
         <div class="ns-actions">
           <button class="btn-s ns-btn-edit" data-ns-edit="${ev.id}">
-            <i class="fa-solid fa-pen-to-square"></i> 編輯
+            編輯
           </button>
           <button class="btn-icon del" data-ns-delete="${ev.id}" title="刪除">
             <i class="fa-solid fa-trash-can"></i>
@@ -2720,8 +2835,14 @@
 
   function openNsDetail(id) {
     nsActiveId = id;
-    document.getElementById('ns-list-view').style.display   = 'none';
-    document.getElementById('ns-detail-view').style.display = '';
+    const detailEl = document.getElementById('ns-detail-view');
+    // On list-only page: navigate to the dedicated edit page
+    if (!detailEl) {
+      location.href = 'admin-notify-settings-edit.html?id=' + encodeURIComponent(id);
+      return;
+    }
+    document.getElementById('ns-list-view')?.style.setProperty('display', 'none');
+    detailEl.style.display = '';
     const isSystem = SYSTEM_NOTIFY_EVENTS.some((e) => e.id === id);
     if (isSystem) renderNsSystemDetail(id);
     else          renderNsCustomDetail(id);
@@ -2740,7 +2861,7 @@
     const hasLine = ev.channels.includes('LINE');
     const smsVal  = esc(tpl.sms || '');
     const lineVal = esc(tpl.lineText || '');
-    const allVars = ['{姓名}','{URL}','{效期}','{案號}','{筆數}'];
+    const allVars = ['{姓名}','{URL}','{效期}','{案號}','{筆數}','{提領URL}','{紀錄URL}','{MGMURL}'];
 
     detailEl.innerHTML = `
       <div class="ns-detail-header">
@@ -2901,7 +3022,7 @@
           <h2 class="ns-detail-title">${esc(ev.name)}</h2>
         </div>
         <div style="display:flex;gap:8px;margin-left:auto;">
-          <button class="btn-s" id="btn-ns-edit-meta"><i class="fa-solid fa-pen-to-square"></i> 編輯設定</button>
+          <button class="btn-s" id="btn-ns-edit-meta">編輯設定</button>
           <button class="btn-icon del" id="btn-ns-del-detail" title="刪除此通知"><i class="fa-solid fa-trash-can"></i></button>
         </div>
       </div>
@@ -3025,8 +3146,16 @@
       });
     });
 
-    // LINE checkbox toggles format row visibility
-    document.getElementById('ce-ch-line')?.addEventListener('change', ceUpdateLineTypeRow);
+    // Channel radio toggles format row visibility and auto-switches active tab
+    document.querySelectorAll('input[name="ce-channel"]').forEach((r) => {
+      r.addEventListener('change', () => {
+        ceUpdateLineTypeRow();
+        const cetab = r.value === 'LINE' ? 'line' : 'sms';
+        document.querySelectorAll('.ce-tpl-tab').forEach((b) => b.classList.toggle('active', b.dataset.cetab === cetab));
+        document.getElementById('ce-panel-line').style.display = r.value === 'LINE' ? '' : 'none';
+        document.getElementById('ce-panel-sms').style.display  = r.value === 'SMS'  ? '' : 'none';
+      });
+    });
 
     // LINE type radio toggles text/image panels
     document.querySelectorAll('input[name="ce-line-type"]').forEach((r) => {
@@ -3082,9 +3211,10 @@
     if (id) {
       const ev = loadCustomEvents().find((x) => x.id === id);
       if (!ev) return;
-      document.getElementById('ce-name').value      = ev.name || '';
-      document.getElementById('ce-ch-line').checked = (ev.channels || []).includes('LINE');
-      document.getElementById('ce-ch-sms').checked  = (ev.channels || []).includes('SMS');
+      document.getElementById('ce-name').value = ev.name || '';
+      const hasSMS = (ev.channels || []).includes('SMS');
+      document.getElementById('ce-ch-line').checked = !hasSMS;
+      document.getElementById('ce-ch-sms').checked  = hasSMS;
       document.getElementById('ce-line-text').value = ev.lineText || '';
       document.getElementById('ce-sms-text').value  = ev.smsText  || '';
       // LINE type
@@ -3116,9 +3246,10 @@
 
     ceUpdateLineTypeRow();
     document.getElementById('ce-name-err').style.display = 'none';
-    document.querySelectorAll('.ce-tpl-tab').forEach((b) => b.classList.toggle('active', b.dataset.cetab === 'line'));
-    document.getElementById('ce-panel-line').style.display = '';
-    document.getElementById('ce-panel-sms').style.display  = 'none';
+    const initTab = document.getElementById('ce-ch-sms').checked ? 'sms' : 'line';
+    document.querySelectorAll('.ce-tpl-tab').forEach((b) => b.classList.toggle('active', b.dataset.cetab === initTab));
+    document.getElementById('ce-panel-line').style.display = initTab === 'line' ? '' : 'none';
+    document.getElementById('ce-panel-sms').style.display  = initTab === 'sms'  ? '' : 'none';
     openModal('modal-custom-event');
   }
 
@@ -3139,9 +3270,8 @@
       document.getElementById('ce-name').focus();
       return;
     }
-    const channels = [];
-    if (document.getElementById('ce-ch-line').checked) channels.push('LINE');
-    if (document.getElementById('ce-ch-sms').checked)  channels.push('SMS');
+    const selectedChannel = document.querySelector('input[name="ce-channel"]:checked')?.value || 'LINE';
+    const channels = [selectedChannel];
 
     const lineType = document.getElementById('ce-lt-image').checked ? 'image' : 'text';
     const lineImageCard = {
@@ -3416,24 +3546,57 @@
     });
   }
 
+  function lockChannelsFromTemplate(chList) {
+    channels.line = chList.includes('LINE');
+    channels.sms  = chList.includes('SMS');
+    const lockedRow = document.getElementById('tpl-ch-locked-row');
+    const lockedEl  = document.getElementById('tpl-locked-channels');
+    if (lockedEl) {
+      lockedEl.innerHTML = chList.map((ch) => ch === 'LINE'
+        ? `<span class="ch-locked-badge ch-locked-badge--line"><i class="fa-brands fa-line"></i> LINE 推播</span>`
+        : `<span class="ch-locked-badge ch-locked-badge--sms"><i class="fa-solid fa-comment-sms"></i> 簡訊 SMS</span>`
+      ).join('');
+    }
+    if (lockedRow) lockedRow.style.display = '';
+    const chSection = document.getElementById('ch-select-section');
+    if (chSection) chSection.style.display = 'none';
+    syncChannelUI();
+  }
+
+  function unlockChannels() {
+    channels.line = false;
+    channels.sms  = false;
+    const lockedRow = document.getElementById('tpl-ch-locked-row');
+    if (lockedRow) lockedRow.style.display = 'none';
+    const chSection = document.getElementById('ch-select-section');
+    if (chSection) chSection.style.display = '';
+    syncChannelUI();
+  }
+
   function bindSend() {
     buildTplPicker();
 
-    // Channel toggles
+    // Channel toggles — single select (radio)
     ['line','sms'].forEach((ch) => {
       const opt = document.getElementById('ch-' + ch + '-opt');
       const cb  = document.getElementById('ch-' + ch);
       opt.addEventListener('click', (e) => {
         if (e.target === cb) return;
         e.preventDefault();
-        channels[ch] = !channels[ch];
-        if (!channels.line && !channels.sms) channels[ch] = true;
-        syncChannelUI();
+        if (!channels[ch]) {
+          channels.line = false;
+          channels.sms  = false;
+          channels[ch]  = true;
+          syncChannelUI();
+        }
       });
       cb.addEventListener('change', () => {
-        channels[ch] = cb.checked;
-        if (!channels.line && !channels.sms) { channels[ch] = true; cb.checked = true; }
-        syncChannelUI();
+        if (cb.checked) {
+          channels.line = false;
+          channels.sms  = false;
+          channels[ch]  = true;
+          syncChannelUI();
+        }
       });
     });
 
@@ -3477,6 +3640,14 @@
     document.getElementById('tpl-picker')?.addEventListener('change', (e) => {
       currentTplId = e.target.value;
       applyTemplate(currentTplId);
+      if (currentTplId) {
+        const sysEv = SYSTEM_NOTIFY_EVENTS.find((ev) => ev.tplId === currentTplId);
+        const ce    = loadCustomEvents().find((ev) => ev.id === currentTplId);
+        const tplChannels = sysEv?.channels || (ce?.channels?.length ? ce.channels : ['LINE']);
+        lockChannelsFromTemplate(tplChannels);
+      } else {
+        unlockChannels();
+      }
     });
 
     // Recipient add buttons
@@ -3681,6 +3852,14 @@
       if (g) renderGroupMemberList(g);
     });
 
+    // ── 新增成員（指定對象）──
+    document.getElementById('btn-group-add-members')?.addEventListener('click', openAddToGroupModal);
+    document.getElementById('atg-search')?.addEventListener('input', () => {
+      const g = getGroupById(activeGroupId);
+      if (g) renderAtgList(g);
+    });
+    document.getElementById('btn-atg-ok')?.addEventListener('click', confirmAddToGroup);
+
     // ── Condition filter ──────────────────────────
     document.getElementById('btn-new-group-condition')?.addEventListener('click', () => openConditionFilter(true));
     document.getElementById('btn-reapply-conditions')?.addEventListener('click', reapplyGroupConditions);
@@ -3689,12 +3868,12 @@
     document.getElementById('btn-cf-add-row')?.addEventListener('click', () => {
       const def = CF_FIELDS[0];
       conditionRows.push({ field: def.key, op: def.ops[0].key, value: def.valType === 'select' ? (def.opts[0]?.key || '') : '' });
-      renderCfRows(); renderConditionFilterResult();
+      renderCfRows(); resetCfPreview();
     });
 
     // Clear rows button
     document.getElementById('btn-cf-clear-rows')?.addEventListener('click', () => {
-      conditionRows = []; renderCfRows(); renderConditionFilterResult();
+      conditionRows = []; renderCfRows(); resetCfPreview();
     });
 
     // Time unlimited toggle
@@ -3703,10 +3882,10 @@
       if (dr) dr.style.display = e.target.checked ? 'none' : '';
     });
 
-    // Exclude DND live recalc
-    document.getElementById('cf-exclude-dnd')?.addEventListener('change', renderConditionFilterResult);
+    // Exclude DND change — resets preview (non-realtime)
+    document.getElementById('cf-exclude-dnd')?.addEventListener('change', resetCfPreview);
 
-    // Preview toggle
+    // Preview toggle — updates count only on demand (non-realtime)
     document.getElementById('btn-cf-preview')?.addEventListener('click', () => {
       const area = document.getElementById('cf-preview-area');
       const btn  = document.getElementById('btn-cf-preview');
@@ -3718,7 +3897,9 @@
         : '<i class="fa-solid fa-eye"></i> 預覽名單';
       if (show) {
         const cond = readConditionsFromModal();
-        renderCfPreviewList(filterByConditions(cond));
+        const matched = filterByConditions(cond);
+        document.getElementById('cf-result-count').textContent = matched.length;
+        renderCfPreviewList(matched);
       }
     });
 
@@ -3809,6 +3990,13 @@
       case 'settings':
         renderSettingsPage();
         break;
+      case 'settings-edit': {
+        bindNsPageEvents();
+        const _editId = new URLSearchParams(location.search).get('id');
+        if (_editId) openNsDetail(_editId);
+        else location.href = 'admin-notify-settings.html';
+        break;
+      }
       case 'log':
         bindLog();
         break;

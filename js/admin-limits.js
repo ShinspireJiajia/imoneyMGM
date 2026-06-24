@@ -14,7 +14,8 @@
     count:         'mgm_risk_limit_count',
     action:        'mgm_risk_overflow_action', // 永遠寫入 'pending_review'
     followupDays:  'mgm_risk_followup_days',   // 後續案件紅利效期（天）
-    unclaimedDays: 'mgm_risk_unclaimed_days',  // 獎金核發後未提領失效期限（天）
+    noBankDays:    'mgm_risk_no_bank_days',    // 未填寫匯款資料失效期限（天）→ E-NBK
+    withdrawDays:  'mgm_risk_withdraw_days',   // 申請提領最長保留天數（天）→ E-WDL
   };
 
   function loadSettings() {
@@ -32,11 +33,12 @@
   function loadExpirySettings() {
     try {
       return {
-        followupDays:  localStorage.getItem(SETTINGS.followupDays)  || '150',
-        unclaimedDays: localStorage.getItem(SETTINGS.unclaimedDays) || '180',
+        followupDays: localStorage.getItem(SETTINGS.followupDays) || '150',
+        noBankDays:   localStorage.getItem(SETTINGS.noBankDays)   || '180',
+        withdrawDays: localStorage.getItem(SETTINGS.withdrawDays)  || '30',
       };
     } catch {
-      return { followupDays: '150', unclaimedDays: '180' };
+      return { followupDays: '150', noBankDays: '180', withdrawDays: '30' };
     }
   }
 
@@ -72,9 +74,11 @@
   function fillExpirySettings() {
     const s = loadExpirySettings();
     const followupEl  = document.getElementById('lim-followup-days');
-    const unclaimedEl = document.getElementById('lim-unclaimed-days');
+    const noBankEl    = document.getElementById('lim-no-bank-days');
+    const withdrawEl  = document.getElementById('lim-withdraw-days');
     if (followupEl)  followupEl.value  = s.followupDays;
-    if (unclaimedEl) unclaimedEl.value = s.unclaimedDays;
+    if (noBankEl)    noBankEl.value    = s.noBankDays;
+    if (withdrawEl)  withdrawEl.value  = s.withdrawDays;
   }
 
   function bindUnlimitedToggles() {
@@ -85,7 +89,7 @@
         document.getElementById(inputId).disabled = cb.checked;
       });
     });
-    ['lim-amount', 'lim-count', 'lim-followup-days', 'lim-unclaimed-days'].forEach((id) => {
+    ['lim-amount', 'lim-count', 'lim-followup-days', 'lim-no-bank-days', 'lim-withdraw-days'].forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
       el.addEventListener('keypress', (e) => {
@@ -104,24 +108,27 @@
     btn.addEventListener('click', () => {
       const prev = loadExpirySettings();
       const followupVal  = (document.getElementById('lim-followup-days')?.value  || '').replace(/[^\d]/g, '') || '150';
-      const unclaimedVal = (document.getElementById('lim-unclaimed-days')?.value || '').replace(/[^\d]/g, '') || '180';
+      const noBankVal    = (document.getElementById('lim-no-bank-days')?.value   || '').replace(/[^\d]/g, '') || '180';
+      const withdrawVal  = (document.getElementById('lim-withdraw-days')?.value  || '').replace(/[^\d]/g, '') || '30';
 
-      if (+followupVal < 1 || +unclaimedVal < 1) {
+      if (+followupVal < 1 || +noBankVal < 1 || +withdrawVal < 1) {
         toast('天數不可為零，請重新輸入', 'var(--color-error, #ef4444)');
         return;
       }
 
       try {
-        localStorage.setItem(SETTINGS.followupDays,  followupVal);
-        localStorage.setItem(SETTINGS.unclaimedDays, unclaimedVal);
+        localStorage.setItem(SETTINGS.followupDays, followupVal);
+        localStorage.setItem(SETTINGS.noBankDays,   noBankVal);
+        localStorage.setItem(SETTINGS.withdrawDays,  withdrawVal);
       } catch (e) {
         alert('儲存失敗：' + (e && e.message ? e.message : '不明原因'));
         return;
       }
 
       const diffs = [];
-      if (prev.followupDays  !== followupVal)  diffs.push(`後續案件紅利效期 ${prev.followupDays} 天 → ${followupVal} 天`);
-      if (prev.unclaimedDays !== unclaimedVal) diffs.push(`未提領失效期限 ${prev.unclaimedDays} 天 → ${unclaimedVal} 天`);
+      if (prev.followupDays !== followupVal) diffs.push(`後續案件紅利效期 ${prev.followupDays} 天 → ${followupVal} 天`);
+      if (prev.noBankDays   !== noBankVal)   diffs.push(`未填寫匯款資料失效期限 ${prev.noBankDays} 天 → ${noBankVal} 天`);
+      if (prev.withdrawDays !== withdrawVal)  diffs.push(`申請提領最長保留天數 ${prev.withdrawDays} 天 → ${withdrawVal} 天`);
 
       if (diffs.length === 0) {
         toast('無變動，未寫入稽核', 'var(--color-text-muted)');
@@ -213,7 +220,7 @@
   const DEMO_AUDIT_ENTRIES = [
     { time: '2026/5/28 下午3:45:12', actor: 'Admin User',         action: '修改時間效期設定',    note: '後續案件紅利效期 180 天 → 150 天' },
     { time: '2026/4/15 上午10:22:05', actor: '財務主管 - Mary',   action: '修改每月提領上限設定', note: '提領上限 30,000 元 → 50,000 元；件數上限 3 件 → 5 件' },
-    { time: '2026/3/01 上午9:00:30',  actor: 'Admin User',        action: '修改時間效期設定',    note: '後續案件紅利效期 90 天 → 180 天；未提領失效期限 90 天 → 180 天' },
+    { time: '2026/3/01 上午9:00:30',  actor: 'Admin User',        action: '修改時間效期設定',    note: '後續案件紅利效期 90 天 → 150 天；未填寫匯款資料失效期限 90 天 → 180 天；申請提領最長保留天數 60 天 → 30 天' },
   ];
 
   function renderAuditLog() {

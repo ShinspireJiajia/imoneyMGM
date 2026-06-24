@@ -242,40 +242,72 @@
   }
 
   // ============================================================
-  // 常見問答 FAQ
+  // 常見問答 FAQ（支援最多三層樹狀結構）
+  // type: 'group' = 分類群組（有 title + children）
+  // type: 'item'  = 問與答（有 question + answer）
+  // 舊版無 type 欄位的資料自動視為 'item'
   // ============================================================
   const FAQ_KEY = 'mgm_faq_items';
 
   const DEFAULT_FAQ = [
     {
-      id: 'faq-1',
-      question: '如何取得我的推薦連結？',
-      answer: '<p>請在首頁點選「複製連結」按鈕，系統即會將您的專屬推薦連結複製至剪貼簿，您可以直接貼到 LINE、FB 等社群平台分享給親友。</p>',
+      id: 'cat-share',
+      type: 'group',
+      title: '推薦與分享',
       enabled: true,
+      children: [
+        {
+          id: 'faq-1',
+          type: 'item',
+          question: '如何取得我的推薦連結？',
+          answer: '<p>請在首頁點選「複製連結」按鈕，系統即會將您的專屬推薦連結複製至剪貼簿，您可以直接貼到 LINE、FB 等社群平台分享給親友。</p>',
+          enabled: true,
+        },
+        {
+          id: 'faq-3',
+          type: 'item',
+          question: '一組推薦碼可以無限次分享嗎？',
+          answer: '<p>是的，您的推薦碼為<strong>固定碼</strong>，可長期、無限次使用。每位親友的歸屬以首次送單時使用的推薦碼為準，同一親友重複送單不會重複計算獎金。</p>',
+          enabled: true,
+        },
+        {
+          id: 'faq-4',
+          type: 'item',
+          question: '如何確認推薦是否成功登錄？',
+          answer: '<p>您可前往底部「紀錄」頁面查看所有透過您連結送出的案件，包含「審核中」、「已核款」及「未通過」等狀態，並可查看對應獎金明細。</p>',
+          enabled: true,
+        },
+      ],
     },
     {
-      id: 'faq-2',
-      question: '推薦獎金何時可以提領？',
-      answer: '<p>當您推薦的親友成功送出申請並通過審核後，獎金會顯示為「可提領」狀態。請前往「我的獎金」頁面選擇提領方式（現場領取或匯款入帳）。</p>',
+      id: 'cat-reward',
+      type: 'group',
+      title: '獎金與提領',
       enabled: true,
-    },
-    {
-      id: 'faq-3',
-      question: '一組推薦碼可以無限次分享嗎？',
-      answer: '<p>是的，您的推薦碼為<strong>固定碼</strong>，可長期、無限次使用。每位親友的歸屬以首次送單時使用的推薦碼為準，同一親友重複送單不會重複計算獎金。</p>',
-      enabled: true,
-    },
-    {
-      id: 'faq-4',
-      question: '如何確認推薦是否成功登錄？',
-      answer: '<p>您可前往底部「紀錄」頁面查看所有透過您連結送出的案件，包含「審核中」、「已核款」及「未通過」等狀態，並可查看對應獎金明細。</p>',
-      enabled: true,
-    },
-    {
-      id: 'faq-5',
-      question: '獎金需要申報稅務嗎？',
-      answer: '<p>推薦獎金將計入年度「執行業務所得／其他所得」申報。超過免稅門檻時，平台將於每年二月提供所得資料協助申報，請留意相關通知。</p>',
-      enabled: true,
+      children: [
+        {
+          id: 'cat-reward-w',
+          type: 'group',
+          title: '提領操作',
+          enabled: true,
+          children: [
+            {
+              id: 'faq-2',
+              type: 'item',
+              question: '推薦獎金何時可以提領？',
+              answer: '<p>當您推薦的親友成功送出申請並通過審核後，獎金會顯示為「可提領」狀態。請前往「我的獎金」頁面選擇提領方式（現場領取或匯款入帳）。</p>',
+              enabled: true,
+            },
+          ],
+        },
+        {
+          id: 'faq-5',
+          type: 'item',
+          question: '獎金需要申報稅務嗎？',
+          answer: '<p>推薦獎金將計入年度「執行業務所得／其他所得」申報。超過免稅門檻時，平台將於每年二月提供所得資料協助申報，請留意相關通知。</p>',
+          enabled: true,
+        },
+      ],
     },
   ];
 
@@ -287,25 +319,58 @@
     return DEFAULT_FAQ;
   }
 
+  function escFaq(str) {
+    return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderFaqNodes(nodes, level) {
+    return (nodes || []).map(function (f) {
+      if (f.enabled === false) return '';
+      var type = f.type || 'item';
+      if (type === 'group') {
+        var children = (f.children || []).filter(function (c) { return c.enabled !== false; });
+        var inner = children.length ? renderFaqNodes(children, level + 1) : '';
+        var iconName = level === 1 ? 'folder' : 'folder-open';
+        return (
+          '<div class="faq-group faq-group-l' + level + '">' +
+            '<div class="faq-group-hd" role="button" tabindex="0" aria-expanded="false">' +
+              '<span class="faq-group-icon"><i class="fa-solid fa-' + iconName + '"></i></span>' +
+              '<span class="faq-group-title">' + escFaq(f.title || '') + '</span>' +
+              '<span class="faq-group-arr"><i class="fa-solid fa-chevron-right"></i></span>' +
+            '</div>' +
+            '<div class="faq-group-body">' + inner + '</div>' +
+          '</div>'
+        );
+      } else {
+        return (
+          '<div class="faq-item" role="listitem">' +
+            '<div class="faq-q" role="button" tabindex="0" aria-expanded="false">' +
+              '<span class="faq-q-text">' + escFaq(f.question || '') + '</span>' +
+              '<span class="faq-q-icon" aria-hidden="true"><i class="fa-solid fa-chevron-down"></i></span>' +
+            '</div>' +
+            '<div class="faq-a">' + (f.answer || '') + '</div>' +
+          '</div>'
+        );
+      }
+    }).join('');
+  }
+
   function renderFaq() {
     const container = document.getElementById('faq-list');
     if (!container) return;
-    const items = loadFaq().filter(function (f) { return f.enabled !== false; });
-    if (!items.length) {
+    const root = loadFaq().filter(function (f) { return f.enabled !== false; });
+    if (!root.length) {
       container.innerHTML = '<p class="faq-empty">暫無問答資料</p>';
       return;
     }
-    container.innerHTML = items.map(function (f) {
-      return (
-        '<div class="faq-item" data-faq-id="' + f.id + '" role="listitem">' +
-          '<div class="faq-q" role="button" tabindex="0" aria-expanded="false">' +
-            '<span class="faq-q-text">' + f.question + '</span>' +
-            '<span class="faq-q-icon" aria-hidden="true"><i class="fa-solid fa-chevron-down"></i></span>' +
-          '</div>' +
-          '<div class="faq-a">' + f.answer + '</div>' +
-        '</div>'
-      );
-    }).join('');
+    container.innerHTML = renderFaqNodes(root, 1);
+
+    container.querySelectorAll('.faq-group-hd').forEach(function (hd) {
+      hd.addEventListener('click', function () { toggleFaqGroup(hd.closest('.faq-group'), hd); });
+      hd.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFaqGroup(hd.closest('.faq-group'), hd); }
+      });
+    });
 
     container.querySelectorAll('.faq-q').forEach(function (q) {
       q.addEventListener('click', function () { toggleFaq(q.closest('.faq-item')); });
@@ -313,6 +378,13 @@
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFaq(q.closest('.faq-item')); }
       });
     });
+  }
+
+  function toggleFaqGroup(group, hd) {
+    if (!group) return;
+    const isOpen = group.classList.contains('faq-group-open');
+    group.classList.toggle('faq-group-open', !isOpen);
+    if (hd) hd.setAttribute('aria-expanded', String(!isOpen));
   }
 
   function toggleFaq(item) {

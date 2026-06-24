@@ -10,6 +10,36 @@
   // 固定獎金制：house_loan $5000 / car_loan $1500 / credit_loan $3600
   //             pre_negotiation $2000 / rehabilitation $2000
   // 疊加上限（overlapCap）：$20,000
+  // ─── 協商案件服務費核款條件 ────────────────────────────────
+  const NEG_FEE_THRESHOLD   = 6000; // 累積服務費須達此金額才算啟動
+  const NEG_FEE_EXTRA_INSTS = 2;    // 啟動後尚需再繳的期數
+
+  function checkNegotiationFeeCondition(r) {
+    if (r.caseType !== 'negotiation') return { ok: true };
+    const receipts = Array.isArray(r.receipts) ? r.receipts : [];
+    let cumulative = 0;
+    let activationIdx = -1;
+    for (let i = 0; i < receipts.length; i++) {
+      cumulative += (receipts[i].amount || 0);
+      if (cumulative >= NEG_FEE_THRESHOLD && activationIdx === -1) activationIdx = i;
+    }
+    if (activationIdx === -1) {
+      return {
+        ok: false,
+        detail: `協商案件服務費累積未達 $${NEG_FEE_THRESHOLD.toLocaleString()}（目前已收：$${cumulative.toLocaleString()}）`,
+      };
+    }
+    const remainingAfter = receipts.length - 1 - activationIdx;
+    if (remainingAfter < NEG_FEE_EXTRA_INSTS) {
+      const still = NEG_FEE_EXTRA_INSTS - remainingAfter;
+      return {
+        ok: false,
+        detail: `協商款已啟動（第 ${activationIdx + 1} 期累積達標），尚需再繳 ${still} 期後方可核款（目前共 ${receipts.length} 期）`,
+      };
+    }
+    return { ok: true };
+  }
+
   const CASES = [
     {
       caseId: 'M2026051504',
@@ -89,6 +119,33 @@
       receipts: [{ suffix: 1, amount: 9000, note: '第一期已核對，請查核第二期金額' }, { suffix: 2, amount: 8000 }],
     },
     {
+      caseId: 'M2026062401',
+      agentName: '陳志明',
+      referrerName: '趙雅琪', referrerTag: '會員', referrerCid: 'U241201008',
+      refereeName: '楊志遠', refereePhone: '0912345678',
+      caseType: 'general',
+      loanTypes: ['房屋貸款', '汽車貸款', '信用貸款'],
+      submitAt: '2026/06/24 09:30', payoutAt: '2026/06/24',
+      campaignId: 'CAMP-C-2026Q2',
+      snapshot: {
+        campaignId: 'CAMP-C-2026Q2',
+        overlapCapEnabled: true,
+        overlapCap: 20000,
+        items: [
+          { projectKey: 'house_loan',   label: '房屋貸款', trigger: '付訖服務費', bonus: 5000 },
+          { projectKey: 'car_loan',     label: '汽車貸款', trigger: '付訖服務費', bonus: 1500 },
+          { projectKey: 'credit_loan',  label: '信用貸款', trigger: '付訖服務費', bonus: 3600 },
+        ],
+      },
+      amount: 10100,
+      payoutAmount: 5200000,
+      status: 'pending_approval',
+      warningCodes: ['E-OVA', 'E-OVC'],
+      customerId: '2606240001',
+      referrerListId: '2412010008',
+      receipts: [{ amount: 26000 }],
+    },
+    {
       caseId: 'M2026042016',
       agentName: '陳志明',
       referrerName: '林副總', referrerTag: '員工', referrerCid: 'U240214003',
@@ -115,6 +172,37 @@
       referrerListId: '2402140003',
       receipts: [{ amount: 8000 }],
     },
+    {
+      // 協商案件：累積達 $6,000（第三期啟動），但啟動後尚未再繳 2 期 → E-NEG 阻擋核款
+      caseId: 'M2026062403',
+      agentName: '李文強',
+      referrerName: '彭俊豪', referrerTag: '會員', referrerCid: 'U240315008',
+      refereeName: '鄭佳豪', refereePhone: '0922345678',
+      caseType: 'negotiation',
+      loanTypes: ['前置協商'],
+      submitAt: '2026/06/22 10:15', payoutAt: '2026/06/23',
+      campaignId: 'CAMP-C-2026Q2',
+      snapshot: {
+        campaignId: 'CAMP-C-2026Q2',
+        overlapCapEnabled: true,
+        overlapCap: 20000,
+        items: [
+          { projectKey: 'pre_negotiation', label: '前置協商', trigger: '啟動計算後再繳滿 2 期服務費', bonus: 2000 },
+        ],
+      },
+      amount: 2000,
+      payoutAmount: 800000,
+      status: 'pending_approval',
+      warningCodes: ['E-NEG'],
+      customerId: '2606220003',
+      referrerListId: '2403150008',
+      receipts: [
+        { suffix: 1, amount: 500  },
+        { suffix: 2, amount: 500  },
+        { suffix: 3, amount: 5000, note: '第三期，累積達 $6,000，啟動計算；尚需再繳 2 期方可核款' },
+        // 啟動於第 3 期，目前僅已繳 3 期，仍需再繳第 4、5 期 → E-NEG
+      ],
+    },
   ];
 
   const STATUS_META = {
@@ -131,33 +219,64 @@
   function loadExpirySettings() {
     try {
       return {
-        followupDays:  +(localStorage.getItem('mgm_risk_followup_days')  || '150'),
-        unclaimedDays: +(localStorage.getItem('mgm_risk_unclaimed_days') || '180'),
+        followupDays: +(localStorage.getItem('mgm_risk_followup_days') || '150'),
+        noBankDays:   +(localStorage.getItem('mgm_risk_no_bank_days')  || '180'),
+        withdrawDays: +(localStorage.getItem('mgm_risk_withdraw_days') || '30'),
       };
     } catch {
-      return { followupDays: 150, unclaimedDays: 180 };
+      return { followupDays: 150, noBankDays: 180, withdrawDays: 30 };
     }
   }
 
   function initExpiryDependencies() {
-    const { followupDays, unclaimedDays } = loadExpirySettings();
+    const { followupDays, noBankDays, withdrawDays } = loadExpirySettings();
+
+    let limitAmount, limitCount;
+    try {
+      limitAmount = localStorage.getItem('mgm_risk_limit_amount') || '50000';
+      limitCount  = localStorage.getItem('mgm_risk_limit_count')  || '5';
+    } catch {
+      limitAmount = '50000';
+      limitCount  = '5';
+    }
+    const ovaLabel = limitAmount === 'unlimited'
+      ? '超過每月提領金額上限'
+      : `超過每月提領金額上限（本月上限 $${Number(limitAmount).toLocaleString()}）`;
+    const ovcLabel = limitCount === 'unlimited'
+      ? '超過每月推薦件數上限'
+      : `超過每月推薦件數上限（本月上限 ${limitCount} 件）`;
+
     WARN_CODES = {
       'E-120': { label: `後續案件超過 ${followupDays} 天紅利效期` },
-      'E-180': { label: `獎金核發後超過 ${unclaimedDays} 天未提領` },
+      'E-NBK': { label: `獎金核發後超過 ${noBankDays} 天未填寫匯款資料` },
+      'E-WDL': { label: `申請提領後超過 ${withdrawDays} 天仍未完成匯款` },
       'E-OLD': { label: '員工／離職員工推薦了「舊客戶」' },
       'E-BLK': { label: '帳號被列為黑名單' },
+      'E-OVA': { label: ovaLabel },
+      'E-OVC': { label: ovcLabel },
+      'E-NEG': { label: '協商案件服務費未達核款條件（累積未到 $6,000 或啟動後不足兩期）' },
     };
     REJECT_REASONS = [
       { code: 'E-120', label: `後續案件超過 ${followupDays} 天紅利效期` },
-      { code: 'E-180', label: `獎金核發後超過 ${unclaimedDays} 天未提領` },
+      { code: 'E-NBK', label: `獎金核發後超過 ${noBankDays} 天未填寫匯款資料` },
+      { code: 'E-WDL', label: `申請提領後超過 ${withdrawDays} 天仍未完成匯款` },
       { code: 'E-OLD', label: '員工／離職員工推薦了「舊客戶」' },
       { code: 'E-BLK', label: '帳號被列為黑名單' },
+      { code: 'E-OVA', label: ovaLabel },
+      { code: 'E-OVC', label: ovcLabel },
+      { code: 'E-NEG', label: '協商案件服務費未達核款條件（累積未到 $6,000 或啟動後不足兩期）' },
       { code: 'OTHER', label: '其他（請輸入原因）' },
     ];
     const e150 = document.getElementById('legend-desc-e150');
-    const e180 = document.getElementById('legend-desc-e180');
+    const eNbk = document.getElementById('legend-desc-enbk');
+    const eWdl = document.getElementById('legend-desc-ewdl');
+    const eOva = document.getElementById('legend-desc-eova');
+    const eOvc = document.getElementById('legend-desc-eovc');
     if (e150) e150.textContent = `後續案件超過 ${followupDays} 天紅利效期`;
-    if (e180) e180.textContent = `獎金核發後超過 ${unclaimedDays} 天未提領`;
+    if (eNbk) eNbk.textContent = `獎金核發後超過 ${noBankDays} 天未填寫匯款資料`;
+    if (eWdl) eWdl.textContent = `申請提領後超過 ${withdrawDays} 天仍未完成匯款`;
+    if (eOva) eOva.textContent = ovaLabel;
+    if (eOvc) eOvc.textContent = ovcLabel;
   }
 
   const TYPE_META = {
@@ -342,11 +461,14 @@
   // ─── approve ──────────────────────────────────────────────
   function doApprove(caseId, note) {
     const r = CASES.find((x) => x.caseId === caseId);
-    if (!r || r.status !== 'pending_approval') return;
+    if (!r || r.status !== 'pending_approval') return false;
+    const negCheck = checkNegotiationFeeCondition(r);
+    if (!negCheck.ok) return false; // 應由呼叫端預先阻擋，此為防禦性判斷
     r.status = 'rewardable';
     r.approvedAt = new Date().toLocaleString('zh-TW');
     r.approvedBy = 'Admin User';
     r.approveNote = note || '';
+    return true;
   }
 
   // ─── reject ───────────────────────────────────────────────
@@ -417,13 +539,26 @@
     document.getElementById('btn-batch-approve').addEventListener('click', () => {
       if (selected.size === 0) return;
       const note = (document.getElementById('batch-note').value || '').trim();
-      if (!confirm(`確認批次核准 ${selected.size} 筆案件獎金？\n核准後推薦人即可申請提領。`)) return;
       const ids = [...selected];
-      ids.forEach((id) => doApprove(id, note));
+
+      // 分離 E-NEG 阻擋案件與可核款案件
+      const blocked    = ids.filter((id) => { const r = CASES.find((x) => x.caseId === id); return r && !checkNegotiationFeeCondition(r).ok; });
+      const approvable = ids.filter((id) => !blocked.includes(id));
+
+      if (blocked.length > 0) {
+        const lines = blocked.map((id) => {
+          const r = CASES.find((x) => x.caseId === id);
+          return `・${id}：${checkNegotiationFeeCondition(r).detail}`;
+        }).join('\n');
+        alert(`[E-NEG] 以下 ${blocked.length} 筆協商案件不符合核款條件，已跳過：\n${lines}`);
+      }
+      if (approvable.length === 0) return;
+      if (!confirm(`確認批次核准 ${approvable.length} 筆案件獎金？\n核准後推薦人即可申請提領。`)) return;
+      approvable.forEach((id) => doApprove(id, note));
       selected.clear();
       document.getElementById('batch-note').value = '';
       render();
-      toast(`已批次核准 ${ids.length} 筆案件，推薦人現可申請提領。`);
+      toast(`已批次核准 ${approvable.length} 筆案件，推薦人現可申請提領。`);
     });
 
     document.getElementById('btn-batch-reject').addEventListener('click', () => {
@@ -669,6 +804,14 @@
   function openNotifyModal(caseId) {
     const r = CASES.find((x) => x.caseId === caseId);
     if (!r) return;
+
+    // E-NEG：協商案件服務費未達核款條件，阻擋核款動作
+    const negCheck = checkNegotiationFeeCondition(r);
+    if (!negCheck.ok) {
+      alert(`[E-NEG] 此協商案件目前無法核款\n\n${negCheck.detail}\n\n請等待客戶繳清後再執行核款。`);
+      return;
+    }
+
     notifyCaseId = caseId;
 
     document.getElementById('notify-caseid').textContent   = r.caseId;

@@ -53,6 +53,27 @@
       status: 'confirmed', snapshot: { base: 1000, ratio: 0.5, cap: 5000 }, amount: null, payoutAmount: null,
       campaignId: 'CAMP-2026Q2',
     },
+    // ── neg_fee_pending 協商案件服務費未達核款條件 ───────────
+    {
+      caseId: 'M2026062403', customerId: '2606220003', negotiationId: 'G26062200003',
+      caseType: 'negotiation',
+      referrerUid: 'U240315008',
+      referrerName: '彭俊豪', referrerTag: '會員',
+      refereeName: '鄭佳豪', refereePhone: '0922345678',
+      product: '前置協商', feeType: '收費',
+      expectedServiceFee: 9000, actualServiceFee: 6000,
+      submitAt: '2026/05/22 10:15', payoutAt: '2026/05/22',
+      status: 'rewardable',
+      accountingTicked: false,
+      snapshot: { base: 2000, ratio: 0, cap: 2000 }, amount: 2000, payoutAmount: 800000,
+      campaignId: 'CAMP-C-2026Q2',
+      // 第3期累積達 $6,000（啟動），但啟動後尚未再繳 2 期 → neg_fee_pending
+      negotiationInstallments: [
+        { amount: 500  },
+        { amount: 500  },
+        { amount: 5000 },
+      ],
+    },
     // ── S1 待會計核對（payoutAt 五月 → 六月 1–25 核款期，未打勾）──
     {
       caseId: 'M2026052014', customerId: '2605200014', negotiationId: 'G26052000014',
@@ -315,6 +336,23 @@
     },
   ];
 
+  // ─── 協商案件服務費核款條件（同 admin-payout 邏輯） ─────────
+  const NEG_FEE_THRESHOLD_REC   = 6000;
+  const NEG_FEE_EXTRA_INSTS_REC = 2;
+
+  function checkNegFeeCondition(r) {
+    if (r.caseType !== 'negotiation') return { ok: true };
+    const insts = Array.isArray(r.negotiationInstallments) ? r.negotiationInstallments : [];
+    if (!insts.length) return { ok: false };
+    let cumulative = 0, activationIdx = -1;
+    for (let i = 0; i < insts.length; i++) {
+      cumulative += (insts[i].amount || 0);
+      if (cumulative >= NEG_FEE_THRESHOLD_REC && activationIdx === -1) activationIdx = i;
+    }
+    if (activationIdx === -1) return { ok: false };
+    return { ok: insts.length - 1 - activationIdx >= NEG_FEE_EXTRA_INSTS_REC };
+  }
+
   const DEFAULT_REASON_LABEL = {
     'no-campaign':  '當下無進行中活動（空窗期）',
     'plan-paused':  '方案全部停用',
@@ -337,6 +375,7 @@
 
   const STATUS_TEXT = {
     reviewing:            '案件審核中',
+    neg_fee_pending:      '待補協商款項',
     waiting_accounting:   '待會計核對',
     accounting_confirmed: '會計已核對',
     rewardable:           '可提領',
@@ -352,6 +391,7 @@
   const STATUS_FILTER_OPTIONS = [
     { value: 'all',                  label: '全部' },
     { value: 'reviewing',            label: STATUS_TEXT.reviewing },
+    { value: 'neg_fee_pending',      label: STATUS_TEXT.neg_fee_pending },
     { value: 'waiting_accounting',   label: STATUS_TEXT.waiting_accounting },
     { value: 'accounting_confirmed', label: STATUS_TEXT.accounting_confirmed },
     { value: 'rewardable',           label: STATUS_TEXT.rewardable },
@@ -399,6 +439,9 @@
 
     // 服務費尚未取得 → S0 案件審核中
     if (!r.payoutAt || r.payoutAt === '—') return 'reviewing';
+
+    // 協商案件：服務費未達核款條件 → 待補協商款項
+    if (!checkNegFeeCondition(r).ok) return 'neg_fee_pending';
 
     const today = new Date();
     const day   = today.getDate();
@@ -783,7 +826,23 @@
       let reasonTone = 'tone-neutral';
       let showReason = false;
 
-      if ((r.status === 'invalid' || r.status === 'pending_review') && r.invalidReason) {
+      if (displayStatus === 'neg_fee_pending') {
+        const insts = Array.isArray(r.negotiationInstallments) ? r.negotiationInstallments : [];
+        let cumulative = 0, activationIdx = -1;
+        for (let i = 0; i < insts.length; i++) {
+          cumulative += (insts[i].amount || 0);
+          if (cumulative >= NEG_FEE_THRESHOLD_REC && activationIdx === -1) activationIdx = i;
+        }
+        if (activationIdx === -1) {
+          reasonText = `[E-NEG] 協商案件服務費累積未達 $${NEG_FEE_THRESHOLD_REC.toLocaleString()}（目前已收：$${cumulative.toLocaleString()}），尚不符合核款條件。`;
+        } else {
+          const remainingAfter = insts.length - 1 - activationIdx;
+          const still = NEG_FEE_EXTRA_INSTS_REC - remainingAfter;
+          reasonText = `[E-NEG] 協商款已啟動（第 ${activationIdx + 1} 期累積達 $${NEG_FEE_THRESHOLD_REC.toLocaleString()}），尚需再繳 ${still} 期後方可進入核款流程（目前共 ${insts.length} 期）。`;
+        }
+        reasonTone = 'tone-warning';
+        showReason = true;
+      } else if ((r.status === 'invalid' || r.status === 'pending_review') && r.invalidReason) {
         reasonText = r.invalidReason;
         reasonTone = r.status === 'invalid' ? 'tone-danger' : 'tone-warning';
         showReason = true;
