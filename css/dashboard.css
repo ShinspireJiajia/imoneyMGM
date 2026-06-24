@@ -1026,3 +1026,122 @@
   font-size: var(--font-sm);
   padding: 16px 0;
 }
+
+/* ============== FAQ 分類群組（Group） ============== */
+.faq-group {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.faq-group.faq-group-open {
+  border-color: var(--color-primary-light);
+  box-shadow: 0 3px 10px rgba(124, 58, 237, 0.08);
+}
+
+.faq-group-hd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 14px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.faq-group-hd:hover .faq-group-title {
+  color: var(--color-primary-dark);
+}
+
+.faq-group-icon {
+  font-size: 13px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.faq-group-title {
+  flex: 1;
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.5;
+  transition: color 0.12s;
+}
+
+.faq-group.faq-group-open > .faq-group-hd .faq-group-title {
+  color: var(--color-primary-dark);
+}
+
+.faq-group-arr {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+  font-size: 9px;
+  flex-shrink: 0;
+  transition: transform 0.2s, background 0.15s;
+}
+
+.faq-group.faq-group-open > .faq-group-hd .faq-group-arr {
+  transform: rotate(90deg);
+  background: var(--color-primary-100);
+}
+
+.faq-group-body {
+  display: none;
+  padding: 8px 10px 10px;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--color-border-light);
+  background: var(--color-primary-50);
+}
+
+.faq-group.faq-group-open > .faq-group-body {
+  display: flex;
+}
+
+/* 二層分類（群組內的子群組） */
+.faq-group-body > .faq-group {
+  background: #fff;
+  border-color: var(--color-border-light);
+  border-radius: 8px;
+}
+
+.faq-group-body > .faq-group > .faq-group-hd {
+  padding: 10px 12px;
+}
+
+.faq-group-body > .faq-group .faq-group-icon {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.faq-group-body > .faq-group .faq-group-title {
+  font-size: var(--font-xs);
+  font-weight: 600;
+}
+
+.faq-group-body > .faq-group .faq-group-arr {
+  width: 18px;
+  height: 18px;
+  font-size: 8px;
+}
+
+.faq-group-body > .faq-group > .faq-group-body {
+  background: #fff;
+  padding: 6px 8px 8px;
+}
+
+/* 群組內的 Q&A 問答卡 */
+.faq-group-body .faq-item {
+  border-color: var(--color-border-light);
+  border-radius: 8px;
+}

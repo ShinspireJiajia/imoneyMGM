@@ -744,6 +744,7 @@ a.rv-ext-link:hover { opacity: 0.75; }
    ============================================================ */
 .data-table .status-text.status-reviewing            { color: var(--color-warning-dark); }
 .data-table .status-text.status-pending_review       { color: var(--color-warning-dark); }
+.data-table .status-text.status-neg_fee_pending      { color: #d97706; font-weight: 600; }
 .data-table .status-text.status-pending_approval     { color: #0369a1; }
 .data-table .status-text.status-waiting_accounting   { color: #b45309; }
 .data-table .status-text.status-accounting_confirmed { color: #1d4ed8; }
@@ -757,6 +758,7 @@ a.rv-ext-link:hover { opacity: 0.75; }
 .data-table .status-text.status-invalid              { color: var(--color-danger); }
 
 /* Modal 狀態色（rv-status）*/
+#rv-status.status-neg_fee_pending      { color: #d97706; font-weight: 600; }
 #rv-status.status-waiting_accounting   { color: #b45309; }
 #rv-status.status-accounting_confirmed { color: #1d4ed8; }
 #rv-status.status-rewardable           { color: var(--color-success-dark); }

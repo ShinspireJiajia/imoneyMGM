@@ -48,7 +48,7 @@
 
 .faq-admin-row {
   display: grid;
-  grid-template-columns: 28px 1fr auto auto;
+  grid-template-columns: 28px 22px 1fr auto auto;
   align-items: center;
   gap: 12px;
   background: #fff;
@@ -559,4 +559,132 @@
 
 .faq-toast.show {
   opacity: 1;
+}
+
+/* ===================== 層級徽章 ===================== */
+.faq-level-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.faq-level-l1 { background: #ede9fe; color: #5b21b6; }
+.faq-level-l2 { background: #dbeafe; color: #1d4ed8; }
+.faq-level-l3 { background: #d1fae5; color: #065f46; }
+
+/* ===================== 行縮排（層級 2/3） ===================== */
+.faq-admin-row-l2 {
+  margin-left: 22px;
+  border-left: 3px solid #bfdbfe;
+}
+
+.faq-admin-row-l3 {
+  margin-left: 44px;
+  border-left: 3px solid #a7f3d0;
+}
+
+/* ===================== 分類群組行標題 ===================== */
+.faq-row-group-title {
+  color: var(--color-primary-dark) !important;
+  font-weight: 700 !important;
+}
+
+.faq-row-group-title i {
+  color: var(--color-primary);
+  margin-right: 3px;
+}
+
+/* ===================== 新增子項按鈕 ===================== */
+.faq-btn-add-child {
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary-light) !important;
+}
+
+.faq-btn-add-child:hover {
+  background: var(--color-primary-50) !important;
+  color: var(--color-primary-dark) !important;
+}
+
+/* ===================== 類型切換開關 ===================== */
+.faq-type-switch {
+  display: flex;
+  gap: 10px;
+}
+
+.faq-type-opt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  user-select: none;
+  flex: 1;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+
+.faq-type-opt input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.faq-type-opt.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-50);
+  color: var(--color-primary-dark);
+}
+
+.faq-type-opt i {
+  font-size: 13px;
+}
+
+/* ===================== 上層分類路徑 ===================== */
+.faq-parent-path {
+  padding: 8px 12px;
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-light);
+  border-radius: 8px;
+  font-size: var(--font-sm);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+
+.faq-parent-path::before {
+  content: '\f07c';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  margin-right: 6px;
+  font-size: 11px;
+}
+
+/* ===================== 刪除警告（群組含子項） ===================== */
+.faq-delete-warn {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  background: #fff7ed;
+  border-left: 3px solid #f97316;
+  border-radius: 0 6px 6px 0;
+  font-size: var(--font-sm);
+  color: #c2410c;
+  font-weight: 600;
+}
+
+/* ===================== 原始碼按鈕 active 狀態 ===================== */
+.faq-tb-btn.active {
+  background: var(--color-primary-50);
+  color: var(--color-primary-dark);
+  border-color: var(--color-primary-light);
 }
