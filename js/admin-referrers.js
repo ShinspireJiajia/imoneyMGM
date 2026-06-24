@@ -555,8 +555,6 @@
         <td>${r.uid}</td>
         <td class="cell-name">${r.name}</td>
         <td>${r.phone}</td>
-        <td class="num">${r.clicks}</td>
-        <td class="num">${r.cases}</td>
         <td class="num money">$${fmt(r.pending)}</td>
         <td class="num money">$${fmt(r.withdrawn)}</td>
         <td><span class="status-text status-${statusClsKey}">${status.label}</span></td>

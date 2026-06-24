@@ -27,6 +27,11 @@
       breadcrumb: '會員管理 / 推薦人管理',
       file: 'pages/admin-referrers.html',
     },
+    'admin-referrer-performance': {
+      title: '推薦人行銷成效總覽',
+      breadcrumb: '會員管理 / 推薦人行銷成效總覽',
+      file: 'pages/admin-referrer-performance.html',
+    },
     'admin-records': {
       title: '推薦案件管理',
       breadcrumb: '案件管理 / 推薦案件管理',
@@ -104,8 +109,8 @@
       file: 'pages/admin-notify-tags.html',
     },
     'notify-settings': {
-      title: '推播設定',
-      breadcrumb: '推播管理 / 推播設定',
+      title: '訊息樣板設定',
+      breadcrumb: '推播管理 / 訊息樣板設定',
       file: 'pages/admin-notify-settings.html',
     },
     'notify-log': {
@@ -117,6 +122,22 @@
       title: '常見問答維護',
       breadcrumb: '內容管理 / 常見問答維護',
       file: 'pages/admin-faq.html',
+    },
+    // ── 系統管理 ──
+    'sys-users': {
+      title: '使用者管理',
+      breadcrumb: '系統管理 / 使用者管理',
+      file: 'pages/admin-sys-users.html',
+    },
+    'sys-roles': {
+      title: '角色權限管理',
+      breadcrumb: '系統管理 / 角色權限管理',
+      file: 'pages/admin-sys-roles.html',
+    },
+    'sys-logs': {
+      title: '操作紀錄查詢',
+      breadcrumb: '系統管理 / 操作紀錄查詢',
+      file: 'pages/admin-sys-logs.html',
     },
   };
 
