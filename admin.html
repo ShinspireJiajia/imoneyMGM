@@ -16,6 +16,23 @@
     />
     <link rel="stylesheet" href="css/common.css" />
     <link rel="stylesheet" href="css/admin-layout.css" />
+    <style>
+      /* ── 推播管理 Sub-menu ── */
+      .admin-nav-group-btn {
+        width: 100%; display: flex; align-items: center; gap: 10px;
+        padding: 9px 16px; border: none; background: transparent; cursor: pointer;
+        font-size: 13px; font-weight: 500; color: #6b7280;
+        font-family: 'Noto Sans TC', sans-serif; text-align: left; transition: color .15s;
+      }
+      .admin-nav-group-btn:hover { color: #6366f1; background: rgba(99,102,241,.04); }
+      .admin-nav-group-btn > span { flex: 1; }
+      .nav-grp-chevron { font-size: 10px; transition: transform .2s; margin-left: auto; }
+      .admin-nav-children { display: none; }
+      .admin-nav-group.is-open > .admin-nav-children { display: block; }
+      .admin-nav-child { padding-left: 38px !important; font-size: 12px !important; }
+      .admin-nav-child:hover { background: rgba(99,102,241,.06) !important; }
+      .perm-hidden { display: none !important; }
+    </style>
   </head>
   <body class="admin">
     <div class="admin-frame">
@@ -29,77 +46,106 @@
             理財通 MGM
             <small>行銷後台</small>
           </div>
+          <button class="sidebar-toggle-btn" id="btn-sidebar-toggle" type="button" title="收合選單" aria-expanded="true">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
         </div>
 
         <nav class="admin-nav">
           <div class="admin-nav-section">行銷設定</div>
           <a class="admin-nav-item active" data-page="admin-campaigns" href="#admin-campaigns">
-            <span>活動檔期管理</span>
+            <i class="fa-solid fa-calendar-days"></i><span>活動檔期管理</span>
           </a>
           <a class="admin-nav-item" data-page="admin-share-rules" href="#admin-share-rules">
-            <span>分享制度說明維護</span>
+            <i class="fa-solid fa-share-nodes"></i><span>分享制度說明維護</span>
           </a>
           <a class="admin-nav-item" data-page="admin-faq" href="#admin-faq">
-            <span>常見問答維護</span>
+            <i class="fa-solid fa-circle-question"></i><span>常見問答維護</span>
           </a>
 
           <div class="admin-nav-section">會員管理</div>
-          <a class="admin-nav-item" data-page="admin-employees" href="#admin-employees">
-            <span>員工帳號管理</span>
-          </a>
           <a class="admin-nav-item" data-page="admin-referrers" href="#admin-referrers">
-            <span>推薦人管理</span>
+            <i class="fa-solid fa-users"></i><span>推薦人管理</span>
+          </a>
+          <a class="admin-nav-item" data-page="admin-referrer-performance" href="#admin-referrer-performance">
+            <i class="fa-solid fa-chart-line"></i><span>推薦人行銷成效總覽</span>
           </a>
 
           <div class="admin-nav-section">推播管理</div>
-          <a class="admin-nav-item" data-page="admin-notify" href="#admin-notify">
-            <span>推播通知管理</span>
+          <a class="admin-nav-item" data-page="notify-send" href="#notify-send">
+            <i class="fa-solid fa-paper-plane"></i><span>發送推播</span>
+          </a>
+          <a class="admin-nav-item" data-page="notify-members" href="#notify-members">
+            <i class="fa-solid fa-users"></i><span>人員管理</span>
+          </a>
+          <a class="admin-nav-item" data-page="notify-groups" href="#notify-groups">
+            <i class="fa-solid fa-layer-group"></i><span>群組管理</span>
+          </a>
+          <a class="admin-nav-item" data-page="notify-tags" href="#notify-tags">
+            <i class="fa-solid fa-tags"></i><span>標籤管理</span>
+          </a>
+          <a class="admin-nav-item" data-page="notify-settings" href="#notify-settings">
+            <i class="fa-solid fa-sliders"></i><span>訊息樣板設定</span>
+          </a>
+          <a class="admin-nav-item" data-page="notify-log" href="#notify-log">
+            <i class="fa-solid fa-clock-rotate-left"></i><span>發送紀錄</span>
           </a>
 
           <div class="admin-nav-section">案件管理</div>
           <a class="admin-nav-item" data-page="admin-records" href="#admin-records">
-            <span>推薦案件管理</span>
+            <i class="fa-solid fa-file-lines"></i><span>推薦案件管理</span>
           </a>
           <a class="admin-nav-item" data-page="admin-reports" href="#admin-reports">
-            <span>推薦案件報表</span>
+            <i class="fa-solid fa-chart-bar"></i><span>推薦案件報表</span>
           </a>
 
           <div class="admin-nav-section">財務管理</div>
           <a class="admin-nav-item" data-page="admin-payout" href="#admin-payout">
-            <span>推薦案件獎金核款</span>
+            <i class="fa-solid fa-file-invoice-dollar"></i><span>推薦案件獎金核款</span>
             <span class="badge-num" id="nav-payout-badge">3</span>
           </a>
           <a class="admin-nav-item" data-page="admin-payments" href="#admin-payments">
-            <span>提領功能管理</span>
+            <i class="fa-solid fa-money-bill-transfer"></i><span>提領功能管理</span>
           </a>
           <a class="admin-nav-item" data-page="admin-cash-payments" href="#admin-cash-payments">
-            <span>提領功能管理(現場提領)</span>
+            <i class="fa-solid fa-store"></i><span>提領功能管理(現場提領)</span>
           </a>
           <a class="admin-nav-item" data-page="admin-pending-review" href="#admin-pending-review">
-            <span>超量待審佇列</span>
+            <i class="fa-solid fa-triangle-exclamation"></i><span>超量待審佇列</span>
             <span class="badge-num">3</span>
           </a>
 
           <div class="admin-nav-section">風控管理</div>
           <a class="admin-nav-item" data-page="admin-plan-switch" href="#admin-plan-switch">
-            <span>全站方案開關</span>
+            <i class="fa-solid fa-toggle-on"></i><span>全站方案開關</span>
           </a>
           <a class="admin-nav-item" data-page="admin-limits" href="#admin-limits">
-            <span>提領限制與時效管理</span>
+            <i class="fa-solid fa-clock"></i><span>提領限制與時效管理</span>
           </a>
           <a class="admin-nav-item" data-page="admin-default" href="#admin-default">
-            <span>活動空窗期獎金設定</span>
+            <i class="fa-solid fa-gear"></i><span>活動空窗期獎金設定</span>
           </a>
           <a class="admin-nav-item" data-page="admin-blacklist" href="#admin-blacklist">
-            <span>黑名單管理</span>
+            <i class="fa-solid fa-ban"></i><span>黑名單管理</span>
+          </a>
+
+          <div class="admin-nav-section">系統管理</div>
+          <a class="admin-nav-item" data-page="sys-users" href="#sys-users">
+            <i class="fa-solid fa-users-gear"></i><span>使用者管理</span>
+          </a>
+          <a class="admin-nav-item" data-page="sys-roles" href="#sys-roles">
+            <i class="fa-solid fa-shield-halved"></i><span>角色權限管理</span>
+          </a>
+          <a class="admin-nav-item" data-page="sys-logs" href="#sys-logs">
+            <i class="fa-solid fa-clock-rotate-left"></i><span>操作紀錄查詢</span>
           </a>
 
           <div class="admin-nav-section">其他</div>
           <a class="admin-nav-item" href="index.html">
-            <span>切換到推薦人前台</span>
+            <i class="fa-solid fa-arrow-right-from-bracket"></i><span>切換到推薦人前台</span>
           </a>
           <a class="admin-nav-item" href="ex-employee.html">
-            <span>員工專屬登入頁</span>
+            <i class="fa-solid fa-id-badge"></i><span>員工專屬登入頁</span>
           </a>
         </nav>
 
