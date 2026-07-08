@@ -123,6 +123,8 @@
 .ms-option.selected-transferred .ms-option-title { color: var(--color-success-dark); }
 .ms-option.selected-failed { border-color: var(--color-danger); background: #FFF5F5; }
 .ms-option.selected-failed .ms-option-title { color: var(--color-danger); }
+.ms-option.selected { border-color: var(--color-primary); background: var(--color-primary-100); }
+.ms-option.selected .ms-option-title { color: var(--color-primary-dark); }
 .ms-payid-label { font-size: 13px; margin-left: 8px; font-family: 'Courier New', monospace; color: var(--color-primary-dark); }
 
 /* 異常款項列 */
