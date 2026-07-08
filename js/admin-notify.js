@@ -275,6 +275,8 @@
   let groupMemberSearch = '';
   let groupsView = 'list';   // 'list' | 'detail'
   let groupListSearch = '';
+  let groupMemberPage = 0;
+  let groupMemberPageSize = 20;
 
   // Tags tab
   let editingTagId    = null;
@@ -1896,6 +1898,7 @@
     if (!g) { showGroupsListView(); return; }
     groupsView   = 'detail';
     activeGroupId = gid;
+    groupMemberPage = 0;
     const listView   = document.getElementById('groups-list-view');
     const detailView = document.getElementById('groups-detail-view');
     if (listView)   listView.style.display   = 'none';
@@ -2021,32 +2024,75 @@
     const members = g.memberIds.map(getMemberById).filter(Boolean).filter((m) =>
       !q || m.name.toLowerCase().includes(q) || m.mobile.includes(q)
     );
-    if (!members.length) {
-      list.innerHTML = `<div style="padding:24px;text-align:center;color:#c0c4cc;font-size:13px;">${q ? '無符合條件的成員' : '尚無成員，點選「新增成員」加入指定對象'}</div>`;
-      return;
-    }
-    list.innerHTML = members.map((m) => {
-      const tagHtml = getUserTagIds(m.id).map((tid) => {
-        const t = getTagById(tid);
-        return t ? `<span class="gm-tag-sm" style="background:${hexRgba(t.color,0.09)};color:${t.color};border:1px solid ${hexRgba(t.color,0.22)};">${esc(t.name)}</span>` : '';
-      }).join('');
-      const idBadges = m.identities.slice(0, 2).map(identityBadge).join('');
-      return `<div class="gm-cpt" style="grid-template-columns:26px 138px 104px 56px 76px 1fr auto;" data-gmcpt="${m.id}">
-        <div class="m-avatar" style="width:26px;height:26px;font-size:11px;flex-shrink:0;">${esc(m.name.charAt(0))}</div>
-        <div class="gm-c-info">
-          <div class="gm-c-name">${esc(m.name)}</div>
-          <div class="gm-c-id">${m.id}</div>
-        </div>
-        <span class="gm-c-phone">${m.mobile}</span>
-        <div class="gm-c-line">${m.line ? '<span class="gm-line-yes"><i class="fa-brands fa-line"></i> 已加</span>' : '<span class="gm-line-no">—</span>'}</div>
-        <div class="gm-c-badges">${idBadges}</div>
-        <div class="gm-c-tags">${tagHtml}</div>
-        <button class="gm-rm-btn" data-gmrm="${m.id}" title="移除" style="background:none;border:none;cursor:pointer;color:#d1d5db;padding:2px 4px;font-size:13px;line-height:1;border-radius:4px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#d1d5db'"><i class="fa-solid fa-xmark"></i></button>
+    const cols = '138px 104px 56px 76px 1fr auto';
+    const head = `<div class="gm-cpt gm-cpt-head" style="grid-template-columns:${cols};">
+        <div class="gm-c-info">姓名／編號</div>
+        <span class="gm-c-phone">手機號碼</span>
+        <div class="gm-c-line">LINE</div>
+        <div class="gm-c-badges">身份</div>
+        <div class="gm-c-tags">標籤</div>
+        <span></span>
       </div>`;
-    }).join('');
+
+    const total = members.length;
+    const totalPages = Math.max(1, Math.ceil(total / groupMemberPageSize));
+    if (groupMemberPage >= totalPages) groupMemberPage = totalPages - 1;
+    if (groupMemberPage < 0) groupMemberPage = 0;
+    const start = groupMemberPage * groupMemberPageSize;
+    const pageItems = members.slice(start, start + groupMemberPageSize);
+
+    const rowsHtml = pageItems.length
+      ? pageItems.map((m) => {
+        const tagHtml = getUserTagIds(m.id).map((tid) => {
+          const t = getTagById(tid);
+          return t ? `<span class="gm-tag-sm" style="background:${hexRgba(t.color,0.09)};color:${t.color};border:1px solid ${hexRgba(t.color,0.22)};">${esc(t.name)}</span>` : '';
+        }).join('');
+        const idBadges = m.identities.slice(0, 2).map(identityBadge).join('');
+        return `<div class="gm-cpt" style="grid-template-columns:${cols};" data-gmcpt="${m.id}">
+          <div class="gm-c-info">
+            <div class="gm-c-name">${esc(m.name)}</div>
+            <div class="gm-c-id">${m.id}</div>
+          </div>
+          <span class="gm-c-phone">${m.mobile}</span>
+          <div class="gm-c-line">${m.line ? '<span class="gm-line-yes"><i class="fa-brands fa-line"></i> 已加</span>' : '<span class="gm-line-no">—</span>'}</div>
+          <div class="gm-c-badges">${idBadges}</div>
+          <div class="gm-c-tags">${tagHtml}</div>
+          <button class="gm-rm-btn" data-gmrm="${m.id}" title="移除" style="background:none;border:none;cursor:pointer;color:#d1d5db;padding:2px 4px;font-size:13px;line-height:1;border-radius:4px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#d1d5db'"><i class="fa-solid fa-xmark"></i></button>
+        </div>`;
+      }).join('')
+      : `<div style="padding:24px;text-align:center;color:#c0c4cc;font-size:13px;">${q ? '無符合條件的成員' : '尚無成員，點選「新增成員」加入指定對象'}</div>`;
+
+    const pagerHtml = `<div class="tag-pagination">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="pg-size">
+            每頁
+            <select id="gm-page-size">
+              <option value="20" ${groupMemberPageSize === 20 ? 'selected' : ''}>20</option>
+              <option value="100" ${groupMemberPageSize === 100 ? 'selected' : ''}>100</option>
+            </select>
+            筆
+          </div>
+          <span class="tag-pg-info">第 ${groupMemberPage + 1} / ${totalPages} 頁，共 ${total} 筆</span>
+        </div>
+        <div class="tag-pg-btns">
+          <button class="tag-pg-btn" id="gm-pg-prev" ${groupMemberPage === 0 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="tag-pg-btn" id="gm-pg-next" ${groupMemberPage >= totalPages - 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>`;
+
+    list.innerHTML = head + rowsHtml;
+    const pager = document.getElementById('group-member-pager');
+    if (pager) pager.innerHTML = total ? pagerHtml : '';
     list.querySelectorAll('[data-gmrm]').forEach((btn) =>
       btn.addEventListener('click', (e) => { e.stopPropagation(); openRemoveNote(btn.dataset.gmrm); })
     );
+    document.getElementById('gm-page-size')?.addEventListener('change', (e) => {
+      groupMemberPageSize = +e.target.value;
+      groupMemberPage = 0;
+      renderGroupMemberList(g);
+    });
+    document.getElementById('gm-pg-prev')?.addEventListener('click', () => { groupMemberPage--; renderGroupMemberList(g); });
+    document.getElementById('gm-pg-next')?.addEventListener('click', () => { groupMemberPage++; renderGroupMemberList(g); });
   }
 
   function openAddToGroupModal() {
@@ -3849,6 +3895,7 @@
     document.getElementById('btn-remove-note-ok')?.addEventListener('click', confirmRemoveMember);
     document.getElementById('group-member-search')?.addEventListener('input', () => {
       const g = getGroupById(activeGroupId);
+      groupMemberPage = 0;
       if (g) renderGroupMemberList(g);
     });
 
