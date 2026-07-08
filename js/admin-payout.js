@@ -43,7 +43,7 @@
   const CASES = [
     {
       caseId: 'M2026051504',
-      agentName: '陳志明',
+      agentName: '陳志明', agentRegion: '北區',
       referrerName: '李大華', referrerTag: '員工', referrerCid: 'U240105002',
       refereeName: '張家豪', refereePhone: '0933678111',
       caseType: 'general',
@@ -69,7 +69,7 @@
     },
     {
       caseId: 'M2026053002',
-      agentName: '張偉傑',
+      agentName: '張偉傑', agentRegion: '中區',
       referrerName: '葉文群', referrerTag: '會員', referrerCid: 'U230408009',
       refereeName: '陳怡君', refereePhone: '0966123456',
       caseType: 'general',
@@ -93,7 +93,7 @@
     },
     {
       caseId: 'M2026051205',
-      agentName: '林美玲',
+      agentName: '林美玲', agentRegion: '南區',
       referrerName: '王小毅', referrerTag: '會員', referrerCid: 'U250310001',
       refereeName: '吳雅芳', refereePhone: '0955333222',
       caseType: 'negotiation',
@@ -120,7 +120,7 @@
     },
     {
       caseId: 'M2026062401',
-      agentName: '陳志明',
+      agentName: '陳志明', agentRegion: '北區',
       referrerName: '趙雅琪', referrerTag: '會員', referrerCid: 'U241201008',
       refereeName: '楊志遠', refereePhone: '0912345678',
       caseType: 'general',
@@ -147,7 +147,7 @@
     },
     {
       caseId: 'M2026042016',
-      agentName: '陳志明',
+      agentName: '陳志明', agentRegion: '北區',
       referrerName: '林副總', referrerTag: '員工', referrerCid: 'U240214003',
       refereeName: '蘇建仁', refereePhone: '0977001122',
       caseType: 'general',
@@ -175,7 +175,7 @@
     {
       // 協商案件：累積達 $6,000（第三期啟動），但啟動後尚未再繳 2 期 → E-NEG 阻擋核款
       caseId: 'M2026062403',
-      agentName: '李文強',
+      agentName: '李文強', agentRegion: '北區',
       referrerName: '彭俊豪', referrerTag: '會員', referrerCid: 'U240315008',
       refereeName: '鄭佳豪', refereePhone: '0922345678',
       caseType: 'negotiation',
@@ -289,7 +289,7 @@
   const EXT_RECEIPT_BASE_URL = '#receipt?no=';   // 收款單系統：EXT_RECEIPT_BASE_URL + 單號
   const EXT_MEMBER_BASE_URL  = '#member?id=';    // 名單系統：EXT_MEMBER_BASE_URL + yymmddXXXX
 
-  const filters = { referrer: '', caseId: '', type: 'all', status: 'pending_approval', warningCode: 'all' };
+  const filters = { referrer: '', caseId: '', type: 'all', status: 'pending_approval', warningCode: 'all', region: 'all' };
   let selected = new Set();
   let currentCaseId = null;
   let rejectTargetId = null;
@@ -352,6 +352,7 @@
     return CASES.filter((r) => {
       if (filters.status !== 'all' && r.status !== filters.status) return false;
       if (filters.type   !== 'all' && r.caseType !== filters.type)  return false;
+      if (filters.region !== 'all' && r.agentRegion !== filters.region) return false;
       if (filters.referrer) {
         const k = filters.referrer.toLowerCase();
         if (!(r.referrerCid + ' ' + r.referrerName).toLowerCase().includes(k)) return false;
@@ -396,6 +397,8 @@
         <td class="mono" style="font-size:12px;">${r.referrerCid}</td>
         <td>${r.referrerTag}</td>
         <td>${r.agentName || '—'}</td>
+        <td>${r.agentRegion || '—'}</td>
+        <td>${r.refereeName || '—'}</td>
         <td><span class="tag-pill ${(TYPE_META[r.caseType] || {}).cls || 'badge-gray'}">${(TYPE_META[r.caseType] || {}).label || '—'}</span></td>
         <td class="num money">${fmt(r.amount)}</td>
         <td>${buildReceiptListHtml(r)}</td>
@@ -421,7 +424,7 @@
     const tbody = document.getElementById('payout-tbody');
     tbody.innerHTML = items.length
       ? items.map(renderRow).join('')
-      : '<tr><td colspan="12" style="padding:32px;text-align:center;color:var(--color-text-muted);">沒有符合條件的案件</td></tr>';
+      : '<tr><td colspan="14" style="padding:32px;text-align:center;color:var(--color-text-muted);">沒有符合條件的案件</td></tr>';
 
     const tc = document.getElementById('total-count');
     if (tc) tc.textContent = items.length;
@@ -601,7 +604,7 @@
     }
     set('pm-referrer-cid', r.referrerCid);
     set('pm-tag',          r.referrerTag);
-    set('pm-agent-name',   r.agentName || '—');
+    set('pm-agent-name',   r.agentName ? `${r.agentName}${r.agentRegion ? '（' + r.agentRegion + '）' : ''}` : '—');
     set('pm-case-type',    (TYPE_META[r.caseType] || {}).label || '—');
     set('pm-referee',       r.refereeName);
     set('pm-referee-phone', r.refereePhone || '—');
@@ -897,7 +900,7 @@
   // ─── filters ──────────────────────────────────────────────
   function bindFilters() {
     document.getElementById('btn-search').addEventListener('click', syncAndRender);
-    ['f-type', 'f-status', 'f-warn-code'].forEach((id) =>
+    ['f-type', 'f-status', 'f-warn-code', 'f-region'].forEach((id) =>
       document.getElementById(id).addEventListener('change', syncAndRender)
     );
     ['f-referrer', 'f-case-id'].forEach((id) =>
@@ -913,6 +916,7 @@
     filters.type         = document.getElementById('f-type').value;
     filters.status       = document.getElementById('f-status').value;
     filters.warningCode  = document.getElementById('f-warn-code').value;
+    filters.region       = document.getElementById('f-region').value;
     selected.clear();
     render();
   }
@@ -924,11 +928,11 @@
     btn.addEventListener('click', () => {
       const items = getFiltered();
       if (items.length === 0) { alert('目前無資料可匯出'); return; }
-      const header = ['案號','推薦人','會員編號','身份','負責業務','被推薦人','案件類型','計算獎金','狀態','系統警示代碼','核款時間','核款人員','核款備註','拒絕時間','拒絕人員','拒絕原因'];
+      const header = ['案號','推薦人','會員編號','身份','負責業務','業務所屬單位地區','被推薦人','案件類型','計算獎金','狀態','系統警示代碼','核款時間','核款人員','核款備註','拒絕時間','拒絕人員','拒絕原因'];
       const rows = items.map((r) => {
         const s  = STATUS_META[r.status]?.label || r.status;
         const ct = TYPE_META[r.caseType]?.label || r.caseType || '';
-        return [r.caseId, r.referrerName, r.referrerCid, r.referrerTag, r.agentName || '',
+        return [r.caseId, r.referrerName, r.referrerCid, r.referrerTag, r.agentName || '', r.agentRegion || '',
           r.refereeName, ct, r.amount ?? '', s,
           (r.warningCodes || []).join(';'),
           r.approvedAt || '', r.approvedBy || '', r.approveNote || '',

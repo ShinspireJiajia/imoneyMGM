@@ -599,6 +599,9 @@
     },
   ];
 
+  // 現金交接狀態預設為「未撥款」，獨立於提領狀態，由會計手動維護
+  PAYMENTS.forEach((p) => { if (!p.cashHandoverStatus) p.cashHandoverStatus = 'not_yet'; });
+
   const HISTORY = {
     'PAY-26052203': [
       { time: '2026/05/22 16:00', actor: '推薦人 - 王小毅', action: '建立提領申請', desc: '現場領取 - 板橋分公司，預計 2026/06/05 上午 10:00-12:00', cls: 'done' },
@@ -669,6 +672,17 @@
     員工: 'badge-green',
     離職員工: 'badge-yellow',
   };
+
+  // 現金交接狀態：獨立於提領狀態，追蹤會計是否已將現金撥給門市業助
+  const CASH_HANDOVER_META = {
+    not_yet:  { label: '未撥款',       cls: 'ch-not-yet' },
+    handed:   { label: '已撥款給業助', cls: 'ch-handed' },
+    returned: { label: '已繳回',       cls: 'ch-returned' },
+  };
+  function cashHandoverBadge(p) {
+    const h = CASH_HANDOVER_META[p.cashHandoverStatus] || CASH_HANDOVER_META.not_yet;
+    return `<span class="pay-status ${h.cls}">${h.label}</span>`;
+  }
 
   function fmt(n) { return n.toLocaleString(); }
 
@@ -753,6 +767,38 @@
         <div class="kpi-label"><i class="fa-solid fa-circle-xmark"></i>提領失敗金額</div>
         <div class="kpi-value" style="color:#ef4444;">$${fmt(fAmt)}</div>
         <div class="kpi-count">${failed.length} 筆</div>
+      </div>` : ''}`;
+
+    renderBoardCashFlow(pays);
+  }
+
+  // 現金交接狀況：僅計入尚未完成領取的案件（現金仍需要被追蹤）
+  function renderBoardCashFlow(pays) {
+    const el = document.getElementById('board-kpi-row-cash');
+    if (!el) return;
+    const tracked = pays.filter((p) => p.status !== 'completed');
+    const notYet   = tracked.filter((p) => p.cashHandoverStatus === 'not_yet');
+    const handed   = tracked.filter((p) => p.cashHandoverStatus === 'handed');
+    const returned = tracked.filter((p) => p.cashHandoverStatus === 'returned');
+    const nAmt = notYet.reduce((s, p) => s + p.amount, 0);
+    const hAmt = handed.reduce((s, p) => s + p.amount, 0);
+    const rAmt = returned.reduce((s, p) => s + p.amount, 0);
+
+    el.innerHTML = `
+      <div class="kpi-card kpi-card-cash-not-yet">
+        <div class="kpi-label"><i class="fa-solid fa-vault"></i>未撥款金額</div>
+        <div class="kpi-value" style="color:#64748b;">$${fmt(nAmt)}</div>
+        <div class="kpi-count">${notYet.length} 筆</div>
+      </div>
+      <div class="kpi-card kpi-card-cash-handed">
+        <div class="kpi-label"><i class="fa-solid fa-hand-holding-dollar"></i>已撥款給業助（未繳回）</div>
+        <div class="kpi-value" style="color:#3b82f6;">$${fmt(hAmt)}</div>
+        <div class="kpi-count">${handed.length} 筆</div>
+      </div>
+      ${rAmt > 0 ? `<div class="kpi-card kpi-card-cash-returned">
+        <div class="kpi-label"><i class="fa-solid fa-rotate-left"></i>已繳回金額</div>
+        <div class="kpi-value" style="color:#10b981;">$${fmt(rAmt)}</div>
+        <div class="kpi-count">${returned.length} 筆</div>
       </div>` : ''}`;
   }
 
@@ -873,7 +919,7 @@
   }
 
   // ==================== 清單 ====================
-  const cashFilters = { keyword: '', referrerName: '', referrerId: '', status: 'pickup', branch: 'all' };
+  const cashFilters = { keyword: '', referrerName: '', referrerId: '', status: 'pickup', branch: 'all', handover: 'all' };
   let cashPgPage = 1, cashPgSize = 20;
   let cashSelected = new Set();
 
@@ -901,6 +947,7 @@
     const result = PAYMENTS.filter((p) => {
       if (cashFilters.status !== 'all' && p.status !== cashFilters.status) return false;
       if (cashFilters.branch !== 'all' && branchCity(p.branch) !== cashFilters.branch) return false;
+      if (cashFilters.handover !== 'all' && p.cashHandoverStatus !== cashFilters.handover) return false;
       if (rnKw  && !(p.referrer  || '').toLowerCase().includes(rnKw))  return false;
       if (ridKw && !(p.memberId  || '').toLowerCase().includes(ridKw)) return false;
       if (kw) {
@@ -951,6 +998,7 @@
         <td>${cityBadge} <span style="font-size:11px;color:var(--color-text-secondary);">${p.branch || '—'}</span></td>
         <td class="cell-applied">${pickupDate}</td>
         <td><span class="pay-status ${s.cls}"><i class="fa-solid ${s.icon}"></i>${s.label}</span></td>
+        <td>${cashHandoverBadge(p)}</td>
         <td>
           <button type="button" class="action-btn" data-action="detail" data-wdid="${p.withdrawalId || ''}">
             <i class="fa-solid fa-list-ul"></i>明細
@@ -960,6 +1008,9 @@
           </button>
           ${p.status === 'pickup' ? `<button type="button" class="action-btn mark-status" data-action="mark-status" data-id="${p.id}">
             <i class="fa-solid fa-pen-to-square"></i>更新狀態
+          </button>` : ''}
+          ${p.status !== 'completed' ? `<button type="button" class="action-btn" data-action="cash-handover" data-id="${p.id}">
+            <i class="fa-solid fa-money-bill-transfer"></i>現金交接
           </button>` : ''}
           ${canEditCash() ? `<button type="button" class="action-btn" data-action="edit" data-id="${p.id}">
             <i class="fa-solid fa-pen-to-square"></i>編輯
@@ -1066,6 +1117,7 @@
     document.getElementById('cash-wd-detail-pickup').textContent = pickupText;
     document.getElementById('cash-wd-detail-status').innerHTML =
       `<span class="pay-status ${s.cls}">${s.label}</span>`;
+    document.getElementById('cash-wd-detail-handover').innerHTML = cashHandoverBadge(first);
     document.getElementById('cash-wd-detail-tbody').innerHTML = pays.map((p) => {
       const ps = STATUS_META[p.status] || { label: p.status, cls: 'pending' };
       return `<tr>
@@ -1154,6 +1206,9 @@
     );
     document.querySelectorAll('[data-action="mark-status"]').forEach((b) =>
       b.addEventListener('click', () => openCashMarkStatus(b.dataset.id))
+    );
+    document.querySelectorAll('[data-action="cash-handover"]').forEach((b) =>
+      b.addEventListener('click', () => openCashHandover(b.dataset.id))
     );
   }
 
@@ -1313,6 +1368,68 @@
     cashMarkStatusId = null;
   }
 
+  // ==================== 現金交接狀態 Modal ====================
+  let cashHandoverId = null;
+  function openCashHandover(payId) {
+    const p = PAYMENTS.find((x) => x.id === payId);
+    if (!p) return;
+    cashHandoverId = payId;
+    document.getElementById('chm-payid').textContent = p.withdrawalId || p.id;
+    document.getElementById('chm-ref').textContent = `${p.referrer} (${p.tag})`;
+    document.getElementById('chm-amount').textContent = '$' + fmt(p.amount);
+    document.getElementById('chm-branch').textContent = p.branch || '—';
+
+    const h = CASH_HANDOVER_META[p.cashHandoverStatus] || CASH_HANDOVER_META.not_yet;
+    document.getElementById('chm-current').innerHTML = `<span class="pay-status ${h.cls}">${h.label}</span>`;
+
+    document.querySelectorAll('input[name="chm-status-pick"]').forEach((r) => {
+      r.checked = r.value === p.cashHandoverStatus;
+    });
+    document.querySelectorAll('#cash-handover-modal .ms-option').forEach((el) => el.classList.remove('selected'));
+    const currentOpt = document.getElementById(`chm-opt-${p.cashHandoverStatus}`);
+    if (currentOpt) currentOpt.classList.add('selected');
+    document.getElementById('chm-note').value = '';
+    document.getElementById('btn-chm-save').disabled = true;
+
+    document.getElementById('cash-handover-modal').classList.add('show');
+  }
+
+  function saveCashHandover() {
+    if (!cashHandoverId) return;
+    const p = PAYMENTS.find((x) => x.id === cashHandoverId);
+    if (!p) return;
+
+    const picked = document.querySelector('input[name="chm-status-pick"]:checked');
+    if (!picked) return;
+    const newHandover = picked.value;
+    const oldHandover = p.cashHandoverStatus;
+    if (newHandover === oldHandover) { closeCashHandover(); return; }
+
+    const note = (document.getElementById('chm-note').value || '').trim();
+    const now = new Date().toLocaleString('zh-TW');
+    p.cashHandoverStatus = newHandover;
+
+    if (!HISTORY[p.id]) HISTORY[p.id] = [];
+    const oldLabel = CASH_HANDOVER_META[oldHandover]?.label || oldHandover;
+    const newLabel = CASH_HANDOVER_META[newHandover]?.label || newHandover;
+    HISTORY[p.id].push({
+      time: now,
+      actor: '會計 - 現金交接維護',
+      action: `現金交接狀態：${oldLabel} → ${newLabel}`,
+      desc: note || '（無備註）',
+      cls: newHandover === 'returned' ? 'done' : '',
+    });
+
+    closeCashHandover();
+    render();
+    toast('已更新現金交接狀態');
+  }
+
+  function closeCashHandover() {
+    document.getElementById('cash-handover-modal').classList.remove('show');
+    cashHandoverId = null;
+  }
+
   // ==================== 檢視附件 Modal ====================
   function drawAttachCanvas(canvasId, typeLabel, subLabel) {
     const canvas = document.getElementById(canvasId);
@@ -1446,12 +1563,14 @@
     btn.addEventListener('click', () => {
       const rows = getCashFiltered();
       if (!rows.length) { alert('目前無資料可匯出'); return; }
-      const header = ['提領編號','款項編號','案號','推薦人編號','推薦人','標籤','金額(NT$)','門市','城市','預計領取日','預約時段','狀態','備註'];
+      const header = ['提領編號','款項編號','案號','推薦人編號','推薦人','標籤','金額(NT$)','門市','城市','預計領取日','預約時段','狀態','現金交接狀態','備註'];
       const data = rows.map((p) => [
         p.withdrawalId || '', p.id, p.caseId, p.memberId || '', p.referrer, p.tag, p.amount,
         p.branch || '', branchCity(p.branch),
         p.expectedPickupDate || '', p.appointmentHours || '',
-        STATUS_META[p.status]?.label || p.status, p.note || '',
+        STATUS_META[p.status]?.label || p.status,
+        CASH_HANDOVER_META[p.cashHandoverStatus]?.label || p.cashHandoverStatus,
+        p.note || '',
       ]);
       downloadCsv(`cash_payments_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.csv`, [header, ...data]);
       toast(`已匯出 ${rows.length} 筆現場提領資料`);
@@ -1471,6 +1590,8 @@
     if (st) st.addEventListener('change', applyFilters);
     const br = document.getElementById('cash-filter-branch');
     if (br) br.addEventListener('change', applyFilters);
+    const ho = document.getElementById('cash-filter-handover');
+    if (ho) ho.addEventListener('change', applyFilters);
     // 篩選收合 / 清除
     const btnToggle = document.getElementById('btn-toggle-advanced');
     const filterGrid = document.getElementById('filter-grid');
@@ -1498,6 +1619,7 @@
       cashFilters.referrerId   = ridInp ? ridInp.value : '';
       cashFilters.status       = st ? st.value : 'all';
       cashFilters.branch       = br ? br.value : 'all';
+      cashFilters.handover     = ho ? ho.value : 'all';
       cashPgPage = 1;
       cashSelected.clear();
       render();
@@ -1639,6 +1761,25 @@
         if (text) text.style.display = cmsFailSel.value === 'other' ? '' : 'none';
       });
     }
+
+    // 現金交接狀態 Modal
+    const chmSave   = document.getElementById('btn-chm-save');
+    const chmCancel = document.getElementById('btn-chm-cancel');
+    const chmClose  = document.getElementById('btn-chm-close');
+    const chmBg     = document.getElementById('cash-handover-modal');
+    if (chmSave)   chmSave.addEventListener('click', saveCashHandover);
+    if (chmCancel) chmCancel.addEventListener('click', closeCashHandover);
+    if (chmClose)  chmClose.addEventListener('click', closeCashHandover);
+    if (chmBg)     chmBg.addEventListener('click', (e) => { if (e.target === e.currentTarget) closeCashHandover(); });
+
+    document.querySelectorAll('input[name="chm-status-pick"]').forEach((r) => {
+      r.addEventListener('change', () => {
+        document.querySelectorAll('#cash-handover-modal .ms-option').forEach((el) => el.classList.remove('selected'));
+        const lbl = r.closest('.ms-option');
+        if (lbl) lbl.classList.add('selected');
+        if (chmSave) chmSave.disabled = false;
+      });
+    });
 
     // 附件 Modal & 燈箱
     bindAttachModal();
