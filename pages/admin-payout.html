@@ -26,31 +26,6 @@
       .rv-section-warning h4 { color: #b45309; margin-bottom: 8px; }
       .warn-code-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
       .warn-code-desc { font-size: 13px; color: #92400e; }
-      .notify-method-wrap { display: flex; gap: 10px; }
-      .notify-method-label {
-        display: inline-flex; align-items: center; gap: 7px;
-        padding: 9px 18px; border: 1.5px solid var(--color-border);
-        border-radius: 8px; cursor: pointer; font-size: 13px;
-        font-weight: 500; transition: border-color 0.15s, background 0.15s;
-        user-select: none;
-      }
-      .notify-method-label input[type="radio"] { display: none; }
-      .notify-method-label.active {
-        border-color: #6366f1; background: #eef2ff; color: #4338ca;
-      }
-      .notify-method-label .fa-line { color: #00b900; font-size: 15px; }
-      .notify-char-row {
-        display: flex; justify-content: space-between; align-items: center;
-        margin-bottom: 6px;
-      }
-      .notify-char-count { font-size: 12px; font-weight: 700; color: var(--color-text-muted); }
-      .notify-char-count.warn  { color: #f59e0b; }
-      .notify-char-count.over  { color: var(--color-danger); }
-      .notify-warn-bar {
-        display: flex; align-items: center; gap: 8px;
-        background: #fffbeb; border: 1px solid #fcd34d; border-radius: 7px;
-        padding: 8px 12px; font-size: 12px; color: #92400e; margin-bottom: 14px;
-      }
       tr.has-warn-code > td { background: #f3f4f6; }
       tr.has-warn-code:hover > td { background: #e5e7eb !important; }
       /* 收款單號多筆連結 */
@@ -482,81 +457,6 @@
         </div>
         <footer class="rec-modal-foot">
           <button type="button" class="btn btn-primary" id="btn-code-legend-ok">了解，關閉</button>
-        </footer>
-      </div>
-    </div>
-
-    <!-- ============== 核款通知 Modal ============== -->
-    <div id="notify-modal" class="rec-modal" hidden>
-      <div class="rec-modal-backdrop" id="notify-backdrop"></div>
-      <div class="rec-modal-panel" style="max-width:500px;" role="dialog" aria-modal="true">
-        <header class="rec-modal-head">
-          <h3>
-            <i class="fa-solid fa-paper-plane" style="color:#6366f1;"></i>發送核款通知
-            <span class="rec-case-id" id="notify-caseid">—</span>
-          </h3>
-          <button type="button" class="rec-modal-close" id="btn-notify-close" aria-label="關閉">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </header>
-        <div class="rec-modal-body">
-
-          <!-- 案件摘要 -->
-          <div style="display:flex;gap:28px;padding:10px 14px;background:#f8fafc;border-radius:8px;margin-bottom:14px;font-size:13px;">
-            <div><span style="color:var(--color-text-muted);">推薦人</span>&ensp;<strong id="notify-referrer">—</strong></div>
-            <div><span style="color:var(--color-text-muted);">獎金</span>&ensp;<strong id="notify-amount" style="color:#059669;">—</strong></div>
-          </div>
-
-          <!-- 系統警示提示（若有） -->
-          <div class="notify-warn-bar" id="notify-warn-bar" hidden>
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <span id="notify-warn-text">此案件含系統警示，請確認核款意願後再發送。</span>
-          </div>
-
-          <!-- 發送方式 -->
-          <div style="margin-bottom:16px;">
-            <div style="font-size:13px;font-weight:600;margin-bottom:10px;">發送方式</div>
-            <div class="notify-method-wrap">
-              <label class="notify-method-label active" id="label-method-sms">
-                <input type="radio" name="notify-method" value="sms" checked>
-                <i class="fa-solid fa-comment-sms"></i>簡訊
-              </label>
-              <label class="notify-method-label" id="label-method-line">
-                <input type="radio" name="notify-method" value="line">
-                <i class="fa-brands fa-line"></i>LINE 推播
-              </label>
-            </div>
-          </div>
-
-          <!-- SMS 面板 -->
-          <div id="notify-panel-sms">
-            <div style="font-size:12px;color:var(--color-text-muted);margin-bottom:6px;">訊息內容</div>
-            <textarea id="notify-sms-content" class="field-input" rows="4"
-              style="resize:vertical;font-size:13px;line-height:1.7;width:100%;box-sizing:border-box;"></textarea>
-          </div>
-
-          <!-- LINE 面板 -->
-          <div id="notify-panel-line" hidden>
-            <div class="notify-char-row">
-              <span style="font-size:12px;color:var(--color-text-muted);">訊息內容（上限 50 字）</span>
-              <span class="notify-char-count" id="notify-line-counter">0 / 50</span>
-            </div>
-            <textarea id="notify-line-content" class="field-input" rows="3"
-              style="resize:none;font-size:13px;line-height:1.7;width:100%;box-sizing:border-box;"
-              maxlength="50"></textarea>
-            <div style="font-size:11px;color:var(--color-text-muted);margin-top:5px;">
-              ※ 內容已含提領連結，LINE 推播限 50 字。
-            </div>
-          </div>
-
-        </div>
-        <footer class="rec-modal-foot">
-          <button type="button" class="btn btn-success" id="btn-notify-send">
-            <i class="fa-solid fa-paper-plane"></i>確認核款並發送通知
-          </button>
-          <button type="button" class="btn btn-outline" id="btn-notify-skip">
-            <i class="fa-solid fa-circle-check"></i>僅核款，不通知
-          </button>
         </footer>
       </div>
     </div>
