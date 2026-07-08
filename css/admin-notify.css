@@ -522,13 +522,16 @@ body { background: var(--color-bg,#f4f6fb); font-family:'Noto Sans TC',sans-seri
 
 /* ── Tighter group spacing overrides ── */
 .group-members-head { padding:9px 14px !important; }
-.group-member-list { max-height:340px; }
+.group-member-list { max-height:340px; overflow-y:auto; overflow-x:hidden; }
 
 /* ── Compact group member rows (CSS Grid — strict column alignment) ── */
 .gm-cpt { display:grid; grid-template-columns:18px 26px 138px 104px 56px 76px 1fr; align-items:center; gap:8px; padding:6px 14px; border-bottom:1px solid #f9fafb; cursor:pointer; transition:background .1s; user-select:none; }
 .gm-cpt:last-child { border-bottom:none; }
 .gm-cpt:hover { background:#fafafa; }
 .gm-cpt.is-sel { background:#eef2ff; }
+.gm-cpt.gm-cpt-head { position:sticky; top:0; z-index:1; background:#f9fafb; cursor:default; font-size:11px; font-weight:700; color:#6b7280; }
+.gm-cpt.gm-cpt-head:hover { background:#f9fafb; }
+.gm-cpt.gm-cpt-head .gm-c-info { font-size:11px; font-weight:700; color:#6b7280; }
 .gm-cb { width:14px; height:14px; cursor:pointer; accent-color:#6366f1; }
 .gm-c-info { display:flex; flex-direction:column; min-width:0; overflow:hidden; }
 .gm-c-name { font-size:12px; font-weight:700; color:#1f2937; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
