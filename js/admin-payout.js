@@ -284,7 +284,6 @@
     negotiation: { label: '債務協商案件', cls: 'badge-orange' },
   };
 
-  const CLAIM_URL = 'https://mgm.shinda.com.tw/';
   // 外部系統連結（上線前請替換為實際網址，末尾需可直接附加 ID / 單號）
   const EXT_RECEIPT_BASE_URL = '#receipt?no=';   // 收款單系統：EXT_RECEIPT_BASE_URL + 單號
   const EXT_MEMBER_BASE_URL  = '#member?id=';    // 名單系統：EXT_MEMBER_BASE_URL + yymmddXXXX
@@ -293,7 +292,6 @@
   let selected = new Set();
   let currentCaseId = null;
   let rejectTargetId = null;
-  let notifyCaseId = null;
 
   // ─── helpers ──────────────────────────────────────────────
   function fmt(n) { return n == null ? '—' : '$' + Number(n).toLocaleString(); }
@@ -513,7 +511,7 @@
       btn.addEventListener('click', () => openModal(btn.dataset.id));
     });
     document.querySelectorAll('[data-act="approve"]').forEach((btn) => {
-      btn.addEventListener('click', () => openNotifyModal(btn.dataset.id));
+      btn.addEventListener('click', () => approveCase(btn.dataset.id));
     });
     document.querySelectorAll('[data-act="reject"]').forEach((btn) => {
       btn.addEventListener('click', () => openRejectModal(btn.dataset.id));
@@ -705,7 +703,7 @@
       if (!currentCaseId) return;
       const id = currentCaseId;
       closeModal();
-      openNotifyModal(id);
+      approveCase(id);
     });
     document.getElementById('btn-modal-reject').addEventListener('click', () => {
       if (!currentCaseId) return;
@@ -779,32 +777,8 @@
     });
   }
 
-  // ─── notify modal ─────────────────────────────────────────
-  function buildLineMsg() {
-    return `您的推薦獎金已核發！請至：${CLAIM_URL}`;
-  }
-  function buildSmsMsg(r) {
-    return `【理財通MGM】您好，${r.referrerName}，您的推薦案件 ${r.caseId} 獎金 ${fmt(r.amount)} 已核准，請登入系統提領：${CLAIM_URL}`;
-  }
-
-  function syncNotifyPanel() {
-    const method = document.querySelector('input[name="notify-method"]:checked')?.value || 'sms';
-    document.getElementById('notify-panel-sms').hidden  = method !== 'sms';
-    document.getElementById('notify-panel-line').hidden = method !== 'line';
-    document.getElementById('label-method-sms').classList.toggle('active', method === 'sms');
-    document.getElementById('label-method-line').classList.toggle('active', method === 'line');
-  }
-
-  function updateLineCounter() {
-    const ta = document.getElementById('notify-line-content');
-    const counter = document.getElementById('notify-line-counter');
-    if (!ta || !counter) return;
-    const len = ta.value.length;
-    counter.textContent = `${len} / 50`;
-    counter.className = 'notify-char-count' + (len > 50 ? ' over' : len >= 45 ? ' warn' : '');
-  }
-
-  function openNotifyModal(caseId) {
+  // ─── approve action（核款通知改由系統排程批次發送，非即時）──
+  function approveCase(caseId) {
     const r = CASES.find((x) => x.caseId === caseId);
     if (!r) return;
 
@@ -815,66 +789,11 @@
       return;
     }
 
-    notifyCaseId = caseId;
+    if (!confirm(`確認核准案件 ${caseId} 的獎金 ${fmt(r.amount)}？${warnConfirmMsg(r)}\n核款通知將由系統排程批次發送給推薦人。`)) return;
 
-    document.getElementById('notify-caseid').textContent   = r.caseId;
-    document.getElementById('notify-referrer').textContent = r.referrerName;
-    document.getElementById('notify-amount').textContent   = fmt(r.amount);
-
-    document.getElementById('notify-line-content').value = buildLineMsg();
-    document.getElementById('notify-sms-content').value  = buildSmsMsg(r);
-
-    const warnBar  = document.getElementById('notify-warn-bar');
-    const warnText = document.getElementById('notify-warn-text');
-    if (r.warningCodes && r.warningCodes.length) {
-      warnBar.hidden = false;
-      warnText.textContent = `此案件含系統警示（${r.warningCodes.join('、')}），請確認核款意願後再發送。`;
-    } else {
-      warnBar.hidden = true;
-    }
-
-    document.querySelector('input[name="notify-method"][value="sms"]').checked = true;
-    syncNotifyPanel();
-    updateLineCounter();
-    document.getElementById('notify-modal').hidden = false;
-  }
-
-  function closeNotifyModal() {
-    document.getElementById('notify-modal').hidden = true;
-    notifyCaseId = null;
-  }
-
-  function bindNotifyModal() {
-    document.getElementById('btn-notify-close').addEventListener('click', closeNotifyModal);
-    document.getElementById('notify-backdrop').addEventListener('click', closeNotifyModal);
-
-    document.querySelectorAll('input[name="notify-method"]').forEach((radio) => {
-      radio.addEventListener('change', syncNotifyPanel);
-    });
-    document.getElementById('notify-line-content').addEventListener('input', updateLineCounter);
-
-    document.getElementById('btn-notify-send').addEventListener('click', () => {
-      if (!notifyCaseId) return;
-      const method = document.querySelector('input[name="notify-method"]:checked')?.value || 'sms';
-      if (method === 'line') {
-        const len = document.getElementById('notify-line-content').value.length;
-        if (len > 50) { alert('LINE 推播訊息超過 50 字，請縮短後再發送。'); return; }
-      }
-      const r = CASES.find((x) => x.caseId === notifyCaseId);
-      doApprove(notifyCaseId, '');
-      const methodLabel = method === 'line' ? 'LINE 推播' : '簡訊';
-      toast(`已核款並發送 ${methodLabel} 通知給 ${r ? r.referrerName : notifyCaseId}。`);
-      closeNotifyModal();
-      render();
-    });
-
-    document.getElementById('btn-notify-skip').addEventListener('click', () => {
-      if (!notifyCaseId) return;
-      doApprove(notifyCaseId, '');
-      toast(`已核准 ${notifyCaseId}，推薦人現可申請提領。`);
-      closeNotifyModal();
-      render();
-    });
+    doApprove(caseId, '');
+    toast(`已核准 ${caseId}，推薦人現可申請提領（核款通知將由系統排程發送）。`);
+    render();
   }
 
   // ─── code legend modal ────────────────────────────────────
@@ -998,7 +917,6 @@
     bindBatchActions();
     bindModal();
     bindRejectModal();
-    bindNotifyModal();
     bindExport();
     bindCodeLegend();
     render();
