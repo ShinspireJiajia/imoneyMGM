@@ -93,6 +93,10 @@
                 <div id="ce-panel-line-text">
                   <textarea class="cf-textarea" id="ce-line-text" rows="5"
                     placeholder="LINE 推播訊息文字…"></textarea>
+                  <div class="line-preview-wrap" style="margin-top:12px;">
+                    <div class="line-preview-hint">預覽（範例：王大明）</div>
+                    <div class="line-text-bubble" id="ce-line-text-preview">（尚未輸入）</div>
+                  </div>
                 </div>
                 <!-- LINE 圖片卡片 -->
                 <div id="ce-panel-line-image" style="display:none;">
@@ -118,6 +122,17 @@
                       <input class="cf-input" id="ce-li-btnurl" placeholder="https://…" />
                     </div>
                   </div>
+                  <div class="line-preview-wrap" style="margin-top:12px;">
+                    <div class="line-preview-hint">卡片預覽</div>
+                    <div class="line-bubble-box">
+                      <div class="line-img-ph" id="ce-li-img-preview"><i class="fa-regular fa-image"></i></div>
+                      <div class="line-card-inner">
+                        <div class="line-card-title-preview" id="ce-li-title-preview">（標題）</div>
+                        <div class="line-card-desc-preview" id="ce-li-body-preview">（說明文字）</div>
+                        <div class="line-card-btn-preview" id="ce-li-btn-preview">立即前往</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -126,6 +141,10 @@
                 <textarea class="cf-textarea" id="ce-sms-text" rows="4"
                   placeholder="SMS 訊息內容…（建議 60 字以內）"></textarea>
                 <div class="ce-char-hint" id="ce-sms-char">0 字</div>
+                <div style="margin-top:10px;">
+                  <div class="line-preview-hint">預覽（範例：王大明）</div>
+                  <div class="preview-card" id="ce-sms-preview">（尚未輸入訊息）</div>
+                </div>
               </div>
             </div>
 

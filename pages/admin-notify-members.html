@@ -116,8 +116,19 @@
       <!-- 列表 -->
       <section class="list-card">
         <div class="list-head">
-          <h3>人員清單</h3>
-          <span id="member-count-label" style="font-size:12px;color:#9ca3af;"></span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <h3>人員清單</h3>
+            <span id="member-count-label" style="font-size:12px;color:#9ca3af;"></span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <input type="file" id="member-import-input" accept=".csv" hidden />
+            <button class="btn btn--sm btn--outline" id="btn-member-import" style="white-space:nowrap;">
+              <i class="fa-solid fa-upload"></i> 匯入
+            </button>
+            <button class="btn btn--sm btn--outline" id="btn-member-export" style="white-space:nowrap;">
+              <i class="fa-solid fa-download"></i> 匯出
+            </button>
+          </div>
         </div>
 
         <div style="overflow-x: auto;">

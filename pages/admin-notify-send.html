@@ -14,7 +14,7 @@
 
     <div class="page-header">
       <div class="ph-title">
-        <h1><i class="fa-solid fa-paper-plane" style="color:#6366f1;margin-right:8px;font-size:18px;"></i>發送推播</h1>
+        <h1 id="send-page-title"><i class="fa-solid fa-paper-plane" style="color:#6366f1;margin-right:8px;font-size:18px;"></i>發送推播</h1>
       </div>
     </div>
 
@@ -242,6 +242,37 @@
           </div>
         </div>
 
+        <!-- Timing -->
+        <div class="cs">
+          <div class="cs-label">推播時間</div>
+          <div class="send-timing-row">
+            <label class="ch-option" id="timing-now-opt">
+              <input type="radio" name="timing-group" id="timing-now" checked />
+              <i class="fa-solid fa-bolt" style="color:#f59e0b;"></i> 立即發送
+            </label>
+            <label class="ch-option" id="timing-schedule-opt">
+              <input type="radio" name="timing-group" id="timing-schedule" />
+              <i class="fa-solid fa-clock" style="color:#6366f1;"></i> 排程發送
+            </label>
+          </div>
+          <div class="schedule-fields" id="schedule-fields" style="display:none;">
+            <div class="cf-2col">
+              <div class="cf-row">
+                <label class="cf-label">發送時間</label>
+                <input class="cf-input" type="datetime-local" id="schedule-datetime" />
+              </div>
+              <div class="cf-row">
+                <label class="cf-label">排程名稱（選填，方便於列表辨識）</label>
+                <input class="cf-input" id="schedule-name" placeholder="例：中秋活動推播" maxlength="30" />
+              </div>
+            </div>
+            <div class="schedule-hint">
+              <i class="fa-solid fa-circle-info"></i>
+              <span>排程送出前，都可以到「排程推播」列表中編輯或刪除。實際發送的對象人數，將以「發送當下」的群組／標籤條件重新計算，此處與預覽畫面顯示的人數僅供建立時參考；訊息文案則以此處設定的內容為準。</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Send bar -->
         <div class="send-bar">
           <button class="btn-send" id="btn-send-notify" disabled>
@@ -333,7 +364,7 @@
     <div class="m-backdrop" data-close="modal-send-confirm"></div>
     <div class="m-panel" role="dialog">
       <header class="m-head">
-        <div class="m-title"><i class="fa-solid fa-paper-plane" style="color:#6366f1;"></i>確認發送</div>
+        <div class="m-title"><i class="fa-solid fa-paper-plane" id="send-confirm-title-icon" style="color:#6366f1;"></i><span id="send-confirm-title-text">確認發送</span></div>
         <button class="m-close" data-close="modal-send-confirm"><i class="fa-solid fa-xmark"></i></button>
       </header>
       <div class="m-body" id="send-confirm-body"></div>

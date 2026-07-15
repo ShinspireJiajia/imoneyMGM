@@ -10,9 +10,11 @@
         /* 標題與控制列 */
         .header-section { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; }
         .page-title { font-size: 24px; font-weight: bold; color: #1a1a1a; margin: 0 0 10px 0; }
-        .control-bar { background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; }
-        .filter-group { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; }
-        .filter-group input[type="date"] { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; color: #333; font-family: inherit; }
+        .control-bar { background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; row-gap: 12px; }
+        .filter-group { display: flex; flex-direction: column; gap: 12px; font-size: 14px; font-weight: 500; }
+        .filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; row-gap: 10px; }
+        .filter-group label { white-space: nowrap; flex-shrink: 0; }
+        .filter-group input[type="date"] { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; color: #333; font-family: inherit; flex-shrink: 0; }
 
         /* 按鈕樣式 */
         .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
@@ -22,16 +24,21 @@
         .btn-export:hover { border-color: #1677ff; color: #1677ff; }
 
         /* 數據總覽看板 (Kanban) */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; margin-bottom: 25px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-top: 4px solid #1677ff; }
         .stat-card.revenue { border-top-color: #52c41a; }
         .stat-card.cost { border-top-color: #faad14; }
         .stat-card.warning { border-top-color: #ff4d4f; }
+        .stat-card.margin { border-top-color: #13c2c2; }
+        .stat-card.roi { border-top-color: #722ed1; }
         .stat-title { font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 500; }
         .stat-value { font-size: 26px; font-weight: bold; color: #1a1a1a; }
         .stat-value.revenue-text { color: #52c41a; }
         .stat-value.cost-text { color: #faad14; }
         .stat-value.warning-text { color: #ff4d4f; }
+        .stat-value.margin-text { color: #13c2c2; }
+        .stat-value.roi-text { color: #722ed1; }
+        th[title] { text-decoration: underline dotted #bbb; text-underline-offset: 3px; }
 
         /* 表格樣式 */
         .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden; }
@@ -43,10 +50,16 @@
         .text-right { text-align: right; }
         .text-center { text-align: center; }
 
+        /* 身分標籤 */
+        .identity-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .identity-badge.identity-員工 { background: #e6f4ff; color: #1677ff; }
+        .identity-badge.identity-會員 { background: #f6ffed; color: #52c41a; }
+        .identity-badge.identity-離職員工 { background: #f5f5f5; color: #888; }
+
         /* 控制列分隔線 */
-        .control-bar-divider { width: 1px; height: 28px; background: #e8e8e8; margin: 0 4px; }
+        .control-bar-divider { width: 1px; height: 28px; background: #e8e8e8; margin: 0 4px; flex-shrink: 0; }
         /* 推薦人搜尋欄 */
-        .search-wrap { position: relative; }
+        .search-wrap { position: relative; flex-shrink: 0; }
         .search-wrap input { padding: 7px 12px 7px 34px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; width: 220px; font-family: inherit; color: #333; }
         .search-wrap input:focus { outline: none; border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,.1); }
         .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 13px; pointer-events: none; }
@@ -71,17 +84,32 @@
 
     <div class="control-bar" style="margin-bottom: 20px;">
         <div class="filter-group">
-            <label>推薦人查詢：</label>
-            <div class="search-wrap">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="referrer-search" placeholder="姓名或會員編號">
+            <div class="filter-row">
+                <label>推薦人查詢：</label>
+                <div class="search-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="referrer-search" placeholder="姓名或會員編號">
+                </div>
+                <div class="control-bar-divider"></div>
+                <label>推薦人加入期間：</label>
+                <input type="date" id="date-start">
+                <span>至</span>
+                <input type="date" id="date-end">
+                <div class="control-bar-divider"></div>
+                <label>身份：</label>
+                <select id="tag-filter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; color: #333; font-family: inherit; flex-shrink: 0;">
+                    <option value="">全部</option>
+                    <option value="員工">員工</option>
+                    <option value="會員">會員</option>
+                </select>
             </div>
-            <div class="control-bar-divider"></div>
-            <label>新客加入期間：</label>
-            <input type="date" id="date-start">
-            <span>至</span>
-            <input type="date" id="date-end">
-            <button class="btn btn-primary" onclick="applyFilter()">執行查詢</button>
+            <div class="filter-row">
+                <label>點擊次數期間：</label>
+                <input type="date" id="click-date-start">
+                <span>至</span>
+                <input type="date" id="click-date-end">
+                <button class="btn btn-primary" onclick="applyFilter()">執行查詢</button>
+            </div>
         </div>
         <button class="btn btn-export">📥 匯出報表</button>
     </div>
@@ -100,8 +128,8 @@
             <div class="stat-title">✅ 全數入帳 (件)</div>
             <div class="stat-value" id="kpi-paid">0</div>
         </div>
-        <div class="stat-card revenue">
-            <div class="stat-title">💰 總核撥金額 (NT$)</div>
+        <div class="stat-card revenue" title="總實收：下線成功辦理案件的費用總計（收款單 > 客戶回覆付款金額）">
+            <div class="stat-title">💰 總實收 (NT$)</div>
             <div class="stat-value revenue-text" id="kpi-amount">0</div>
         </div>
         <div class="stat-card cost">
@@ -112,6 +140,14 @@
             <div class="stat-title">❌ 婉拒/不符資格 (件)</div>
             <div class="stat-value warning-text" id="kpi-rejected">0</div>
         </div>
+        <div class="stat-card margin" title="毛利率 = (總實收 - 發放獎金) / 總實收 * 100%">
+            <div class="stat-title">📈 毛利率</div>
+            <div class="stat-value margin-text" id="kpi-margin">0%</div>
+        </div>
+        <div class="stat-card roi" title="ROI = (總實收 - 發放獎金) / 發放獎金 * 100%">
+            <div class="stat-title">🎯 ROI</div>
+            <div class="stat-value roi-text" id="kpi-roi">0%</div>
+        </div>
     </div>
 
     <div class="table-container">
@@ -119,14 +155,18 @@
             <thead>
                 <tr>
                     <th onclick="handleSort('name')">推薦人 (姓名/編號) ↕</th>
-                    <th onclick="handleSort('date')">新客加入區間 ↕</th>
-                    <th class="text-right" onclick="handleSort('clicks')">點擊次數 ↕</th>
-                    <th class="text-right" onclick="handleSort('joined')">加入(人) ↕</th>
-                    <th class="text-right" onclick="handleSort('submitted')">進件(人) ↕</th>
+                    <th onclick="handleSort('identity')">身分 ↕</th>
+                    <th onclick="handleSort('date')" title="推薦人加入時間：該推薦人本人加入/成為推薦人之日期">推薦人加入時間 ↕</th>
+                    <th class="text-right" onclick="handleSort('clicksDisplay')">點擊次數 ↕</th>
+                    <th class="text-right" onclick="handleSort('joined')" title="加入(人)：透過推薦連結成功加入 MGM 好友、開啟 MGM 首頁之人數">加入(人) ↕</th>
+                    <th class="text-right" onclick="handleSort('formSubmitted')" title="填單(人)：加入好友後，完成填寫諮詢/申請表單之人數">填單(人) ↕</th>
+                    <th class="text-right" onclick="handleSort('closed')" title="成交(人)：完成簽約成交之人數">成交(人) ↕</th>
                     <th class="text-right" onclick="handleSort('paid')">入帳(件) ↕</th>
-                    <th class="text-right" onclick="handleSort('rate')">轉換率 ↕</th>
-                    <th class="text-right" onclick="handleSort('amount')">核撥總額 ↕</th>
+                    <th class="text-right" onclick="handleSort('formRate')" title="填單轉換率 = 填單(人) / 點擊次數 * 100%">填單轉換率 ↕</th>
+                    <th class="text-right" onclick="handleSort('rate')" title="轉換率 = 入帳(件) / 加入(人) * 100%">轉換率 ↕</th>
+                    <th class="text-right" onclick="handleSort('amount')" title="總實收：下線成功辦理案件的費用總計（收款單 > 客戶回覆付款金額）">總實收 ↕</th>
                     <th class="text-right" onclick="handleSort('bonus')">發放獎金 ↕</th>
+                    <th class="text-right" onclick="handleSort('roi')" title="ROI = (總實收 - 發放獎金) / 發放獎金 * 100%">ROI ↕</th>
                     <th class="text-right" onclick="handleSort('rejected')">婉拒(件) ↕</th>
                 </tr>
             </thead>
@@ -156,26 +196,46 @@
         const dateStr = d.toISOString().slice(0, 10);
 
         let clicks = Math.floor(Math.random() * 500) + 20;
+        let clickDates = [];
+        for (let c = 0; c < clicks; c++) {
+            const cd = new Date(_today);
+            cd.setDate(cd.getDate() - Math.floor(Math.random() * 365));
+            clickDates.push(cd.toISOString().slice(0, 10));
+        }
         let joined = Math.floor(Math.random() * 80) + 5;
-        let submitted = Math.floor(Math.random() * (joined * 0.6));
-        let paid = Math.floor(Math.random() * (submitted * 0.8));
-        let rejected = submitted > paid ? Math.floor(Math.random() * (submitted - paid)) : 0;
+        let formSubmitted = Math.floor(Math.random() * (joined * 0.8));
+        let closed = Math.floor(Math.random() * (formSubmitted * 0.6));
+        let paid = Math.floor(Math.random() * (closed * 0.8));
+        let rejected = closed > paid ? Math.floor(Math.random() * (closed - paid)) : 0;
         let rate = joined > 0 ? ((paid / joined) * 100).toFixed(1) : 0;
+        let formRate = clicks > 0 ? ((formSubmitted / clicks) * 100).toFixed(1) : 0;
         let amount = paid * (Math.floor(Math.random() * 400000) + 100000);
         let bonus = paid * (Math.floor(Math.random() * 2000) + 1000);
+        let roi = bonus > 0 ? (((amount - bonus) / bonus) * 100).toFixed(1) : null;
+        const tagRoll = Math.random();
+        // 身份標籤：員工／會員／離職員工，離職員工於「身份」篩選時歸類為會員
+        let identity = tagRoll < 0.2 ? '員工' : (tagRoll < 0.3 ? '離職員工' : '會員');
+        let tagFilterValue = identity === '離職員工' ? '會員' : identity;
 
         allData.push({
             name: `${firstNames[i % 10]}${lastNames[(i * 3) % 10]}`,
             id: `U250${String(i).padStart(3, '0')}`,
             date: dateStr,
             clicks: clicks,
+            clickDates: clickDates,
+            clicksDisplay: clicks,
             joined: joined,
-            submitted: submitted,
+            formSubmitted: formSubmitted,
+            formRate: parseFloat(formRate),
+            closed: closed,
             paid: paid,
             rate: parseFloat(rate),
             amount: amount,
             bonus: bonus,
-            rejected: rejected
+            roi: roi === null ? null : parseFloat(roi),
+            rejected: rejected,
+            identity: identity,
+            tag: tagFilterValue
         });
     }
 
@@ -188,30 +248,48 @@
     function updateDashboard(data) {
         const totals = (data || filteredData).reduce((acc, row) => {
             acc.joined += row.joined;
-            acc.submitted += row.submitted;
+            acc.closed += row.closed;
             acc.paid += row.paid;
             acc.amount += row.amount;
             acc.bonus += row.bonus;
             acc.rejected += row.rejected;
             return acc;
-        }, { joined: 0, submitted: 0, paid: 0, amount: 0, bonus: 0, rejected: 0 });
+        }, { joined: 0, closed: 0, paid: 0, amount: 0, bonus: 0, rejected: 0 });
 
         document.getElementById('kpi-joined').innerText = totals.joined.toLocaleString();
-        document.getElementById('kpi-submitted').innerText = totals.submitted.toLocaleString();
+        document.getElementById('kpi-submitted').innerText = totals.closed.toLocaleString();
         document.getElementById('kpi-paid').innerText = totals.paid.toLocaleString();
         document.getElementById('kpi-amount').innerText = '$' + totals.amount.toLocaleString();
         document.getElementById('kpi-bonus').innerText = '$' + totals.bonus.toLocaleString();
         document.getElementById('kpi-rejected').innerText = totals.rejected.toLocaleString();
+
+        const margin = totals.amount > 0 ? (((totals.amount - totals.bonus) / totals.amount) * 100).toFixed(1) : 0;
+        const roi = totals.bonus > 0 ? (((totals.amount - totals.bonus) / totals.bonus) * 100).toFixed(1) : 0;
+        document.getElementById('kpi-margin').innerText = margin + '%';
+        document.getElementById('kpi-roi').innerText = roi + '%';
     }
 
     function applyFilter() {
         const startDate = document.getElementById('date-start').value;
         const endDate = document.getElementById('date-end').value;
+        const tagFilter = document.getElementById('tag-filter').value;
+        const clickStart = document.getElementById('click-date-start').value;
+        const clickEnd = document.getElementById('click-date-end').value;
         searchKeyword = document.getElementById('referrer-search').value;
 
         let dateFiltered = (!startDate || !endDate)
             ? [...allData]
             : allData.filter(row => row.date >= startDate && row.date <= endDate);
+
+        if (tagFilter) {
+            dateFiltered = dateFiltered.filter(row => row.tag === tagFilter);
+        }
+
+        dateFiltered.forEach(row => {
+            row.clicksDisplay = (clickStart && clickEnd)
+                ? row.clickDates.filter(d => d >= clickStart && d <= clickEnd).length
+                : row.clicks;
+        });
 
         updateDashboard(dateFiltered);
 
@@ -237,14 +315,18 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${row.name}</strong> <span style="color:#888;font-size:12px;">${row.id}</span></td>
+                <td><span class="identity-badge identity-${row.identity}">${row.identity}</span></td>
                 <td>${row.date.replace(/-/g, '/')}</td>
-                <td class="text-right">${row.clicks.toLocaleString()}</td>
+                <td class="text-right">${row.clicksDisplay.toLocaleString()}</td>
                 <td class="text-right">${row.joined}</td>
-                <td class="text-right">${row.submitted}</td>
+                <td class="text-right">${row.formSubmitted}</td>
+                <td class="text-right">${row.closed}</td>
                 <td class="text-right" style="color:#52c41a; font-weight:bold;">${row.paid}</td>
+                <td class="text-right">${row.formRate}%</td>
                 <td class="text-right">${row.rate}%</td>
                 <td class="text-right">$${row.amount.toLocaleString()}</td>
                 <td class="text-right" style="color:#faad14;">$${row.bonus.toLocaleString()}</td>
+                <td class="text-right" style="color:#722ed1;">${row.roi === null ? '-' : row.roi + '%'}</td>
                 <td class="text-right" style="color:#ff4d4f;">${row.rejected}</td>
             `;
             tbody.appendChild(tr);
@@ -304,6 +386,8 @@
         start.setMonth(start.getMonth() - 3);
         document.getElementById('date-end').value = end;
         document.getElementById('date-start').value = start.toISOString().slice(0, 10);
+        document.getElementById('click-date-end').value = end;
+        document.getElementById('click-date-start').value = start.toISOString().slice(0, 10);
         applyFilter();
     };
 </script>
