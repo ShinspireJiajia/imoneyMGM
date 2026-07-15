@@ -13,6 +13,7 @@
   const MGM_URL        = 'https://mgm.shinda.com.tw/';
   const DEMO_EXPIRE = '2026/07/31';
   const LOG_KEY     = 'mgm_notify_log';
+  const SCHEDULE_KEY= 'mgm_notify_schedule';
   const TPL_KEY     = 'mgm_notify_templates';
   const TAGS_KEY    = 'mgm_tags';
   const UTAGS_KEY   = 'mgm_user_tags';
@@ -215,6 +216,9 @@
   function loadJson(key, def) { try { const v = JSON.parse(localStorage.getItem(key)); return v ?? def; } catch { return def; } }
   function saveJson(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
 
+  function loadSchedule() { return loadJson(SCHEDULE_KEY, []); }
+  function saveSchedule(list) { saveJson(SCHEDULE_KEY, list); }
+
   function loadTemplates() {
     const saved = loadJson(TPL_KEY, {});
     return DEFAULT_TEMPLATES.map((t) => ({
@@ -252,6 +256,13 @@
   let activeMsgCh   = 'line';
   let lineType      = 'text';
   let currentTplId  = '';
+  let sendMode         = 'now';   // 'now' | 'schedule'
+  let editingScheduleId = null;   // set when editing an existing pending schedule
+
+  // Schedule (排程推播) list tab
+  let scheduleFilter = { status:'', dateFrom:'', dateTo:'', keyword:'' };
+  let schedulePage   = 1;
+  const SCHEDULE_PAGE_SIZE = 15;
 
   // Members tab
   let memberSearch       = '';   // kept for compat
@@ -309,6 +320,15 @@
   function nowStr() {
     const d = new Date();
     return d.toLocaleString('zh-TW', { hour12: false }).replace(/\//g,'-');
+  }
+  // Sortable "YYYY-MM-DD HH:MM" — matches the format produced by <input type="datetime-local">
+  function nowSortableMinute() {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+  function displaySortableDatetime(s) {
+    return (s || '').replace(/-/g, '/');
   }
   function toast(msg, color = '#10b981') {
     const t = document.createElement('div');
@@ -383,6 +403,60 @@
     });
     sendPersons.forEach((id) => ids.add(id));
     return [...ids];
+  }
+
+  // Re-resolve recipients for a schedule item's saved audience definition —
+  // called at actual execution time so group/tag membership changes since
+  // the schedule was created are honored (the message copy stays fixed).
+  function resolveRecipientsFromAudience(aud) {
+    const ids = new Set();
+    (aud.groupIds || []).forEach((gid) => {
+      const g = getGroupById(gid);
+      if (g) g.memberIds.forEach((id) => ids.add(id));
+    });
+    (aud.tagIds || []).forEach((tid) => {
+      MEMBERS.forEach((m) => { if (getUserTagIds(m.id).includes(tid)) ids.add(m.id); });
+    });
+    (aud.personIds || []).forEach((id) => ids.add(id));
+    return [...ids];
+  }
+
+  // Executes any pending schedule whose send time has arrived — recomputes
+  // recipients from current conditions and appends a 發送紀錄 entry.
+  function processDueSchedules() {
+    const list = loadSchedule();
+    const now  = nowSortableMinute();
+    let changed = false;
+    list.forEach((item) => {
+      if (item.status !== 'pending') return;
+      if (item.scheduledAt > now) return;
+      const rcptIds = resolveRecipientsFromAudience(item.audience || {});
+      const rcptDetails = rcptIds.map((id) => getMemberById(id)).filter(Boolean)
+        .map((m) => ({ name: m.name, id: m.id, mobile: m.mobile, line: m.line }));
+      const chList = [];
+      if (item.channels?.line) chList.push('LINE');
+      if (item.channels?.sms)  chList.push('SMS');
+      const entry = {
+        time: nowStr(), actor: item.creator || 'Admin User',
+        recipientDetails: rcptDetails, recipientCount: rcptIds.length,
+        channels: chList, tplName: item.tplName || '自訂',
+        smsText: item.content?.smsText || '', lineText: item.content?.lineText || '',
+        lineType: item.content?.lineType || 'text',
+        lineImageCard: item.content?.lineImageCard || { imageUrl:'', title:'', body:'', buttonLabel:'', buttonUrl:'' },
+        lineLocation: item.content?.lineLocation || { name:'', address:'', lat:'', lng:'' },
+        scheduledFrom: item.id,
+      };
+      const log = loadJson(LOG_KEY, []);
+      log.unshift(entry);
+      if (log.length > 200) log.length = 200;
+      saveJson(LOG_KEY, log);
+      item.status  = 'sent';
+      item.sentAt  = nowStr();
+      item.sentEntry = entry;
+      changed = true;
+    });
+    if (changed) saveSchedule(list);
+    return changed;
   }
 
   function renderSendChips() {
@@ -641,7 +715,26 @@
       msgPreview += `<div class="sc-label" style="margin-top:10px;">LINE 地點卡片</div><div class="sc-preview">${esc(document.getElementById('ll-name')?.value||'')}  ${esc(document.getElementById('ll-addr')?.value||'')}</div>`;
     }
 
+    let timingHtml;
+    if (sendMode === 'schedule') {
+      const dtVal = document.getElementById('schedule-datetime')?.value || '';
+      const disp  = displaySortableDatetime(dtVal.replace('T', ' '));
+      timingHtml = `
+      <div class="sc-section">
+        <div class="sc-label">發送時機</div>
+        <div class="sc-schedule-badge"><i class="fa-solid fa-clock"></i> 排程發送：${esc(disp)}</div>
+        <div style="color:#9ca3af;font-size:11px;margin-top:6px;">＊實際發送對象將於發送當下依群組／標籤條件重新計算，上方合計人數僅供建立時參考。</div>
+      </div>`;
+    } else {
+      timingHtml = `
+      <div class="sc-section">
+        <div class="sc-label">發送時機</div>
+        <div class="sc-schedule-badge sc-schedule-badge--now"><i class="fa-solid fa-bolt"></i> 立即發送</div>
+      </div>`;
+    }
+
     return `
+      ${timingHtml}
       <div class="sc-section">
         <div class="sc-label">發送對象來源</div>
         <div class="sc-chips">${groupChips}${tagChips}${personChips}</div>
@@ -657,6 +750,15 @@
       </div>`;
   }
 
+  function getCurrentTplName() {
+    if (!currentTplId) return '自訂';
+    const sysEv = SYSTEM_NOTIFY_EVENTS.find((ev) => ev.tplId === currentTplId);
+    if (sysEv) return sysEv.name;
+    const ce = loadCustomEvents().find((e) => e.id === currentTplId);
+    if (ce) return ce.name;
+    return loadAllSysTemplates().find((t) => t.id === currentTplId)?.name || '自訂';
+  }
+
   function handleSendClick() {
     const rcptIds = resolveRecipients();
     if (!rcptIds.length) { toast('請先選擇推播對象', '#ef4444'); return; }
@@ -668,7 +770,19 @@
       (lineType === 'location' && (document.getElementById('ll-name')?.value         || '').trim())
     );
     if (!hasSmsContent && !hasLineContent) { toast('請先輸入訊息內容', '#ef4444'); return; }
+    if (sendMode === 'schedule') {
+      const dtVal = document.getElementById('schedule-datetime')?.value || '';
+      if (!dtVal) { toast('請選擇排程發送時間', '#ef4444'); return; }
+      if (dtVal.replace('T', ' ') <= nowSortableMinute()) { toast('排程時間需為未來時間', '#ef4444'); return; }
+    }
     document.getElementById('send-confirm-body').innerHTML = getSendSummaryHtml(rcptIds);
+    const titleText = sendMode === 'schedule' ? (editingScheduleId ? '確認更新排程' : '確認建立排程') : '確認發送';
+    const titleEl = document.getElementById('send-confirm-title-text');
+    if (titleEl) titleEl.textContent = titleText;
+    const okBtn = document.getElementById('btn-send-confirm-ok');
+    if (okBtn) okBtn.innerHTML = sendMode === 'schedule'
+      ? `<i class="fa-solid fa-clock"></i> ${editingScheduleId ? '確認更新' : '確認建立排程'}`
+      : `<i class="fa-solid fa-paper-plane"></i> 確認發送`;
     openModal('modal-send-confirm');
   }
 
@@ -679,14 +793,7 @@
     const chList = [];
     if (channels.line) chList.push('LINE');
     if (channels.sms)  chList.push('SMS');
-    const tplName = (() => {
-      if (!currentTplId) return '自訂';
-      const sysEv = SYSTEM_NOTIFY_EVENTS.find((ev) => ev.tplId === currentTplId);
-      if (sysEv) return sysEv.name;
-      const ce = loadCustomEvents().find((e) => e.id === currentTplId);
-      if (ce) return ce.name;
-      return loadAllSysTemplates().find((t) => t.id === currentTplId)?.name || '自訂';
-    })();
+    const tplName = getCurrentTplName();
     const entry = {
       time: nowStr(), actor: 'Admin User',
       recipientDetails: rcptDetails, recipientCount: rcptIds.length,
@@ -716,6 +823,57 @@
     // clear
     sendGroups.clear(); sendTags.clear(); sendPersons.clear();
     renderSendChips(); updateSendTotal();
+  }
+
+  function confirmSchedule() {
+    const rcptIds = resolveRecipients(); // preview snapshot only — re-resolved at actual send time
+    const chList = [];
+    if (channels.line) chList.push('LINE');
+    if (channels.sms)  chList.push('SMS');
+    const tplName = getCurrentTplName();
+    const dtVal = document.getElementById('schedule-datetime')?.value || '';
+    const scheduledAt = dtVal.replace('T', ' ');
+    const content = {
+      smsText:  document.getElementById('msg-sms-text')?.value  || '',
+      lineText: document.getElementById('msg-line-text')?.value || '',
+      lineType,
+      lineImageCard: {
+        imageUrl:    document.getElementById('li-img-url')?.value   || '',
+        title:       document.getElementById('li-title')?.value     || '',
+        body:        document.getElementById('li-body')?.value      || '',
+        buttonLabel: document.getElementById('li-btn-label')?.value || '',
+        buttonUrl:   document.getElementById('li-btn-url')?.value   || '',
+      },
+      lineLocation: {
+        name:    document.getElementById('ll-name')?.value || '',
+        address: document.getElementById('ll-addr')?.value || '',
+        lat:     document.getElementById('ll-lat')?.value  || '',
+        lng:     document.getElementById('ll-lng')?.value  || '',
+      },
+    };
+    const audience = { groupIds: [...sendGroups], tagIds: [...sendTags], personIds: [...sendPersons] };
+    const name = (document.getElementById('schedule-name')?.value || '').trim() || tplName;
+    const list = loadSchedule();
+    const wasEditing = !!editingScheduleId;
+    if (wasEditing) {
+      const idx = list.findIndex((s) => s.id === editingScheduleId);
+      if (idx > -1) {
+        list[idx] = { ...list[idx], name, scheduledAt, channels: { ...channels }, tplId: currentTplId, tplName, content, audience,
+          previewSnapshot: { recipientCount: rcptIds.length }, updatedAt: nowStr() };
+      }
+    } else {
+      list.unshift({
+        id: 'sch-' + Date.now(), name, scheduledAt, status: 'pending',
+        createdAt: nowStr(), updatedAt: nowStr(), creator: 'Admin User',
+        channels: { ...channels }, tplId: currentTplId, tplName, content, audience,
+        previewSnapshot: { recipientCount: rcptIds.length },
+        sentAt: null, sentEntry: null,
+      });
+    }
+    saveSchedule(list);
+    closeModal('modal-send-confirm');
+    toast(wasEditing ? '排程已更新！' : `排程已建立！將於 ${displaySortableDatetime(scheduledAt)} 發送`);
+    location.href = 'admin-notify-schedule.html';
   }
 
   /* ── Pick modals ── */
@@ -2687,6 +2845,12 @@
       });
     });
   }
+  function updateNsPreview(taId, previewId, isSms) {
+    const ta = document.getElementById(taId);
+    const el = document.getElementById(previewId);
+    if (!ta || !el) return;
+    el.textContent = previewText(ta.value || '', '王大明') || (isSms ? '（尚未輸入訊息）' : '（尚未輸入）');
+  }
   function updateTplCharInfo(tplId, ch) {
     const ta  = document.getElementById(`ta-${ch === 'sms' ? 'sms' : 'linetext'}-${tplId}`);
     const el  = document.getElementById(`ci-${ch}-${tplId}`);
@@ -2963,6 +3127,10 @@
                 <span class="tpl-char-info" id="ci-line-${tpl.id}"></span>
                 <button class="btn-tpl-save" data-saveid="${tpl.id}"><i class="fa-solid fa-floppy-disk"></i> 儲存此母版</button>
               </div>
+              <div class="line-preview-wrap" style="margin-top:12px;">
+                <div class="line-preview-hint">預覽（範例：王大明）</div>
+                <div class="line-text-bubble" id="prev-linetext-${tpl.id}">（尚未輸入）</div>
+              </div>
             </div>` : ''}
             ${hasSms ? `
             <div id="wrap-sms-${tpl.id}" style="${hasLine ? 'display:none;' : ''}">
@@ -2975,6 +3143,10 @@
               <div class="tpl-save-row">
                 <span class="tpl-char-info" id="ci-sms-${tpl.id}"></span>
                 <button class="btn-tpl-save" data-saveid="${tpl.id}"><i class="fa-solid fa-floppy-disk"></i> 儲存此母版</button>
+              </div>
+              <div style="margin-top:10px;">
+                <div class="line-preview-hint">預覽（範例：王大明）</div>
+                <div class="preview-card" id="prev-sms-${tpl.id}">（尚未輸入訊息）</div>
               </div>
             </div>` : ''}
           </div>
@@ -3003,12 +3175,16 @@
         const ta    = document.getElementById(`ta-${ch === 'sms' ? 'sms' : 'linetext'}-${tplId}`);
         if (ta) insertAtCursor(ta, chip.dataset.v);
         updateTplCharInfo(tplId, ch === 'sms' ? 'sms' : 'line');
+        updateNsPreview(`ta-${ch === 'sms' ? 'sms' : 'linetext'}-${tplId}`, `prev-${ch === 'sms' ? 'sms' : 'linetext'}-${tplId}`, ch === 'sms');
       });
     });
 
     ['sms','linetext'].forEach((pfx) => {
       const ta = document.getElementById(`ta-${pfx}-${tpl.id}`);
-      if (ta) ta.addEventListener('input', () => updateTplCharInfo(tpl.id, pfx === 'sms' ? 'sms' : 'line'));
+      if (ta) ta.addEventListener('input', () => {
+        updateTplCharInfo(tpl.id, pfx === 'sms' ? 'sms' : 'line');
+        updateNsPreview(`ta-${pfx}-${tpl.id}`, `prev-${pfx}-${tpl.id}`, pfx === 'sms');
+      });
     });
 
     detailEl.querySelectorAll('[data-saveid]').forEach((btn) => {
@@ -3026,8 +3202,8 @@
       });
     });
 
-    if (hasLine) updateTplCharInfo(tpl.id, 'line');
-    if (hasSms)  updateTplCharInfo(tpl.id, 'sms');
+    if (hasLine) { updateTplCharInfo(tpl.id, 'line'); updateNsPreview(`ta-linetext-${tpl.id}`, `prev-linetext-${tpl.id}`, false); }
+    if (hasSms)  { updateTplCharInfo(tpl.id, 'sms');  updateNsPreview(`ta-sms-${tpl.id}`,      `prev-sms-${tpl.id}`,      true);  }
   }
 
   function renderNsCustomDetail(id) {
@@ -3050,15 +3226,20 @@
 
     const lineContentHtml = lineType === 'image' ? `
       <div style="display:flex;flex-direction:column;gap:10px;padding:12px 0;">
+        <div class="line-preview-hint">預覽（範例：王大明）</div>
         <div class="tpl-ic-preview" style="background:#f8f9ff;border:1px solid #e0e0f0;border-radius:10px;padding:14px;font-size:12px;color:#374151;">
           ${ic.imageUrl ? `<img src="${esc(ic.imageUrl)}" style="width:100%;max-height:140px;object-fit:cover;border-radius:7px;margin-bottom:8px;" onerror="this.style.display='none'" />` : '<div style="height:80px;background:#f3f4f6;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#c0c4cc;font-size:11px;margin-bottom:8px;">無圖片</div>'}
-          <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${esc(ic.title || '—')}</div>
-          <div style="color:#6b7280;">${esc(ic.body || '—')}</div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${esc(previewText(ic.title || '', '王大明')) || '—'}</div>
+          <div style="color:#6b7280;">${esc(previewText(ic.body || '', '王大明')) || '—'}</div>
           ${ic.buttonLabel ? `<div style="margin-top:10px;"><a style="display:inline-block;padding:6px 16px;background:#6366f1;color:#fff;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;">${esc(ic.buttonLabel)}</a></div>` : ''}
         </div>
       </div>` : `
       <textarea class="tpl-textarea" id="nsd-ta-line">${lineVal}</textarea>
-      <div class="tpl-save-row"><span class="tpl-char-info" id="nsd-ci-line"></span></div>`;
+      <div class="tpl-save-row"><span class="tpl-char-info" id="nsd-ci-line"></span></div>
+      <div class="line-preview-wrap" style="margin-top:12px;">
+        <div class="line-preview-hint">預覽（範例：王大明）</div>
+        <div class="line-text-bubble" id="nsd-prev-line">（尚未輸入）</div>
+      </div>`;
 
     detailEl.innerHTML = `
       <div class="ns-detail-header">
@@ -3116,6 +3297,10 @@
               </div>
               <textarea class="tpl-textarea" id="nsd-ta-sms">${smsVal}</textarea>
               <div class="tpl-save-row"><span class="tpl-char-info" id="nsd-ci-sms"></span></div>
+              <div style="margin-top:10px;">
+                <div class="line-preview-hint">預覽（範例：王大明）</div>
+                <div class="preview-card" id="nsd-prev-sms">（尚未輸入訊息）</div>
+              </div>
             </div>
             <div class="tpl-save-row" style="border-top:1px solid #f3f4f6;padding-top:12px;margin-top:8px;">
               <span></span>
@@ -3178,6 +3363,8 @@
       ci.className  = 'tpl-char-info' + (len > limit ? ' warn' : '');
       ci.textContent = `${len} 字${limit === 60 ? '（建議 ≤ 60）' : ''}`;
     });
+    updateNsPreview('nsd-ta-sms',  'nsd-prev-sms',  true);
+    updateNsPreview('nsd-ta-line', 'nsd-prev-line', false);
   }
 
   function bindNsPageEvents() {
@@ -3212,6 +3399,13 @@
     document.getElementById('ce-sms-text')?.addEventListener('input', function () {
       const el = document.getElementById('ce-sms-char');
       if (el) el.textContent = this.value.length + ' 字';
+      ceSyncSmsPreview();
+    });
+
+    // Live preview — LINE text & image card fields
+    document.getElementById('ce-line-text')?.addEventListener('input', ceSyncLineTextPreview);
+    ['ce-li-imgurl','ce-li-title','ce-li-body','ce-li-btnlabel'].forEach((id) => {
+      document.getElementById(id)?.addEventListener('input', ceSyncImageCardPreview);
     });
 
     // Variable chips — insert at cursor in the focused textarea (LINE text or SMS)
@@ -3233,6 +3427,7 @@
         ta.value = ta.value.slice(0, s) + variable + ta.value.slice(e);
         ta.selectionStart = ta.selectionEnd = s + variable.length;
         ta.focus();
+        ta.dispatchEvent(new Event('input'));
       });
     });
 
@@ -3296,6 +3491,9 @@
     document.querySelectorAll('.ce-tpl-tab').forEach((b) => b.classList.toggle('active', b.dataset.cetab === initTab));
     document.getElementById('ce-panel-line').style.display = initTab === 'line' ? '' : 'none';
     document.getElementById('ce-panel-sms').style.display  = initTab === 'sms'  ? '' : 'none';
+    ceSyncLineTextPreview();
+    ceSyncImageCardPreview();
+    ceSyncSmsPreview();
     openModal('modal-custom-event');
   }
 
@@ -3307,6 +3505,33 @@
   function ceUpdateLineTypeRow() {
     const lineChecked = document.getElementById('ce-ch-line').checked;
     document.getElementById('ce-line-type-row').style.display = lineChecked ? '' : 'none';
+  }
+
+  function ceSyncLineTextPreview() {
+    updateNsPreview('ce-line-text', 'ce-line-text-preview', false);
+  }
+
+  function ceSyncSmsPreview() {
+    updateNsPreview('ce-sms-text', 'ce-sms-preview', true);
+  }
+
+  function ceSyncImageCardPreview() {
+    const title = document.getElementById('ce-li-title')?.value  || '';
+    const body  = document.getElementById('ce-li-body')?.value   || '';
+    const btnL  = document.getElementById('ce-li-btnlabel')?.value || '立即前往';
+    const imgUrl= document.getElementById('ce-li-imgurl')?.value || '';
+    const preview = document.getElementById('ce-li-img-preview');
+    if (preview) {
+      preview.innerHTML = imgUrl
+        ? `<img src="${esc(imgUrl)}" style="width:100%;height:110px;object-fit:cover;" onerror="this.style.display='none'" />`
+        : '<i class="fa-regular fa-image"></i>';
+    }
+    const tp = document.getElementById('ce-li-title-preview');
+    const bp = document.getElementById('ce-li-body-preview');
+    const btnp = document.getElementById('ce-li-btn-preview');
+    if (tp)   tp.textContent   = previewText(title, '王大明') || '（標題）';
+    if (bp)   bp.textContent   = previewText(body,  '王大明') || '（說明文字）';
+    if (btnp) btnp.textContent = btnL || '立即前往';
   }
 
   function saveCustomEventFromModal() {
@@ -3574,6 +3799,194 @@
   }
 
   /* ══════════════════════════════════════════════
+     SCHEDULE MODULE — 排程推播列表
+  ══════════════════════════════════════════════ */
+  const SCH_STATUS_LABEL = { pending: '待發送', sent: '已發送', cancelled: '已取消' };
+
+  function getFilteredSchedule() {
+    let list = [...loadSchedule()];
+    if (scheduleFilter.status) list = list.filter((s) => s.status === scheduleFilter.status);
+    if (scheduleFilter.dateFrom) list = list.filter((s) => (s.scheduledAt || '').slice(0, 10) >= scheduleFilter.dateFrom);
+    if (scheduleFilter.dateTo)   list = list.filter((s) => (s.scheduledAt || '').slice(0, 10) <= scheduleFilter.dateTo);
+    if (scheduleFilter.keyword) {
+      const kw = scheduleFilter.keyword.toLowerCase();
+      list = list.filter((s) =>
+        (s.name || '').toLowerCase().includes(kw) ||
+        (s.tplName || '').toLowerCase().includes(kw) ||
+        (s.content?.smsText || '').toLowerCase().includes(kw) ||
+        (s.content?.lineText || '').toLowerCase().includes(kw)
+      );
+    }
+    list.sort((a, b) => (a.scheduledAt || '').localeCompare(b.scheduledAt || ''));
+    return list;
+  }
+
+  function renderSchedule() {
+    const tbody = document.getElementById('schedule-tbody');
+    if (!tbody) return;
+    processDueSchedules();
+
+    const filtered = getFilteredSchedule();
+    const total = filtered.length;
+    const pages = Math.max(1, Math.ceil(total / SCHEDULE_PAGE_SIZE));
+    if (schedulePage > pages) schedulePage = pages;
+    const from  = (schedulePage - 1) * SCHEDULE_PAGE_SIZE;
+    const to    = Math.min(schedulePage * SCHEDULE_PAGE_SIZE, total);
+    const slice = filtered.slice(from, to);
+
+    const infoEl = document.getElementById('schedule-result-info');
+    if (infoEl) {
+      const totalAll = loadSchedule().length;
+      infoEl.textContent = total === totalAll ? `共 ${total} 筆排程` : `篩選結果：${total} 筆（共 ${totalAll} 筆）`;
+    }
+
+    if (!slice.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#9ca3af;">尚無排程</td></tr>';
+      renderSchedulePagination(pages, total, from + 1, to);
+      return;
+    }
+
+    tbody.innerHTML = slice.map((s) => {
+      const chBadges = [s.channels?.line ? '<span class="log-ch-badge log-ch-badge--line">LINE</span>' : '',
+        s.channels?.sms ? '<span class="log-ch-badge log-ch-badge--sms">SMS</span>' : ''].filter(Boolean).join(' ');
+      const rcptCount = s.status === 'sent' ? (s.sentEntry?.recipientCount ?? s.previewSnapshot?.recipientCount ?? 0)
+                                             : (s.previewSnapshot?.recipientCount ?? 0);
+      const rcptNote = s.status === 'pending' ? '（建立時預估，實際將於發送當下重新計算）' : '';
+      const statusCls = `sch-badge--${s.status}`;
+      const statusLbl = SCH_STATUS_LABEL[s.status] || s.status;
+      let actions = `<button class="sch-action-btn" data-sch-detail="${s.id}"><i class="fa-solid fa-magnifying-glass" style="font-size:9px;"></i> 明細</button>`;
+      if (s.status === 'pending') {
+        actions += `<a class="sch-action-btn" href="admin-notify-send.html?editSchedule=${encodeURIComponent(s.id)}"><i class="fa-solid fa-pen" style="font-size:9px;"></i> 編輯</a>`;
+        actions += `<button class="sch-action-btn sch-action-btn--danger" data-sch-delete="${s.id}"><i class="fa-solid fa-trash" style="font-size:9px;"></i> 刪除</button>`;
+      }
+      return `<tr>
+        <td style="white-space:nowrap;font-size:12px;font-weight:600;">${esc(displaySortableDatetime(s.scheduledAt))}</td>
+        <td style="font-size:12px;">${esc(s.name || s.tplName || '自訂')}</td>
+        <td style="font-size:12px;">${rcptCount} 人<div style="color:#c0c4cc;font-size:11px;">${rcptNote}</div></td>
+        <td style="white-space:nowrap;">${chBadges}</td>
+        <td style="font-size:12px;white-space:nowrap;">${esc(s.creator || '—')}<div style="color:#9ca3af;font-size:11px;">${esc(s.createdAt || '—')}</div></td>
+        <td style="white-space:nowrap;"><span class="sch-badge ${statusCls}">${statusLbl}</span></td>
+        <td style="white-space:nowrap;">${actions}</td>
+      </tr>`;
+    }).join('');
+
+    tbody.querySelectorAll('[data-sch-detail]').forEach((btn) =>
+      btn.addEventListener('click', () => openScheduleDetail(btn.dataset.schDetail))
+    );
+    tbody.querySelectorAll('[data-sch-delete]').forEach((btn) =>
+      btn.addEventListener('click', () => deleteSchedule(btn.dataset.schDelete))
+    );
+
+    renderSchedulePagination(pages, total, from + 1, to);
+  }
+
+  function renderSchedulePagination(pages, total, from, to) {
+    const el = document.getElementById('schedule-pagination');
+    if (!el) return;
+    if (total === 0) { el.innerHTML = ''; return; }
+
+    let btns = `<button class="pag-btn" id="spag-prev" ${schedulePage === 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left" style="font-size:10px;"></i></button>`;
+    const maxV = 7;
+    let start = Math.max(1, schedulePage - 3);
+    let end   = Math.min(pages, start + maxV - 1);
+    if (end - start < maxV - 1) start = Math.max(1, end - maxV + 1);
+    if (start > 1) { btns += `<button class="pag-btn" data-spage="1">1</button>`; if (start > 2) btns += `<span class="pag-ellipsis">…</span>`; }
+    for (let i = start; i <= end; i++) {
+      btns += `<button class="pag-btn${i === schedulePage ? ' active' : ''}" data-spage="${i}">${i}</button>`;
+    }
+    if (end < pages) { if (end < pages - 1) btns += `<span class="pag-ellipsis">…</span>`; btns += `<button class="pag-btn" data-spage="${pages}">${pages}</button>`; }
+    btns += `<button class="pag-btn" id="spag-next" ${schedulePage === pages ? 'disabled' : ''}><i class="fa-solid fa-chevron-right" style="font-size:10px;"></i></button>`;
+
+    el.innerHTML = `<span class="pag-info">第 ${from}–${to} 筆，共 ${total} 筆</span><div class="pag-btns">${btns}</div>`;
+    el.querySelector('#spag-prev')?.addEventListener('click', () => { if (schedulePage > 1) { schedulePage--; renderSchedule(); } });
+    el.querySelector('#spag-next')?.addEventListener('click', () => { if (schedulePage < pages) { schedulePage++; renderSchedule(); } });
+    el.querySelectorAll('[data-spage]').forEach((b) => b.addEventListener('click', () => { schedulePage = +b.dataset.spage; renderSchedule(); }));
+  }
+
+  function deleteSchedule(id) {
+    const list = loadSchedule();
+    const item = list.find((s) => s.id === id);
+    if (!item) return;
+    if (!confirm(`確認刪除排程「${item.name || item.tplName || '自訂'}」？此操作無法復原。`)) return;
+    saveSchedule(list.filter((s) => s.id !== id));
+    toast('排程已刪除');
+    renderSchedule();
+  }
+
+  function openScheduleDetail(id) {
+    const item = loadSchedule().find((s) => s.id === id);
+    if (!item) return;
+    const hasSms  = !!item.channels?.sms;
+    const hasLine = !!item.channels?.line;
+    const chBadges = [hasLine ? '<span class="log-ch-badge log-ch-badge--line">LINE</span>' : '',
+      hasSms ? '<span class="log-ch-badge log-ch-badge--sms">SMS</span>' : ''].filter(Boolean).join(' ');
+    const statusLbl = SCH_STATUS_LABEL[item.status] || item.status;
+
+    const groupNames  = (item.audience?.groupIds  || []).map((gid) => getGroupById(gid)?.name).filter(Boolean);
+    const tagNames    = (item.audience?.tagIds    || []).map((tid) => getTagById(tid)?.name).filter(Boolean);
+    const personNames = (item.audience?.personIds || []).map((pid) => getMemberById(pid)?.name).filter(Boolean);
+    const audienceHtml = [...groupNames.map((n) => `<span class="rchip rchip--group">${esc(n)}</span>`),
+      ...tagNames.map((n) => `<span class="rchip rchip--tag">${esc(n)}</span>`),
+      ...personNames.map((n) => `<span class="rchip rchip--person">${esc(n)}</span>`)].join('') || '<span style="color:#c0c4cc;font-size:12px;">（無）</span>';
+
+    let msgHtml = '';
+    if (hasSms && item.content?.smsText) msgHtml += `<div class="nm-section"><div class="nm-ch-head nm-ch-head--sms"><i class="fa-solid fa-comment-sms"></i> SMS 訊息內容</div><div class="nm-msg-box">${esc(item.content.smsText)}</div></div>`;
+    if (hasLine && item.content?.lineText) msgHtml += `<div class="nm-section"><div class="nm-ch-head nm-ch-head--line"><i class="fa-brands fa-line"></i> LINE 訊息內容</div><div class="nm-msg-box">${esc(item.content.lineText)}</div></div>`;
+
+    const sentHtml = item.status === 'sent' && item.sentEntry ? `
+      <div class="nm-section">
+        <div class="nm-section-title"><i class="fa-solid fa-check"></i> 實際發送結果</div>
+        <div style="font-size:12px;color:#374151;">發送時間：${esc(item.sentAt || '—')}｜實際發送人數：<strong>${item.sentEntry.recipientCount}</strong> 人（依發送當下條件重新計算）</div>
+      </div>` : '';
+
+    document.getElementById('sch-detail-body').innerHTML = `
+      <div class="nm-meta">
+        <i class="fa-solid fa-clock" style="color:#6366f1;"></i>
+        <strong>排程時間：${esc(displaySortableDatetime(item.scheduledAt))}</strong>
+        <span class="nm-meta-sep">|</span>
+        <span class="sch-badge sch-badge--${item.status}">${statusLbl}</span>
+        <span class="nm-meta-sep">|</span>
+        ${chBadges}
+        <span class="nm-meta-sep">|</span>
+        <span style="color:#6366f1;font-weight:700;">【${esc(item.tplName || '自訂')}】</span>
+      </div>
+      <div class="nm-section">
+        <div class="nm-section-title"><i class="fa-solid fa-users"></i> 發送對象條件（建立時預估 ${item.previewSnapshot?.recipientCount ?? 0} 人）</div>
+        <div class="sc-chips">${audienceHtml}</div>
+      </div>
+      ${msgHtml}
+      ${sentHtml}
+      <div style="font-size:11px;color:#c0c4cc;margin-top:8px;">建立：${esc(item.createdAt||'—')}（${esc(item.creator||'—')}）${item.updatedAt && item.updatedAt !== item.createdAt ? `｜最後更新：${esc(item.updatedAt)}` : ''}</div>`;
+    openModal('modal-schedule-detail');
+  }
+
+  function bindSchedule() {
+    const applyFilter = () => {
+      scheduleFilter.status   = document.getElementById('sf-status')?.value    || '';
+      scheduleFilter.dateFrom = document.getElementById('sf-date-from')?.value || '';
+      scheduleFilter.dateTo   = document.getElementById('sf-date-to')?.value   || '';
+      scheduleFilter.keyword  = document.getElementById('sf-keyword')?.value   || '';
+      schedulePage = 1;
+      renderSchedule();
+    };
+    const clearFilter = () => {
+      ['sf-date-from','sf-date-to','sf-keyword'].forEach((id) => { const el = document.getElementById(id); if (el) el.value = ''; });
+      const st = document.getElementById('sf-status'); if (st) st.value = '';
+      scheduleFilter = { status:'', dateFrom:'', dateTo:'', keyword:'' };
+      schedulePage = 1;
+      renderSchedule();
+    };
+    document.getElementById('btn-search-schedule')?.addEventListener('click', applyFilter);
+    document.getElementById('btn-clear-schedule')?.addEventListener('click', clearFilter);
+    document.getElementById('btn-refresh-schedule')?.addEventListener('click', () => clearFilter());
+    document.getElementById('sf-status')?.addEventListener('change', applyFilter);
+    ['sf-date-from','sf-date-to','sf-keyword'].forEach((id) => {
+      document.getElementById(id)?.addEventListener('keydown', (e) => { if (e.key === 'Enter') applyFilter(); });
+    });
+    renderSchedule();
+  }
+
+  /* ══════════════════════════════════════════════
      EVENT BINDINGS
   ══════════════════════════════════════════════ */
   function bindTabs() {
@@ -3737,10 +4150,275 @@
 
     // Send btn → confirm modal
     document.getElementById('btn-send-notify')?.addEventListener('click', handleSendClick);
-    document.getElementById('btn-send-confirm-ok')?.addEventListener('click', confirmSend);
+    document.getElementById('btn-send-confirm-ok')?.addEventListener('click', () => {
+      if (sendMode === 'schedule') confirmSchedule(); else confirmSend();
+    });
+
+    // 發送時機 — 立即發送 / 排程發送
+    const dtInput = document.getElementById('schedule-datetime');
+    if (dtInput) {
+      const min = new Date();
+      min.setMinutes(min.getMinutes() + 1);
+      const p = (n) => String(n).padStart(2, '0');
+      dtInput.min = `${min.getFullYear()}-${p(min.getMonth()+1)}-${p(min.getDate())}T${p(min.getHours())}:${p(min.getMinutes())}`;
+    }
+    document.getElementById('timing-now')?.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        sendMode = 'now';
+        document.getElementById('schedule-fields').style.display = 'none';
+        updateSendBtnLabel();
+      }
+    });
+    document.getElementById('timing-schedule')?.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        sendMode = 'schedule';
+        document.getElementById('schedule-fields').style.display = '';
+        updateSendBtnLabel();
+      }
+    });
+  }
+
+  function updateSendBtnLabel() {
+    const btn = document.getElementById('btn-send-notify');
+    if (!btn) return;
+    btn.innerHTML = sendMode === 'schedule'
+      ? `<i class="fa-solid fa-clock"></i> ${editingScheduleId ? '更新排程' : '建立排程'}`
+      : `<i class="fa-solid fa-paper-plane"></i> 發送推播`;
+  }
+
+  // Load an existing pending schedule into the compose form for editing —
+  // entered via admin-notify-send.html?editSchedule=<id> from the schedule list.
+  function loadScheduleIntoForm(id) {
+    const item = loadSchedule().find((s) => s.id === id);
+    if (!item) { toast('找不到此排程，可能已被刪除', '#ef4444'); location.href = 'admin-notify-schedule.html'; return; }
+    if (item.status !== 'pending') { toast('此排程已發送或取消，無法編輯', '#ef4444'); location.href = 'admin-notify-schedule.html'; return; }
+
+    editingScheduleId = id;
+    sendGroups  = new Set(item.audience?.groupIds  || []);
+    sendTags    = new Set(item.audience?.tagIds    || []);
+    sendPersons = new Set(item.audience?.personIds || []);
+    const wantLine = !!item.channels?.line;
+    const wantSms  = !!item.channels?.sms;
+    channels.line = wantLine;
+    channels.sms  = wantSms;
+    currentTplId = item.tplId || '';
+
+    const picker = document.getElementById('tpl-picker');
+    if (picker) picker.value = currentTplId;
+    if (currentTplId) {
+      const sysEv = SYSTEM_NOTIFY_EVENTS.find((ev) => ev.tplId === currentTplId);
+      const ce    = loadCustomEvents().find((ev) => ev.id === currentTplId);
+      const tplChannels = sysEv?.channels || (ce?.channels?.length ? ce.channels : ['LINE']);
+      lockChannelsFromTemplate(tplChannels);
+    } else {
+      // Reveal the manual channel-select UI, then restore the saved selection —
+      // unlockChannels() resets channels.line/sms to false as a side effect, so re-apply after.
+      unlockChannels();
+      channels.line = wantLine;
+      channels.sms  = wantSms;
+      const lineCb = document.getElementById('ch-line');
+      const smsCb  = document.getElementById('ch-sms');
+      if (lineCb) lineCb.checked = wantLine;
+      if (smsCb)  smsCb.checked  = wantSms;
+      document.getElementById('ch-line-opt')?.classList.toggle('is-on', wantLine);
+      document.getElementById('ch-sms-opt')?.classList.toggle('is-on', wantSms);
+    }
+
+    // Restore saved content — overrides whatever applyTemplate() populated above
+    const c = item.content || {};
+    lineType = c.lineType || 'text';
+    const smsEl  = document.getElementById('msg-sms-text');  if (smsEl)  smsEl.value  = c.smsText  || '';
+    const lineEl = document.getElementById('msg-line-text'); if (lineEl) lineEl.value = c.lineText || '';
+    const ic = c.lineImageCard || {};
+    if (document.getElementById('li-img-url'))   document.getElementById('li-img-url').value   = ic.imageUrl   || '';
+    if (document.getElementById('li-title'))     document.getElementById('li-title').value     = ic.title      || '';
+    if (document.getElementById('li-body'))      document.getElementById('li-body').value      = ic.body       || '';
+    if (document.getElementById('li-btn-label')) document.getElementById('li-btn-label').value = ic.buttonLabel|| '';
+    if (document.getElementById('li-btn-url'))   document.getElementById('li-btn-url').value   = ic.buttonUrl  || '';
+    const lc = c.lineLocation || {};
+    if (document.getElementById('ll-name')) document.getElementById('ll-name').value = lc.name    || '';
+    if (document.getElementById('ll-addr')) document.getElementById('ll-addr').value = lc.address || '';
+    if (document.getElementById('ll-lat'))  document.getElementById('ll-lat').value  = lc.lat     || '';
+    if (document.getElementById('ll-lng'))  document.getElementById('ll-lng').value  = lc.lng     || '';
+
+    // Switch timing mode to schedule and pre-fill datetime/name
+    sendMode = 'schedule';
+    const timingSchedule = document.getElementById('timing-schedule');
+    if (timingSchedule) timingSchedule.checked = true;
+    const scheduleFields = document.getElementById('schedule-fields');
+    if (scheduleFields) scheduleFields.style.display = '';
+    const dtInput = document.getElementById('schedule-datetime');
+    if (dtInput) dtInput.value = (item.scheduledAt || '').replace(' ', 'T');
+    const nameInput = document.getElementById('schedule-name');
+    if (nameInput) nameInput.value = item.name || '';
+
+    syncLineCompose(); syncSmsCount(); syncLineTextPreview(); syncImageCardPreview(); syncLocationPreview();
+    renderSendChips(); updateSendTotal(); syncChannelUI();
+    updateSendBtnLabel();
+
+    const titleEl = document.getElementById('send-page-title');
+    if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-pen-to-square" style="color:#6366f1;margin-right:8px;font-size:18px;"></i>編輯排程推播';
+  }
+
+  /* ══════════════════════════════════════════════
+     人員清單 匯出 / 匯入
+  ══════════════════════════════════════════════ */
+  function nmCsvEscape(v) {
+    const s = String(v == null ? '' : v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
+  function nmSplitMulti(s) {
+    return String(s || '').split(/[、,，]/).map((x) => x.trim()).filter(Boolean);
+  }
+
+  // 簡易 CSV 解析（支援雙引號包覆與跳脫）
+  function nmParseCsv(text) {
+    text = String(text || '').replace(/^﻿/, '');
+    const rows = [];
+    let row = [], field = '', inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else inQuotes = false;
+        } else field += c;
+      } else if (c === '"') {
+        inQuotes = true;
+      } else if (c === ',') {
+        row.push(field); field = '';
+      } else if (c === '\r') {
+        // skip
+      } else if (c === '\n') {
+        row.push(field); rows.push(row); row = []; field = '';
+      } else {
+        field += c;
+      }
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    return rows.filter((r) => !(r.length === 1 && r[0].trim() === ''));
+  }
+
+  function exportMembersCsv() {
+    const items = getMembersFiltered();
+    if (!items.length) { toast('目前無資料可匯出', '#ef4444'); return; }
+    const header = ['會員編號', '姓名', '手機號碼', '身份', 'LINE好友', '加入好友時間', '標籤', '群組'];
+    const rows = items.map((m) => [
+      m.id,
+      m.name,
+      m.mobile,
+      m.identities.join('、'),
+      m.line ? '已加入' : '未加入',
+      m.lineJoinDate || '',
+      getUserTagIds(m.id).map((tid) => getTagById(tid)?.name || '').filter(Boolean).join('、'),
+      getMemberGroups(m.id).map((g) => g.name).join('、'),
+    ]);
+    const csv = [header, ...rows].map((r) => r.map(nmCsvEscape).join(',')).join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const d = new Date();
+    const dateStr = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+    a.download = `members_${dateStr}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+    toast(`已匯出 ${items.length} 筆人員資料`);
+  }
+
+  const NM_IDENTITY_WHITELIST = ['員工', '新客', '會員', '離職員工', '訪客'];
+
+  function importMembersFromCsv(text) {
+    const parsed = nmParseCsv(text);
+    if (!parsed.length) { toast('檔案內容為空', '#ef4444'); return; }
+    const header = parsed[0].map((h) => h.trim());
+    const idIdx  = header.indexOf('會員編號');
+    const idyIdx = header.indexOf('身份');
+    const tagIdx = header.indexOf('標籤');
+    const grpIdx = header.indexOf('群組');
+    if (idIdx === -1) { toast('找不到「會員編號」欄位，請使用匯出的範本格式', '#ef4444'); return; }
+
+    const dataRows = parsed.slice(1).filter((r) => r.some((c) => c.trim() !== ''));
+    const skipped = [];
+    const touchedGroupNames = new Set();
+    const rowPlans = [];
+
+    dataRows.forEach((r) => {
+      const id = (r[idIdx] || '').trim();
+      const m  = getMemberById(id);
+      if (!m) { skipped.push(id || '(空白)'); return; }
+      const identities  = idyIdx > -1 ? nmSplitMulti(r[idyIdx]).filter((v) => NM_IDENTITY_WHITELIST.includes(v)) : null;
+      const tagNames    = tagIdx > -1 ? nmSplitMulti(r[tagIdx]) : null;
+      const groupNames  = grpIdx > -1 ? nmSplitMulti(r[grpIdx]) : null;
+      if (groupNames) groupNames.forEach((n) => touchedGroupNames.add(n));
+      rowPlans.push({ m, identities, tagNames, groupNames });
+    });
+
+    // 身份 + 標籤：逐筆套用（以檔案內容為準覆蓋）
+    rowPlans.forEach(({ m, identities, tagNames }) => {
+      if (identities && identities.length) m.identities = identities;
+      if (tagNames) {
+        const tagIds = tagNames.map((name) => {
+          let t = tags.find((x) => x.name === name);
+          if (!t) {
+            t = { id: 'tag-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6), name, color: TAG_COLORS[tags.length % TAG_COLORS.length] };
+            tags.push(t);
+          }
+          return t.id;
+        });
+        userTags[m.id] = tagIds;
+      }
+    });
+
+    // 群組：本次匯入涉及的群組，成員名單以檔案內容為準（可新增亦可移除）
+    touchedGroupNames.forEach((name) => {
+      let g = groups.find((x) => x.name === name);
+      if (!g) {
+        g = {
+          id: 'grp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+          name, memberIds: [], createdAt: new Date().toISOString().slice(0, 10),
+          history: [{ actor: 'Admin', time: nowStr(), action: '透過匯入建立群組', note: '' }],
+        };
+        groups.push(g);
+      }
+      let added = 0, removed = 0;
+      rowPlans.forEach(({ m, groupNames }) => {
+        if (!groupNames) return;
+        const shouldBeIn = groupNames.includes(name);
+        const isIn = g.memberIds.includes(m.id);
+        if (shouldBeIn && !isIn) { g.memberIds.push(m.id); added++; }
+        else if (!shouldBeIn && isIn) { g.memberIds = g.memberIds.filter((x) => x !== m.id); removed++; }
+      });
+      if (added || removed) addGroupHistory(g, `透過匯入更新成員（新增 ${added}，移除 ${removed}）`, '');
+    });
+
+    saveTags(); saveUserTags(); saveGroups();
+    renderMemberTagFilterRow(); renderMemberGroupFilterRow(); renderMemberTable();
+
+    let msg = `已匯入 ${rowPlans.length} 筆人員資料`;
+    if (skipped.length) msg += `，${skipped.length} 筆找不到會員編號已略過`;
+    toast(msg, skipped.length ? '#f59e0b' : '#10b981');
+  }
+
+  function bindMemberImportExport() {
+    document.getElementById('btn-member-export')?.addEventListener('click', exportMembersCsv);
+    document.getElementById('btn-member-import')?.addEventListener('click', () => {
+      document.getElementById('member-import-input')?.click();
+    });
+    document.getElementById('member-import-input')?.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => importMembersFromCsv(String(ev.target.result || ''));
+      reader.readAsText(file, 'utf-8');
+      e.target.value = '';
+    });
   }
 
   function bindMembers() {
+    bindMemberImportExport();
     // ── 文字搜尋 ──
     document.getElementById('filter-member-id')?.addEventListener('input', (e) => {
       memberSearchId = e.target.value; memberPage = 1; renderMemberTable();
@@ -4002,6 +4680,7 @@
     const notifyPage = document.body.dataset.notifyPage || 'all';
 
     bindModalClose();
+    processDueSchedules(); // catch up any schedule whose send time has already arrived
 
     if (notifyPage === 'all') {
       // Legacy tab page — keep all tabs + lazy rendering
@@ -4018,9 +4697,15 @@
 
     // Standalone page — init only the active module
     switch (notifyPage) {
-      case 'send':
+      case 'send': {
         bindSend();
+        const _editSchId = new URLSearchParams(location.search).get('editSchedule');
+        if (_editSchId) loadScheduleIntoForm(_editSchId);
         renderSendChips(); updateSendTotal(); syncChannelUI();
+        break;
+      }
+      case 'schedule':
+        bindSchedule();
         break;
       case 'members':
         bindMembers();

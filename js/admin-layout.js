@@ -93,6 +93,11 @@
       breadcrumb: '推播管理 / 發送推播',
       file: 'pages/admin-notify-send.html',
     },
+    'notify-schedule': {
+      title: '排程推播',
+      breadcrumb: '推播管理 / 排程推播',
+      file: 'pages/admin-notify-schedule.html',
+    },
     'notify-members': {
       title: '人員管理',
       breadcrumb: '推播管理 / 人員管理',
@@ -146,7 +151,7 @@
     admin: { label: '系統管理員', perms: 'all' },
     marketer: {
       label: '行銷管理員',
-      perms: ['notify-send', 'notify-members', 'notify-groups', 'notify-tags', 'notify-log'],
+      perms: ['notify-send', 'notify-schedule', 'notify-members', 'notify-groups', 'notify-tags', 'notify-log'],
     },
     viewer: {
       label: '唯讀',
