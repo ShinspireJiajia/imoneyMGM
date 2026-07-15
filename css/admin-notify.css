@@ -414,6 +414,24 @@ body { background: var(--color-bg,#f4f6fb); font-family:'Noto Sans TC',sans-seri
 .sc-chips { display:flex; flex-wrap:wrap; gap:5px; }
 .sc-total { font-size:13px; font-weight:700; color:#1f2937; padding:10px 14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; margin-top:8px; }
 .sc-preview { background:#f8faff; border:1px solid #e5e7eb; border-radius:8px; padding:12px; font-size:13px; color:#374151; white-space:pre-wrap; word-break:break-word; line-height:1.7; max-height:110px; overflow-y:auto; }
+.sc-schedule-badge { display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:8px; font-size:13px; font-weight:600; background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; }
+.sc-schedule-badge--now { background:#fff7ed; color:#c2410c; border-color:#fed7aa; }
+
+/* send timing (schedule) */
+.send-timing-row { display:flex; gap:12px; }
+.schedule-fields { margin-top:12px; padding:14px; background:#f8faff; border:1px solid #e5e7eb; border-radius:9px; }
+.schedule-hint { display:flex; align-items:flex-start; gap:6px; font-size:11px; color:#6b7280; line-height:1.6; margin-top:8px; }
+.schedule-hint i { margin-top:2px; color:#818cf8; }
+
+/* schedule list */
+.sch-badge { font-size:11px; padding:3px 10px; border-radius:10px; font-weight:600; display:inline-flex; align-items:center; gap:4px; }
+.sch-badge--pending   { background:#fef3c7; color:#92400e; }
+.sch-badge--sent      { background:#d1fae5; color:#065f46; }
+.sch-badge--cancelled { background:#f3f4f6; color:#6b7280; }
+.sch-action-btn { font-size:11px; padding:3px 10px; border:1px solid #e0e7ff; border-radius:5px; cursor:pointer; background:#eef2ff; color:#6366f1; font-family:'Noto Sans TC',sans-serif; transition:all .12s; white-space:nowrap; font-weight:500; margin:2px 3px 2px 0; display:inline-flex; align-items:center; gap:4px; }
+.sch-action-btn:hover { background:#6366f1; color:#fff; }
+.sch-action-btn--danger { border-color:#fecaca; background:#fef2f2; color:#dc2626; }
+.sch-action-btn--danger:hover { background:#dc2626; color:#fff; }
 
 /* group action note */
 .note-input { width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; font-family:'Noto Sans TC',sans-serif; outline:none; color:#1f2937; resize:none; min-height:72px; }
