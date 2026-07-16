@@ -106,6 +106,12 @@ body { background: var(--color-bg,#f4f6fb); font-family:'Noto Sans TC',sans-seri
 .cf-textarea:focus { border-color:#6366f1; }
 .cf-2col { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
+.img-upload-field { display:flex; align-items:center; gap:8px; }
+.img-upload-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 13px; border:1px solid #d1d5db; border-radius:7px; background:#fff; color:#374151; font-size:12.5px; font-weight:500; font-family:'Noto Sans TC',sans-serif; cursor:pointer; transition:all .15s; white-space:nowrap; }
+.img-upload-btn:hover { border-color:#6366f1; color:#6366f1; background:#f5f5ff; }
+.img-upload-clear { border:none; background:#f3f4f6; color:#9ca3af; width:24px; height:24px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; flex-shrink:0; }
+.img-upload-clear:hover { background:#fee2e2; color:#ef4444; }
+
 .line-preview-wrap { margin-top:12px; background:#f0f0f5; border-radius:12px; padding:14px; }
 .line-preview-hint { font-size:11px; color:#9ca3af; margin-bottom:8px; }
 .line-bubble-box { max-width:260px; }

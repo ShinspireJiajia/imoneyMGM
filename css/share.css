@@ -16,7 +16,7 @@
   position: relative;
   background: var(--color-primary-dark);
   border-radius: 14px;
-  padding: 24px 20px 22px;
+  padding: 14px 20px 16px;
   color: #fff;
   text-align: center;
   overflow: hidden;
@@ -53,84 +53,204 @@
 }
 
 .share-hero h2 {
-  font-size: var(--font-md);
+  font-size: var(--font-xs);
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.85);
   letter-spacing: 0.04em;
   position: relative;
   z-index: 1;
 }
 
-.share-hero-code {
-  font-size: 34px;
-  font-weight: 700;
-  letter-spacing: 8px;
-  margin: 8px 0 4px;
-  font-variant-numeric: tabular-nums;
-  position: relative;
-  z-index: 1;
-}
-
-.share-hero-expire {
-  font-size: var(--font-xs);
-  color: rgba(255, 255, 255, 0.85);
-  position: relative;
-  z-index: 1;
-}
-
-/* QR Code 區 */
-.qr-wrap {
-  position: relative;
-  margin: 14px auto 0;
-  width: 180px;
-  height: 180px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 12px;
+.share-hero-code-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow:
-    inset 0 0 0 1px var(--color-primary-100),
-    0 8px 20px -6px rgba(124, 58, 237, 0.35);
+  gap: 10px;
+  margin-top: 6px;
+  position: relative;
   z-index: 1;
 }
 
-.qr-wrap img {
+.share-hero-code {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-code-copy-btn {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.hero-code-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+  transform: translateY(-1px);
+}
+
+/* ============== 分享管道卡（免費諮詢 / 邀請好友加入MGM） ============== */
+.channel-card {
+  margin-top: 16px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.channel-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.channel-icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  color: #fff;
+}
+
+.channel-icon-consult {
+  background: linear-gradient(135deg, var(--color-warning) 0%, var(--color-warning-dark) 100%);
+}
+
+.channel-icon-invite {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+
+.channel-head h3 {
+  font-size: var(--font-md);
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 2px 0 4px;
+}
+
+.channel-desc {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.link-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.link-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+  background: var(--color-bg-alt);
+}
+
+.link-copy-btn {
+  flex: 0 0 auto;
+  font-size: var(--font-sm);
+}
+
+.channel-msg-btn {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.channel-qr-wrap {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* ============== QR Code 放大 / 複製圖片 彈窗 ============== */
+.qr-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 12, 34, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 1000;
+}
+
+.qr-modal {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px 20px 20px;
+  text-align: center;
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.35);
+}
+
+.qr-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-bg-alt);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.qr-modal-close:hover {
+  background: var(--color-primary-100);
+  color: var(--color-primary-dark);
+}
+
+.qr-modal-title {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 4px 0 14px;
+  padding-right: 24px;
+}
+
+.qr-modal-img-wrap {
+  width: 220px;
+  height: 220px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: inset 0 0 0 1px var(--color-primary-100);
+}
+
+.qr-modal-img-wrap img {
   width: 100%;
   height: 100%;
 }
 
-/* 分享操作按鈕 */
-.share-actions {
-  margin-top: 18px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-  position: relative;
-  z-index: 1;
-}
-
-.share-action-btn {
-  background: #fff;
-  color: var(--color-primary-dark);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  border-radius: 10px;
-  padding: 11px 22px;
-  border: none;
-  transition: all 0.15s;
-  font-size: var(--font-md);
-}
-
-.share-action-btn:hover {
-  background: var(--color-warning);
-  color: var(--color-text);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(245, 158, 11, 0.30);
+.qr-modal-copy-btn {
+  width: 100%;
+  margin-top: 16px;
 }
 
 /* ============== 當期活動文案卡（由後台維護） ============== */
