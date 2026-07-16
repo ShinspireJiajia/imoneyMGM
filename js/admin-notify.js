@@ -46,6 +46,21 @@
     { id:'U250612022', name:'李建鵬',  mobile:'0943-456-789', line:true,  lineJoinDate:'2025-06-12', identities:['新客'],       cases:4, lastReferralDate:'2026-04-05', pendingReward:14000, rewardExpireDate:'2026-07-25', hasReviewCase:true,  hasCollectionCase:false, doNotDisturb:false, joinDate:'2025-06-12', hasResponsible:true,  lastContactDate:'2026-04-10', isBlacklisted:false, suitableProducts:['車貸'],                  hasNegotiationCase:false },
   ];
 
+  // 推薦成效指標（對齊 admin-referrer-performance 報表欄位），由既有欄位推算，供群組條件篩選使用
+  MEMBERS.forEach((m) => {
+    const seed = parseInt(m.id.slice(-3), 10) || 1;
+    m.consultClicks = m.cases * 25 + (seed % 50) + 20;
+    m.inviteClicks  = m.cases * 8  + (seed % 20) + 5;
+    const totalClicks = m.consultClicks + m.inviteClicks;
+    m.formSubmittedCount = Math.max(m.cases, Math.round(totalClicks * 0.12));
+    m.closedCount     = m.cases;
+    m.paidPeopleCount = Math.max(0, m.closedCount - (seed % 2));
+    m.totalAmount = m.paidPeopleCount * (180000 + (seed % 6) * 35000);
+    m.totalBonus  = m.pendingReward + m.paidPeopleCount * 3000;
+    m.roi = m.totalBonus > 0 ? Math.round(((m.totalAmount - m.totalBonus) / m.totalBonus) * 100) : 0;
+    m.conversionRate = totalClicks > 0 ? Math.round((m.paidPeopleCount / totalClicks) * 1000) / 10 : 0;
+  });
+
   const DEFAULT_TAGS = [
     { id:'tag-vip',      name:'VIP',       color:'#8b5cf6' },
     { id:'tag-new',      name:'新加入',    color:'#10b981' },
@@ -316,6 +331,32 @@
   ══════════════════════════════════════════════ */
   function esc(s) {
     return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  // Wires a hidden <label>+<input type=file> upload widget to a hidden text field holding
+  // the resulting base64 data URI; dispatches 'input' on the hidden field so existing
+  // preview-sync listeners (already bound to that id) pick up the change unchanged.
+  function wireImageUpload(fileId, hiddenId, clearId) {
+    const fileInput = document.getElementById(fileId);
+    const hidden    = document.getElementById(hiddenId);
+    const clearBtn  = document.getElementById(clearId);
+    if (!fileInput || !hidden) return;
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+      if (!file.type.startsWith('image/')) { alert('請選擇圖片檔'); return; }
+      if (file.size > 1024 * 1024 * 2 && !confirm('圖片大於 2MB，可能會超過儲存上限，仍要繼續嗎？')) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        hidden.value = ev.target.result;
+        hidden.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+      reader.readAsDataURL(file);
+    });
+    clearBtn?.addEventListener('click', () => {
+      hidden.value = '';
+      hidden.dispatchEvent(new Event('input', { bubbles: true }));
+    });
   }
   function nowStr() {
     const d = new Date();
@@ -619,6 +660,10 @@
         preview.innerHTML = '<i class="fa-regular fa-image"></i>';
       }
     }
+    const uploadLbl = document.getElementById('li-img-upload-label');
+    const clearBtn  = document.getElementById('li-img-clear');
+    if (uploadLbl) uploadLbl.textContent = imgUrl ? '更換圖片' : '選擇圖片';
+    if (clearBtn)  clearBtn.style.display = imgUrl ? '' : 'none';
     const tp = document.getElementById('li-title-preview');
     const bp = document.getElementById('li-body-preview');
     const btnp = document.getElementById('li-btn-preview');
@@ -1613,6 +1658,16 @@
     { key:'rewardExpireDays',   group:'mgm', label:'獎金到期倒數',   ops:[{key:'lte',label:'不超過'}],                                                                          valType:'number', placeholder:'天' },
     { key:'lineStatus',         group:'mgm', label:'LINE 狀態',      ops:[{key:'eq',label:'等於'}],                                                                             valType:'select', opts:[{key:'joined',label:'已加入'},{key:'not-joined',label:'未加入'}] },
     { key:'identity',           group:'mgm', label:'身份',           ops:[{key:'includes',label:'包含'}],                                                                       valType:'select', opts:[{key:'員工',label:'員工'},{key:'新客',label:'新客'},{key:'會員',label:'會員'},{key:'離職員工',label:'離職員工'},{key:'訪客',label:'訪客'}] },
+    // ── 推薦成效欄位（對齊 admin-referrer-performance 報表）──
+    { key:'consultClicks',      group:'perf', label:'諮詢連結點擊次數', ops:[{key:'gte',label:'大於等於'},{key:'lte',label:'小於等於'}],                                          valType:'number', placeholder:'次數' },
+    { key:'inviteClicks',       group:'perf', label:'邀請連結點擊次數', ops:[{key:'gte',label:'大於等於'},{key:'lte',label:'小於等於'}],                                          valType:'number', placeholder:'次數' },
+    { key:'formSubmittedCount', group:'perf', label:'填單人數',       ops:[{key:'gte',label:'大於等於'},{key:'lte',label:'小於等於'}],                                          valType:'number', placeholder:'人數' },
+    { key:'closedCount',        group:'perf', label:'成交人數',       ops:[{key:'gte',label:'大於等於'},{key:'lte',label:'小於等於'}],                                          valType:'number', placeholder:'人數' },
+    { key:'paidPeopleCount',    group:'perf', label:'入帳人數',       ops:[{key:'gte',label:'大於等於'},{key:'lte',label:'小於等於'}],                                          valType:'number', placeholder:'人數' },
+    { key:'totalAmount',        group:'perf', label:'總實收(NT$)',    ops:[{key:'gte',label:'大於等於'},{key:'lte',label:'小於等於'}],                                          valType:'number', placeholder:'金額' },
+    { key:'totalBonus',         group:'perf', label:'發放獎金(NT$)',  ops:[{key:'gte',label:'大於等於'},{key:'lte',label:'小於等於'}],                                          valType:'number', placeholder:'金額' },
+    { key:'roi',                group:'perf', label:'ROI(%)',        ops:[{key:'gte',label:'大於等於'},{key:'lte',label:'小於等於'}],                                          valType:'number', placeholder:'百分比' },
+    { key:'conversionRate',     group:'perf', label:'轉換率(%)',      ops:[{key:'gte',label:'大於等於'},{key:'lte',label:'小於等於'}],                                          valType:'number', placeholder:'百分比' },
   ];
 
   let conditionRows = []; // [{field, op, value}]
@@ -1620,7 +1675,7 @@
   function getCfField(key) { return CF_FIELDS.find((f) => f.key === key); }
 
   function buildFieldOpts(selectedKey) {
-    const groups = [{ key:'crm', label:'名單系統' }, { key:'mgm', label:'推薦平台' }];
+    const groups = [{ key:'crm', label:'名單系統' }, { key:'mgm', label:'推薦平台' }, { key:'perf', label:'推薦成效' }];
     return groups.map(({key, label}) => {
       const opts = CF_FIELDS.filter(f => f.group === key)
         .map(f => `<option value="${f.key}"${f.key === selectedKey ? ' selected' : ''}>${esc(f.label)}</option>`)
@@ -1645,6 +1700,12 @@
     let html = objs.map(({label, group}) =>
       `<span class="gcb-badge${group === 'crm' ? ' gcb-badge--crm' : ''}">${esc(label)}</span>`
     ).join('');
+    if (cond.joinDateFrom || cond.joinDateTo) {
+      const label = cond.joinDateFrom && cond.joinDateTo
+        ? `加入期間 ${cond.joinDateFrom}～${cond.joinDateTo}`
+        : cond.joinDateFrom ? `加入日期 ≥ ${cond.joinDateFrom}` : `加入日期 ≤ ${cond.joinDateTo}`;
+      html += `<span class="gcb-badge">${esc(label)}</span>`;
+    }
     if (cond.excludeDND) html += '<span class="gcb-badge gcb-badge--exclude"><i class="fa-solid fa-ban" style="font-size:9px;"></i> 排除勿擾</span>';
     return html;
   }
@@ -1710,11 +1771,21 @@
     });
   }
 
-  function filterByRowConditions(rows, excludeDND) {
+  const PERF_NUMERIC_FIELDS = ['consultClicks', 'inviteClicks', 'formSubmittedCount', 'closedCount', 'paidPeopleCount', 'totalAmount', 'totalBonus', 'roi', 'conversionRate'];
+
+  function filterByRowConditions(rows, excludeDND, joinDateFrom, joinDateTo) {
     return MEMBERS.filter((m) => {
       if (excludeDND && m.doNotDisturb) return false;
+      if (joinDateFrom && (!m.joinDate || m.joinDate < joinDateFrom)) return false;
+      if (joinDateTo   && (!m.joinDate || m.joinDate > joinDateTo))   return false;
       return rows.every((row) => {
         const v = row.value;
+        if (PERF_NUMERIC_FIELDS.includes(row.field)) {
+          const val = m[row.field] || 0;
+          if (row.op === 'gte') return val >= +v;
+          if (row.op === 'lte') return val <= +v;
+          return true;
+        }
         switch (row.field) {
           case 'referralCount': {
             const cnt = m.cases || 0;
@@ -1772,7 +1843,7 @@
 
   function filterByConditions(cond) {
     // Row-based format (new)
-    if (cond.rows) return filterByRowConditions(cond.rows, cond.excludeDND);
+    if (cond.rows) return filterByRowConditions(cond.rows, cond.excludeDND, cond.joinDateFrom, cond.joinDateTo);
     // Legacy flat-object format (backward compat)
     return MEMBERS.filter((m) => {
       if (cond.excludeDND && m.doNotDisturb) return false;
@@ -1813,9 +1884,12 @@
   }
 
   function readConditionsFromModal() {
+    const timeUnlimited = document.getElementById('cf-time-unlimited')?.checked ?? true;
     return {
       rows: conditionRows.map((r) => ({ ...r })),
       excludeDND: document.getElementById('cf-exclude-dnd')?.checked ?? false,
+      joinDateFrom: timeUnlimited ? '' : (document.getElementById('cf-date-from')?.value || ''),
+      joinDateTo:   timeUnlimited ? '' : (document.getElementById('cf-date-to')?.value || ''),
     };
   }
 
@@ -1835,7 +1909,15 @@
   }
 
   function conditionsToLabels(cond) {
-    if (cond.rows) return rowsToLabels(cond.rows);
+    if (cond.rows) {
+      const labels = rowsToLabels(cond.rows);
+      if (cond.joinDateFrom || cond.joinDateTo) {
+        labels.push(cond.joinDateFrom && cond.joinDateTo
+          ? `加入期間 ${cond.joinDateFrom}～${cond.joinDateTo}`
+          : cond.joinDateFrom ? `加入日期 ≥ ${cond.joinDateFrom}` : `加入日期 ≤ ${cond.joinDateTo}`);
+      }
+      return labels;
+    }
     // Legacy
     const labels = [];
     const opLabel = { eq:'= ', gte:'≥ ', lte:'≤ ' };
@@ -1965,8 +2047,13 @@
     conditionRows = g.conditions?.rows ? g.conditions.rows.map((r) => ({ ...r })) : [];
     const excDnd = document.getElementById('cf-exclude-dnd');
     if (excDnd) excDnd.checked = g.conditions?.excludeDND ?? true;
+    const hasJoinDateRange = !!(g.conditions?.joinDateFrom || g.conditions?.joinDateTo);
     const timeEl = document.getElementById('cf-time-unlimited');
-    if (timeEl) { timeEl.checked = true; const dr = document.getElementById('cfb-date-range'); if (dr) dr.style.display = 'none'; }
+    if (timeEl) { timeEl.checked = !hasJoinDateRange; const dr = document.getElementById('cfb-date-range'); if (dr) dr.style.display = hasJoinDateRange ? '' : 'none'; }
+    const dateFromEl = document.getElementById('cf-date-from');
+    if (dateFromEl) dateFromEl.value = g.conditions?.joinDateFrom || '';
+    const dateToEl = document.getElementById('cf-date-to');
+    if (dateToEl) dateToEl.value = g.conditions?.joinDateTo || '';
     resetCfPreview();
     const toSendBtn = document.getElementById('btn-cf-to-send');
     if (toSendBtn) toSendBtn.style.display = 'none';
@@ -3407,6 +3494,7 @@
     ['ce-li-imgurl','ce-li-title','ce-li-body','ce-li-btnlabel'].forEach((id) => {
       document.getElementById(id)?.addEventListener('input', ceSyncImageCardPreview);
     });
+    wireImageUpload('ce-li-imgfile', 'ce-li-imgurl', 'ce-li-imgclear');
 
     // Variable chips — insert at cursor in the focused textarea (LINE text or SMS)
     document.querySelectorAll('[data-cevar-modal]').forEach((chip) => {
@@ -3526,6 +3614,10 @@
         ? `<img src="${esc(imgUrl)}" style="width:100%;height:110px;object-fit:cover;" onerror="this.style.display='none'" />`
         : '<i class="fa-regular fa-image"></i>';
     }
+    const uploadLbl = document.getElementById('ce-li-imgupload-label');
+    const clearBtn  = document.getElementById('ce-li-imgclear');
+    if (uploadLbl) uploadLbl.textContent = imgUrl ? '更換圖片' : '選擇圖片';
+    if (clearBtn)  clearBtn.style.display = imgUrl ? '' : 'none';
     const tp = document.getElementById('ce-li-title-preview');
     const bp = document.getElementById('ce-li-body-preview');
     const btnp = document.getElementById('ce-li-btn-preview');
@@ -4076,6 +4168,7 @@
     ['li-img-url','li-title','li-body','li-btn-label','li-btn-url'].forEach((id) =>
       document.getElementById(id)?.addEventListener('input', syncImageCardPreview)
     );
+    wireImageUpload('li-img-file', 'li-img-url', 'li-img-clear');
     // Location card fields
     ['ll-name','ll-addr','ll-lat','ll-lng'].forEach((id) =>
       document.getElementById(id)?.addEventListener('input', syncLocationPreview)

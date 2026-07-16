@@ -217,6 +217,20 @@
     ],
   };
 
+  // 名單系統（CRM）會員姓名 demo（key 為手機號碼）— 用於同步顯示會員真實姓名
+  // 若手機號碼未在名單系統中比對到資料，畫面以「-」呈現
+  const CRM_MEMBER_NAMES = {
+    '0918123888': '王小毅',
+    '0922456555': '李大華',
+    '0912345456': '陳志忠',
+    '0955333222': '李育穎',
+    '0966444333': '王建鴻',
+  };
+
+  function getCrmMemberName(r) {
+    return CRM_MEMBER_NAMES[r.phone] || '-';
+  }
+
   const STATUS_LABEL = {
     reviewing: '審核中', confirmed: '專案已確認', pending_review: '人工審核中',
     rewardable: '可提領', withdrawn: '已提領', invalid: '未符合資格',
@@ -553,6 +567,7 @@
       <tr class="${rowCls}">
         <td>${tagLabel}</td>
         <td>${r.uid}</td>
+        <td class="cell-name">${getCrmMemberName(r)}</td>
         <td class="cell-name">${r.name}</td>
         <td>${r.phone}</td>
         <td class="num money">$${fmt(r.pending)}</td>
@@ -630,7 +645,7 @@
 
     tbody.innerHTML = items.length
       ? items.map(renderRow).join('')
-      : '<tr><td colspan="10" style="padding:30px;text-align:center;color:var(--color-text-muted);">沒有符合條件的推薦人</td></tr>';
+      : '<tr><td colspan="11" style="padding:30px;text-align:center;color:var(--color-text-muted);">沒有符合條件的推薦人</td></tr>';
 
     const pg = document.getElementById('ref-pg-total');
     if (pg) pg.textContent = items.length;

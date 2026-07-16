@@ -203,6 +203,44 @@
         // 啟動於第 3 期，目前僅已繳 3 期，仍需再繳第 4、5 期 → E-NEG
       ],
     },
+    {
+      // 測試用：分期繳納服務費達 12 期，驗證收款單列表「展開」功能
+      caseId: 'M2026070112',
+      agentName: '林美玲', agentRegion: '南區',
+      referrerName: '洪家寶', referrerTag: '會員', referrerCid: 'U250601002',
+      refereeName: '柯世豪', refereePhone: '0988112233',
+      caseType: 'negotiation',
+      loanTypes: ['前置協商'],
+      submitAt: '2026/07/01 09:00', payoutAt: '2026/07/13',
+      campaignId: 'CAMP-C-2026Q2',
+      snapshot: {
+        campaignId: 'CAMP-C-2026Q2',
+        overlapCapEnabled: true,
+        overlapCap: 20000,
+        items: [
+          { projectKey: 'pre_negotiation', label: '前置協商', trigger: '啟動計算後再繳滿 2 期服務費', bonus: 2000 },
+        ],
+      },
+      amount: 2000,
+      payoutAmount: 900000,
+      status: 'pending_approval',
+      customerId: '2607130012',
+      referrerListId: '2506010002',
+      receipts: [
+        { suffix: 1,  amount: 500 },
+        { suffix: 2,  amount: 500 },
+        { suffix: 3,  amount: 500 },
+        { suffix: 4,  amount: 500 },
+        { suffix: 5,  amount: 500 },
+        { suffix: 6,  amount: 500, note: '第六期，累積達 $6,000，啟動計算' },
+        { suffix: 7,  amount: 500 },
+        { suffix: 8,  amount: 500 },
+        { suffix: 9,  amount: 500 },
+        { suffix: 10, amount: 500 },
+        { suffix: 11, amount: 500 },
+        { suffix: 12, amount: 500, note: '第十二期繳訖，共 12 期，已達再繳 2 期條件' },
+      ],
+    },
   ];
 
   const STATUS_META = {
@@ -313,11 +351,12 @@
     return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  function buildReceiptListHtml(r) {
+  function buildReceiptListHtml(r, opts) {
+    const limit = opts && opts.limit;
     const base = receiptNoOf(r);
     if (base === '—') return '—';
     const items = Array.isArray(r.receipts) && r.receipts.length ? r.receipts : [{ amount: r.amount }];
-    return '<div class="receipt-link-list">' + items.map((item) => {
+    const renderItem = (item) => {
       // 有支號：base-1 / base-2；無支號（單筆）：直接顯示 base
       const no = item.suffix != null ? base + '-' + item.suffix : base;
       const noteIcon = item.note
@@ -329,7 +368,19 @@
         '</a>' +
         noteIcon +
         '</div>';
-    }).join('') + '</div>';
+    };
+    if (!limit || items.length <= limit) {
+      return '<div class="receipt-link-list">' + items.map(renderItem).join('') + '</div>';
+    }
+    const visible = items.slice(0, limit);
+    const extra = items.slice(limit);
+    return '<div class="receipt-link-list">' +
+      visible.map(renderItem).join('') +
+      '<div class="receipt-link-extra" hidden>' + extra.map(renderItem).join('') + '</div>' +
+      '<button type="button" class="receipt-toggle-btn" data-id="' + escAttr(r.caseId) + '" data-more-label="還有 ' + extra.length + ' 筆">' +
+        '<i class="fa-solid fa-chevron-down"></i><span>還有 ' + extra.length + ' 筆</span>' +
+      '</button>' +
+      '</div>';
   }
 
   function renderWarnChips(codes) {
@@ -399,7 +450,7 @@
         <td>${r.refereeName || '—'}</td>
         <td><span class="tag-pill ${(TYPE_META[r.caseType] || {}).cls || 'badge-gray'}">${(TYPE_META[r.caseType] || {}).label || '—'}</span></td>
         <td class="num money">${fmt(r.amount)}</td>
-        <td>${buildReceiptListHtml(r)}</td>
+        <td>${buildReceiptListHtml(r, { limit: 3 })}</td>
         <td><span class="status-text ${s.cls}">${s.label}</span></td>
         <td>${warnHtml ? `<div class="warn-chips-row">${warnHtml}</div>` : '<span style="color:var(--color-text-muted);font-size:12px;">—</span>'}</td>
         <td>
@@ -515,6 +566,15 @@
     });
     document.querySelectorAll('[data-act="reject"]').forEach((btn) => {
       btn.addEventListener('click', () => openRejectModal(btn.dataset.id));
+    });
+    document.querySelectorAll('.receipt-toggle-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const extra = btn.previousElementSibling;
+        const expanded = btn.classList.toggle('expanded');
+        if (extra && extra.classList.contains('receipt-link-extra')) extra.hidden = !expanded;
+        const label = btn.querySelector('span');
+        if (label) label.textContent = expanded ? '收起' : btn.dataset.moreLabel;
+      });
     });
     document.querySelectorAll('.row-check').forEach((cb) => {
       cb.addEventListener('change', () => {
@@ -847,7 +907,7 @@
     btn.addEventListener('click', () => {
       const items = getFiltered();
       if (items.length === 0) { alert('目前無資料可匯出'); return; }
-      const header = ['案號','推薦人','會員編號','身份','負責業務','業務所屬單位地區','被推薦人','案件類型','計算獎金','狀態','系統警示代碼','核款時間','核款人員','核款備註','拒絕時間','拒絕人員','拒絕原因'];
+      const header = ['案號','推薦人','會員編號','身份','負責業務','業務所屬地區','被推薦人','案件類型','計算獎金','狀態','系統警示代碼','核款時間','核款人員','核款備註','拒絕時間','拒絕人員','拒絕原因'];
       const rows = items.map((r) => {
         const s  = STATUS_META[r.status]?.label || r.status;
         const ct = TYPE_META[r.caseType]?.label || r.caseType || '';
