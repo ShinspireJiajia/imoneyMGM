@@ -101,8 +101,15 @@
                 <!-- LINE 圖片卡片 -->
                 <div id="ce-panel-line-image" style="display:none;">
                   <div class="ce-form-row">
-                    <label class="cf-label">圖片網址</label>
-                    <input class="cf-input" id="ce-li-imgurl" placeholder="https://…" />
+                    <label class="cf-label">卡片圖片</label>
+                    <div class="img-upload-field">
+                      <label class="img-upload-btn" for="ce-li-imgfile">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> <span id="ce-li-imgupload-label">選擇圖片</span>
+                      </label>
+                      <input type="file" id="ce-li-imgfile" accept="image/*" hidden />
+                      <button type="button" class="img-upload-clear" id="ce-li-imgclear" title="移除圖片" style="display:none;"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <input type="hidden" id="ce-li-imgurl" />
                   </div>
                   <div class="ce-form-row">
                     <label class="cf-label">標題</label>

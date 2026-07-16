@@ -137,8 +137,15 @@
             <div id="ltype-image" style="display:none;">
               <div class="card-fields">
                 <div class="cf-row">
-                  <label class="cf-label"><i class="fa-regular fa-image" style="margin-right:3px;"></i>圖片網址</label>
-                  <input class="cf-input" id="li-img-url" placeholder="https://example.com/image.jpg" />
+                  <label class="cf-label"><i class="fa-regular fa-image" style="margin-right:3px;"></i>卡片圖片</label>
+                  <div class="img-upload-field">
+                    <label class="img-upload-btn" for="li-img-file">
+                      <i class="fa-solid fa-cloud-arrow-up"></i> <span id="li-img-upload-label">選擇圖片</span>
+                    </label>
+                    <input type="file" id="li-img-file" accept="image/*" hidden />
+                    <button type="button" class="img-upload-clear" id="li-img-clear" title="移除圖片" style="display:none;"><i class="fa-solid fa-xmark"></i></button>
+                  </div>
+                  <input type="hidden" id="li-img-url" />
                 </div>
                 <div class="cf-row">
                   <label class="cf-label">標題</label>

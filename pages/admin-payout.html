@@ -44,6 +44,15 @@
         margin-left: 5px; vertical-align: middle;
         flex-shrink: 0;
       }
+      .receipt-link-extra { display: flex; flex-direction: column; gap: 5px; }
+      .receipt-toggle-btn {
+        display: inline-flex; align-items: center; gap: 4px;
+        background: none; border: none; padding: 0; margin-top: 2px;
+        color: #4338ca; font-size: 11px; font-weight: 600; cursor: pointer;
+      }
+      .receipt-toggle-btn:hover { text-decoration: underline; }
+      .receipt-toggle-btn i { font-size: 9px; transition: transform 0.15s; }
+      .receipt-toggle-btn.expanded i { transform: rotate(180deg); }
       /* 貸款類型小標籤（案號欄） */
       .loan-type-chips { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
       .loan-type-chip {
@@ -235,12 +244,12 @@
             <thead>
               <tr>
                 <th style="width: 36px;"></th>
-                <th>案號</th>
+                <th style="width: 90px;">案號</th>
                 <th>推薦人</th>
                 <th>會員編號</th>
                 <th>身份</th>
                 <th>負責業務</th>
-                <th>業務所屬單位地區</th>
+                <th>業務所屬地區</th>
                 <th>被推薦人</th>
                 <th>類型</th>
                 <th>計算獎金</th>

@@ -128,7 +128,7 @@
             <div class="stat-title">✅ 全數入帳 (件)</div>
             <div class="stat-value" id="kpi-paid">0</div>
         </div>
-        <div class="stat-card revenue" title="總實收：下線成功辦理案件的費用總計（收款單 > 客戶回覆付款金額）">
+        <div class="stat-card revenue" title="總實收：下線成功辦理案件的費用總計（收款單 > 客戶回覆付款金額），僅計算前三期金額">
             <div class="stat-title">💰 總實收 (NT$)</div>
             <div class="stat-value revenue-text" id="kpi-amount">0</div>
         </div>
@@ -157,14 +157,16 @@
                     <th onclick="handleSort('name')">推薦人 (姓名/編號) ↕</th>
                     <th onclick="handleSort('identity')">身分 ↕</th>
                     <th onclick="handleSort('date')" title="推薦人加入時間：該推薦人本人加入/成為推薦人之日期">推薦人加入時間 ↕</th>
-                    <th class="text-right" onclick="handleSort('clicksDisplay')">點擊次數 ↕</th>
-                    <th class="text-right" onclick="handleSort('joined')" title="加入(人)：透過推薦連結成功加入 MGM 好友、開啟 MGM 首頁之人數">加入(人) ↕</th>
+                    <th class="text-right" onclick="handleSort('consultClicksDisplay')" title="諮詢連結點擊次數：透過分享的免費諮詢連結被點擊之次數">諮詢連結點擊 ↕</th>
+                    <th class="text-right" onclick="handleSort('inviteClicksDisplay')" title="邀請MGM連結點擊次數：透過分享的MGM推薦團隊邀請連結被點擊之次數">邀請連結點擊 ↕</th>
+                    <th class="text-right" onclick="handleSort('joined')" title="綁定(人)：透過推薦連結成功加入 MGM 好友、開啟 MGM 首頁之人數">加入(人) ↕</th>
                     <th class="text-right" onclick="handleSort('formSubmitted')" title="填單(人)：加入好友後，完成填寫諮詢/申請表單之人數">填單(人) ↕</th>
                     <th class="text-right" onclick="handleSort('closed')" title="成交(人)：完成簽約成交之人數">成交(人) ↕</th>
+                    <th class="text-right" onclick="handleSort('paidPeople')" title="入帳(人)：完成付款入帳之不重複人數">入帳(人) ↕</th>
                     <th class="text-right" onclick="handleSort('paid')">入帳(件) ↕</th>
                     <th class="text-right" onclick="handleSort('formRate')" title="填單轉換率 = 填單(人) / 點擊次數 * 100%">填單轉換率 ↕</th>
-                    <th class="text-right" onclick="handleSort('rate')" title="轉換率 = 入帳(件) / 加入(人) * 100%">轉換率 ↕</th>
-                    <th class="text-right" onclick="handleSort('amount')" title="總實收：下線成功辦理案件的費用總計（收款單 > 客戶回覆付款金額）">總實收 ↕</th>
+                    <th class="text-right" onclick="handleSort('rate')" title="轉換率 = 入帳(人) / 綁定(人) * 100%">轉換率 ↕</th>
+                    <th class="text-right" onclick="handleSort('amount')" title="總實收：下線成功辦理案件的費用總計（收款單 > 客戶回覆付款金額），僅計算前三期金額">總實收 ↕</th>
                     <th class="text-right" onclick="handleSort('bonus')">發放獎金 ↕</th>
                     <th class="text-right" onclick="handleSort('roi')" title="ROI = (總實收 - 發放獎金) / 發放獎金 * 100%">ROI ↕</th>
                     <th class="text-right" onclick="handleSort('rejected')">婉拒(件) ↕</th>
@@ -195,19 +197,28 @@
         d.setDate(d.getDate() - daysAgo);
         const dateStr = d.toISOString().slice(0, 10);
 
-        let clicks = Math.floor(Math.random() * 500) + 20;
-        let clickDates = [];
-        for (let c = 0; c < clicks; c++) {
+        let consultClicks = Math.floor(Math.random() * 400) + 20;
+        let consultClickDates = [];
+        for (let c = 0; c < consultClicks; c++) {
             const cd = new Date(_today);
             cd.setDate(cd.getDate() - Math.floor(Math.random() * 365));
-            clickDates.push(cd.toISOString().slice(0, 10));
+            consultClickDates.push(cd.toISOString().slice(0, 10));
         }
+        let inviteClicks = Math.floor(Math.random() * 100) + 5;
+        let inviteClickDates = [];
+        for (let c = 0; c < inviteClicks; c++) {
+            const cd = new Date(_today);
+            cd.setDate(cd.getDate() - Math.floor(Math.random() * 365));
+            inviteClickDates.push(cd.toISOString().slice(0, 10));
+        }
+        let clicks = consultClicks + inviteClicks;
         let joined = Math.floor(Math.random() * 80) + 5;
         let formSubmitted = Math.floor(Math.random() * (joined * 0.8));
         let closed = Math.floor(Math.random() * (formSubmitted * 0.6));
         let paid = Math.floor(Math.random() * (closed * 0.8));
+        let paidPeople = paid > 0 ? Math.floor(paid * (0.7 + Math.random() * 0.3)) : 0;
         let rejected = closed > paid ? Math.floor(Math.random() * (closed - paid)) : 0;
-        let rate = joined > 0 ? ((paid / joined) * 100).toFixed(1) : 0;
+        let rate = joined > 0 ? ((paidPeople / joined) * 100).toFixed(1) : 0;
         let formRate = clicks > 0 ? ((formSubmitted / clicks) * 100).toFixed(1) : 0;
         let amount = paid * (Math.floor(Math.random() * 400000) + 100000);
         let bonus = paid * (Math.floor(Math.random() * 2000) + 1000);
@@ -222,13 +233,19 @@
             id: `U250${String(i).padStart(3, '0')}`,
             date: dateStr,
             clicks: clicks,
-            clickDates: clickDates,
             clicksDisplay: clicks,
+            consultClicks: consultClicks,
+            consultClickDates: consultClickDates,
+            consultClicksDisplay: consultClicks,
+            inviteClicks: inviteClicks,
+            inviteClickDates: inviteClickDates,
+            inviteClicksDisplay: inviteClicks,
             joined: joined,
             formSubmitted: formSubmitted,
             formRate: parseFloat(formRate),
             closed: closed,
             paid: paid,
+            paidPeople: paidPeople,
             rate: parseFloat(rate),
             amount: amount,
             bonus: bonus,
@@ -250,11 +267,12 @@
             acc.joined += row.joined;
             acc.closed += row.closed;
             acc.paid += row.paid;
+            acc.paidPeople += row.paidPeople;
             acc.amount += row.amount;
             acc.bonus += row.bonus;
             acc.rejected += row.rejected;
             return acc;
-        }, { joined: 0, closed: 0, paid: 0, amount: 0, bonus: 0, rejected: 0 });
+        }, { joined: 0, closed: 0, paid: 0, paidPeople: 0, amount: 0, bonus: 0, rejected: 0 });
 
         document.getElementById('kpi-joined').innerText = totals.joined.toLocaleString();
         document.getElementById('kpi-submitted').innerText = totals.closed.toLocaleString();
@@ -286,9 +304,13 @@
         }
 
         dateFiltered.forEach(row => {
-            row.clicksDisplay = (clickStart && clickEnd)
-                ? row.clickDates.filter(d => d >= clickStart && d <= clickEnd).length
-                : row.clicks;
+            row.consultClicksDisplay = (clickStart && clickEnd)
+                ? row.consultClickDates.filter(d => d >= clickStart && d <= clickEnd).length
+                : row.consultClicks;
+            row.inviteClicksDisplay = (clickStart && clickEnd)
+                ? row.inviteClickDates.filter(d => d >= clickStart && d <= clickEnd).length
+                : row.inviteClicks;
+            row.clicksDisplay = row.consultClicksDisplay + row.inviteClicksDisplay;
         });
 
         updateDashboard(dateFiltered);
@@ -317,10 +339,12 @@
                 <td><strong>${row.name}</strong> <span style="color:#888;font-size:12px;">${row.id}</span></td>
                 <td><span class="identity-badge identity-${row.identity}">${row.identity}</span></td>
                 <td>${row.date.replace(/-/g, '/')}</td>
-                <td class="text-right">${row.clicksDisplay.toLocaleString()}</td>
+                <td class="text-right">${row.consultClicksDisplay.toLocaleString()}</td>
+                <td class="text-right">${row.inviteClicksDisplay.toLocaleString()}</td>
                 <td class="text-right">${row.joined}</td>
                 <td class="text-right">${row.formSubmitted}</td>
                 <td class="text-right">${row.closed}</td>
+                <td class="text-right" style="color:#52c41a; font-weight:bold;">${row.paidPeople}</td>
                 <td class="text-right" style="color:#52c41a; font-weight:bold;">${row.paid}</td>
                 <td class="text-right">${row.formRate}%</td>
                 <td class="text-right">${row.rate}%</td>

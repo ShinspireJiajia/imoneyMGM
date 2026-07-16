@@ -41,21 +41,79 @@
       </section>
 
       <div id="share-main-wrap">
-      <!-- ============== 推薦碼主視覺卡（含 QR Code） ============== -->
+      <!-- ============== 推薦碼主視覺卡 ============== -->
       <section class="share-hero" aria-label="您的專屬推薦碼">
         <h2>您的專屬推薦碼</h2>
-        <div class="share-hero-code">A1B2C3D</div>
+        <div class="share-hero-code-row">
+          <span class="share-hero-code">A1B2C3D</span>
+          <button type="button" id="btn-copy-code" class="hero-code-copy-btn" aria-label="複製推薦碼">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+        </div>
+      </section>
 
-        <!-- QR Code -->
-        <div class="qr-wrap" aria-label="推薦碼 QR Code">
-          <img id="qr-img" src="" alt="正在產生 QR Code…" />
+      <!-- ============== 分享管道一：免費諮詢申請連結（推薦客戶） ============== -->
+      <section class="channel-card" aria-label="分享免費諮詢申請連結">
+        <div class="channel-head">
+          <div class="channel-icon channel-icon-consult"><i class="fa-solid fa-comments-dollar"></i></div>
+          <div>
+            <h3>分享免費諮詢連結</h3>
+            <p class="channel-desc">邀請有資金週轉、理財需求的親友申請「免費一對一諮詢」，本人完成核貸撥款後即可獲得分享獎金回饋。</p>
+          </div>
         </div>
 
-        <div class="share-actions">
-          <button type="button" id="btn-copy-url" class="btn btn-outline share-action-btn">
+        <div class="link-row">
+          <input type="text" id="consult-link-input" class="link-input" readonly aria-label="免費諮詢申請連結" />
+          <button type="button" id="btn-copy-consult-link" class="btn btn-outline link-copy-btn">
             <i class="fa-solid fa-link"></i>複製連結
           </button>
         </div>
+
+        <button type="button" id="btn-copy-consult-msg" class="btn btn-primary channel-msg-btn">
+          <i class="fa-solid fa-copy"></i>複製分享文字（含連結）
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-outline channel-qr-wrap"
+          id="qr-consult-trigger"
+          data-qr-title="免費諮詢連結 QR Code"
+        >
+          <i class="fa-solid fa-qrcode"></i>顯示 QR Code
+          <img id="qr-consult-img" src="" alt="免費諮詢連結 QR Code" hidden />
+        </button>
+      </section>
+
+      <!-- ============== 分享管道二：邀請好友加入 MGM 推薦團隊 ============== -->
+      <section class="channel-card" aria-label="邀請好友加入MGM推薦團隊">
+        <div class="channel-head">
+          <div class="channel-icon channel-icon-invite"><i class="fa-solid fa-people-group"></i></div>
+          <div>
+            <h3>邀請好友加入 MGM 推薦團隊</h3>
+            <p class="channel-desc">邀請好友一起成為理財通 MGM 推薦人，分享賺獎金，一起拓展分享收益。</p>
+          </div>
+        </div>
+
+        <div class="link-row">
+          <input type="text" id="invite-link-input" class="link-input" readonly aria-label="MGM 推薦團隊邀請連結" />
+          <button type="button" id="btn-copy-invite-link" class="btn btn-outline link-copy-btn">
+            <i class="fa-solid fa-link"></i>複製連結
+          </button>
+        </div>
+
+        <button type="button" id="btn-copy-invite-msg" class="btn btn-primary channel-msg-btn">
+          <i class="fa-solid fa-copy"></i>複製分享文字（含連結）
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-outline channel-qr-wrap"
+          id="qr-invite-trigger"
+          data-qr-title="MGM 推薦團隊邀請連結 QR Code"
+        >
+          <i class="fa-solid fa-qrcode"></i>顯示 QR Code
+          <img id="qr-invite-img" src="" alt="MGM 推薦團隊邀請連結 QR Code" hidden />
+        </button>
       </section>
 
       <!-- ============== 當期活動文案（由後台維護） ============== -->
@@ -78,6 +136,22 @@
         </ol>
       </section>
       </div><!-- /#share-main-wrap -->
+
+      <!-- ============== QR Code 放大 / 複製圖片 彈窗 ============== -->
+      <div class="qr-modal-overlay" id="qr-modal-overlay" hidden>
+        <div class="qr-modal" role="dialog" aria-modal="true" aria-label="QR Code 放大檢視">
+          <button type="button" class="qr-modal-close" id="qr-modal-close" aria-label="關閉">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          <h3 class="qr-modal-title" id="qr-modal-title">QR Code</h3>
+          <div class="qr-modal-img-wrap">
+            <img id="qr-modal-img" src="" alt="QR Code 放大圖" />
+          </div>
+          <button type="button" class="btn btn-primary qr-modal-copy-btn" id="qr-modal-copy-btn">
+            <i class="fa-solid fa-copy"></i>複製圖片
+          </button>
+        </div>
+      </div>
     </main>
 
     <script src="../js/common.js"></script>
